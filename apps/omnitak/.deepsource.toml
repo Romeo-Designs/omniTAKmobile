@@ -15,9 +15,13 @@ name = "javascript"
 
 [[analyzers]]
 name = "python"
+dependency_file_paths = [
+  "requirements/requirements_project.txt"
+]
 
   [analyzers.meta]
-  runtime_version = "3.x.x"
+  max_line_length = 100
+
 
 [[analyzers]]
 name = "rust"
