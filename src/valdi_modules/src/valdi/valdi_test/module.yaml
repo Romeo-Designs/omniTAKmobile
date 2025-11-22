@@ -1,0 +1,12 @@
+output_target: debug
+
+dependencies:
+  - jasmine
+  - source_map
+  - valdi_core
+  - valdi_standalone
+  - valdi_tsx
+allowed_debug_dependencies:
+  - jasmine
+  - source_map
+  - valdi_standalone

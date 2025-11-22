@@ -1,0 +1,118 @@
+at org.apache.xerces.impl.XMLScanner.scanAttributeValue(Unknown Source)
+at org.apache.xerces.impl.XMLDocumentFragmentScannerImpl.scanAttribute(Unknown Source)
+at org.apache.xerces.impl.XMLDocumentFragmentScannerImpl.scanStartElement(Unknown Source)
+at org.apache.xerces.impl.XMLDocumentFragmentScannerImpl$FragmentContentDispatcher.dispatch(Unknown Source)
+at org.apache.xerces.impl.XMLDocumentFragmentScannerImpl.scanDocument(Unknown Source)
+at org.apache.xerces.parsers.XML11Configuration.parse(Unknown Source)
+at org.apache.xerces.parsers.XML11Configuration.parse(Unknown Source)
+at org.apache.xerces.parsers.XMLParser.parse(Unknown Source)
+at org.apache.xerces.parsers.AbstractSAXParser.parse(Unknown Source)
+at org.apache.xerces.jaxp.SAXParserImpl$JAXPSAXParser.parse(Unknown Source)
+at org.dom4j.io.SAXReader.read(SAXReader.java:494)
+... 7 common frames omitted
+2025-11-21-16:24:17.042 [CallsignAssignmentExecutor-0] INFO c.b.m.s.DistributedSubscriptionManager - Set client for subscription: tls:87 to R06-MDT (ANDROID-039F74DF-A25A-426F-BA41-2C7D417F21DE) source=192.168.1.182:63626
+2025-11-21-16:24:37.395 [readParseProcessor-0] WARN c.b.m.n.p.c.StreamingCotProtocol - Error parsing cot message
+org.dom4j.DocumentException: Error on line 9 of document  : The value of attribute "destinations" associated with an element type "__serverdestination" must not contain the '<' character.
+at org.dom4j.io.SAXReader.read(SAXReader.java:511)
+at tak.server.cot.CotParser.parse(CotParser.java:125)
+at com.bbn.marti.nio.protocol.connections.StreamingCotProtocol.add(StreamingCotProtocol.java:244)
+at com.bbn.marti.nio.netty.handlers.NioNettyTlsServerHandler.convertAndSubmitBytesAsCot(NioNettyTlsServerHandler.java:311)
+at com.bbn.marti.nio.netty.handlers.NioNettyTlsServerHandler.lambda$setReader$1(NioNettyTlsServerHandler.java:214)
+at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: org.xml.sax.SAXParseException: The value of attribute "destinations" associated with an element type "__serverdestination" must not contain the '<' character.
+at org.apache.xerces.util.ErrorHandlerWrapper.createSAXParseException(Unknown Source)
+at org.apache.xerces.util.ErrorHandlerWrapper.fatalError(Unknown Source)
+at org.apache.xerces.impl.XMLErrorReporter.reportError(Unknown Source)
+at org.apache.xerces.impl.XMLErrorReporter.reportError(Unknown Source)
+at org.apache.xerces.impl.XMLErrorReporter.reportError(Unknown Source)
+at org.apache.xerces.impl.XMLScanner.reportFatalError(Unknown Source)
+at org.apache.xerces.impl.XMLScanner.scanAttributeValue(Unknown Source)
+at org.apache.xerces.impl.XMLDocumentFragmentScannerImpl.scanAttribute(Unknown Source)
+at org.apache.xerces.impl.XMLDocumentFragmentScannerImpl.scanStartElement(Unknown Source)
+at org.apache.xerces.impl.XMLDocumentFragmentScannerImpl$FragmentContentDispatcher.dispatch(Unknown Source)
+at org.apache.xerces.impl.XMLDocumentFragmentScannerImpl.scanDocument(Unknown Source)
+at org.apache.xerces.parsers.XML11Configuration.parse(Unknown Source)
+at org.apache.xerces.parsers.XML11Configuration.parse(Unknown Source)
+at org.apache.xerces.parsers.XMLParser.parse(Unknown Source)
+at org.apache.xerces.parsers.AbstractSAXParser.parse(Unknown Source)
+at org.apache.xerces.jaxp.SAXParserImpl$JAXPSAXParser.parse(Unknown Source)
+at org.dom4j.io.SAXReader.read(SAXReader.java:494)
+... 7 common frames omitted
+2025-11-21-16:28:25.226 [epollEventLoopGroup-4-8] ERROR c.b.m.n.n.h.NioNettyHandlerBase - NioNettyServerHandler error. Cause: recvAddress(..) failed: Connection reset by peer. Additional info: Remote address: 192.168.1.184; Remote port: 61207; Local port: 8089; Peer certificate Subject DN: CN=OmniTAKiPhone, OU=TAK, O=RoeTAK, L=Nashville, ST=TN, C=US;
+2025-11-21-16:28:25.230 [RemoveSubscriptionPool-0] INFO c.b.m.s.DistributedSubscriptionManager - Removed Subscription: tls:86
+2025-11-21-16:29:39.942 [epollEventLoopGroup-4-2] INFO c.b.m.s.DistributedSubscriptionManager - Added Subscription: id=tls:88 source=192.168.1.184
+2025-11-21-16:29:50.552 [epollEventLoopGroup-4-1] ERROR c.b.m.n.n.h.NioNettyHandlerBase - NioNettyServerHandler error. Cause: recvAddress(..) failed: Connection reset by peer. Additional info: Remote address: 192.168.1.182; Remote port: 63626; Local port: 8089; Peer certificate Subject DN: CN=OmniTAKMacOS, OU=TAK, O=RoeTAK, L=Nashville, ST=TN, C=US;
+2025-11-21-16:29:50.557 [RemoveSubscriptionPool-0] INFO c.b.m.s.DistributedSubscriptionManager - Removed Subscription: tls:87
+2025-11-21-16:30:09.906 [CallsignAssignmentExecutor-0] INFO c.b.m.s.DistributedSubscriptionManager - Set client for subscription: tls:88 to R06 (ANDROID-C2C1C15A-1943-449D-8611-C66FCF9D7E74) source=192.168.1.184:61225
+2025-11-21-16:30:10.014 [epollEventLoopGroup-4-3] INFO c.b.m.s.DistributedSubscriptionManager - Added Subscription: id=tls:89 source=192.168.1.182
+2025-11-21-16:30:39.653 [CallsignAssignmentExecutor-0] INFO c.b.m.s.DistributedSubscriptionManager - Set client for subscription: tls:89 to R06-MDT (ANDROID-039F74DF-A25A-426F-BA41-2C7D417F21DE) source=192.168.1.182:63635
+2025-11-21-16:35:15.889 [svc-#5143] INFO c.b.m.s.DistributedSubscriptionManager - Added Subscription: id=tls:90 source=192.168.1.182
+2025-11-21-16:35:16.231 [CallsignAssignmentExecutor-0] INFO c.b.m.s.DistributedSubscriptionManager - Set client for subscription: tls:90 to Romeo Base (031d1985-9050-7010-d95d-eaaf31260902) source=192.168.1.182:55626
+2025-11-21-16:35:30.880 [RemoveSubscriptionPool-0] INFO c.b.m.s.DistributedSubscriptionManager - Removed Subscription: tls:90
+2025-11-21-16:36:42.565 [svc-#5148] INFO c.b.m.service.ActuatorMetricsService - Collecting CPU usage from process: 10@takserver
+2025-11-21-16:36:47.773 [svc-#5149] INFO c.b.m.service.ActuatorMetricsService - Collecting CPU usage from process: 10@takserver
+2025-11-21-16:51:43.965 [epollEventLoopGroup-4-4] INFO c.b.m.s.DistributedSubscriptionManager - Added Subscription: id=tls:91 source=192.168.1.182
+2025-11-21-16:52:26.169 [CallsignAssignmentExecutor-0] INFO c.b.m.s.DistributedSubscriptionManager - Set client for subscription: tls:91 to ROMEO MDT (72300025-8056-4F3A-8BC9-B3DBADB8137D) source=192.168.1.182:56806
+2025-11-21-16:53:10.785 [epollEventLoopGroup-4-5] INFO c.b.m.s.DistributedSubscriptionManager - Added Subscription: id=tls:92 source=192.168.1.184
+2025-11-21-16:53:15.615 [RemoveSubscriptionPool-0] INFO c.b.m.s.DistributedSubscriptionManager - Removed Subscription: tls:92
+2025-11-21-16:55:00.945 [svc-#5144] INFO c.bbn.marti.groups.FileAuthenticator - adding new file-based user iphoneitak
+2025-11-21-16:57:34.986 [epollEventLoopGroup-4-6] INFO c.b.m.s.DistributedSubscriptionManager - Added Subscription: id=tls:93 source=192.168.1.184
+2025-11-21-16:57:51.071 [CallsignAssignmentExecutor-0] INFO c.b.m.s.DistributedSubscriptionManager - Set client for subscription: tls:93 to R06-iTAK (18FB839D-781B-49BC-AA26-7824398F5F19) source=192.168.1.184:50700
+2025-11-21-17:00:56.336 [main] INFO tak.server.ServerConfiguration - Starting ServerConfiguration v5.5-RELEASE-58 using Java 17.0.17 with PID 11 (/opt/tak/takserver.war started by root in /opt/tak)
+2025-11-21-17:00:56.339 [main] INFO tak.server.ServerConfiguration - The following 2 profiles are active: "plugins", "messaging"
+2025-11-21-17:01:04.377 [main] WARN o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'serverConfiguration' of type [tak.server.ServerConfiguration$$SpringCGLIB$$0] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). The currently created BeanPostProcessor [persistenceAnnotationBeanPostProcessor] is declared through a non-static factory method on that class; consider declaring it as static instead.
+2025-11-21-17:01:07.322 [main] INFO tak.server.util.DataSourceUtils - 4 CPU cores detected. Postgres server maximum allowed connections value is 2100. The computed connection pool size is: 200
+2025-11-21-17:01:08.728 [main] WARN org.hibernate.orm.deprecation - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-11-21-17:01:16.295 [services-deployment-worker-#61] WARN com.bbn.marti.service.SSLConfig - TLS enabled, but no certificate revocation lists, and OSCP is not enabled in Core Config!
+2025-11-21-17:01:17.076 [main] INFO tak.server.cache.CoTCacheHelper - CoT cache disabled
+2025-11-21-17:01:23.925 [main] INFO c.b.m.sync.JDBCEnterpriseSyncService - file cache explicity disabled.
+2025-11-21-17:01:23.930 [main] INFO c.b.marti.service.SubmissionService - input class type: Input
+2025-11-21-17:01:23.931 [main] INFO c.b.marti.service.SubmissionService - Configuring network input com.bbn.marti.config.Input stdssl:
+2025-11-21-17:01:24.030 [main] WARN com.bbn.marti.service.SSLConfig - TLS enabled, but no certificate revocation lists, and OSCP is not enabled in Core Config!
+2025-11-21-17:01:24.349 [main] INFO c.b.marti.nio.netty.NioNettyBuilder - netty worker pool size 8
+2025-11-21-17:01:24.583 [Thread-5] INFO c.b.marti.nio.netty.NioNettyBuilder - Successfully Started Netty Server for TlsServerInitializer on Port 8089 with watermark WriteBufferWaterMark(low: 8192, high: 16384)
+2025-11-21-17:01:24.819 [main] INFO t.server.federation.FederationServer - Federation disabled in config. Not starting V2 federation server.
+2025-11-21-17:01:24.876 [main] INFO com.bbn.marti.nio.server.NioServer - max memory (bytes): 2707423232
+2025-11-21-17:01:24.876 [main] INFO com.bbn.marti.nio.server.NioServer - Server started
+2025-11-21-17:01:24.931 [main] INFO t.server.cache.DatafeedCacheHelper - Done initializing PluginDatafeedCacheHelper with buffer cache value: 300 seconds
+2025-11-21-17:01:24.959 [main] INFO com.bbn.marti.util.VersionBean - TAK Server version 5.5-RELEASE-58-HEAD
+2025-11-21-17:01:24.959 [main] INFO c.b.m.sync.EnterpriseSyncCacheHelper - file cache explicity disabled.
+2025-11-21-17:01:24.959 [main] INFO c.b.m.sync.EnterpriseSyncCacheHelper - Initialzed EnterpriseSyncCacheHelper with file cache TTL 120 seconds. Implementation: caffeine
+2025-11-21-17:01:24.960 [main] INFO tak.server.ServerConfiguration - Started ServerConfiguration in 33.901 seconds (process running for 63.083)
+2025-11-21-17:01:24.975 [main] INFO tak.server.ServerConfiguration - Started TAK Server messaging Microservice.
+2025-11-21-17:03:27.257 [epollEventLoopGroup-4-2] INFO c.b.m.s.DistributedSubscriptionManager - Added Subscription: id=tls:1 source=192.168.1.182
+2025-11-21-17:03:28.987 [RemoveSubscriptionPool-0] INFO c.b.m.s.DistributedSubscriptionManager - Removed Subscription: tls:1
+2025-11-21-17:04:10.459 [epollEventLoopGroup-4-3] INFO c.b.m.s.DistributedSubscriptionManager - Added Subscription: id=tls:2 source=192.168.1.184
+2025-11-21-17:04:40.442 [CallsignAssignmentExecutor-0] INFO c.b.m.s.DistributedSubscriptionManager - Set client for subscription: tls:2 to R06 (ANDROID-C2C1C15A-1943-449D-8611-C66FCF9D7E74) source=192.168.1.184:61393
+2025-11-21-17:05:15.530 [epollEventLoopGroup-4-4] INFO c.b.m.s.DistributedSubscriptionManager - Added Subscription: id=tls:3 source=192.168.1.182
+2025-11-21-17:05:45.192 [CallsignAssignmentExecutor-0] INFO c.b.m.s.DistributedSubscriptionManager - Set client for subscription: tls:3 to R06-MDT (ANDROID-039F74DF-A25A-426F-BA41-2C7D417F21DE) source=192.168.1.182:63698
+2025-11-21-17:28:32.519 [epollEventLoopGroup-4-3] ERROR c.b.m.n.n.h.NioNettyHandlerBase - NioNettyServerHandler error. Cause: recvAddress(..) failed: Connection reset by peer. Additional info: Remote address: 192.168.1.184; Remote port: 61393; Local port: 8089; Peer certificate Subject DN: CN=OmniTAKiPhone, OU=TAK, O=RoeTAK, L=Nashville, ST=TN, C=US;
+2025-11-21-17:28:32.536 [RemoveSubscriptionPool-0] INFO c.b.m.s.DistributedSubscriptionManager - Removed Subscription: tls:2
+2025-11-21-17:29:01.200 [epollEventLoopGroup-4-4] ERROR c.b.m.n.n.h.NioNettyHandlerBase - NioNettyServerHandler error. Cause: recvAddress(..) failed: Connection reset by peer. Additional info: Remote address: 192.168.1.182; Remote port: 63698; Local port: 8089; Peer certificate Subject DN: CN=OmniTAKMacOS, OU=TAK, O=RoeTAK, L=Nashville, ST=TN, C=US;
+2025-11-21-17:29:01.207 [RemoveSubscriptionPool-0] INFO c.b.m.s.DistributedSubscriptionManager - Removed Subscription: tls:3
+2025-11-21-17:29:15.854 [epollEventLoopGroup-4-5] INFO c.b.m.s.DistributedSubscriptionManager - Added Subscription: id=tls:4 source=192.168.1.182
+2025-11-21-17:29:29.865 [epollEventLoopGroup-4-6] INFO c.b.m.s.DistributedSubscriptionManager - Added Subscription: id=tls:5 source=192.168.1.182
+2025-11-21-17:29:29.966 [CallsignAssignmentExecutor-0] INFO c.b.m.s.DistributedSubscriptionManager - Set client for subscription: tls:5 to ROMEO MDT (72300025-8056-4F3A-8BC9-B3DBADB8137D) source=192.168.1.182:60724
+2025-11-21-17:29:45.658 [CallsignAssignmentExecutor-0] INFO c.b.m.s.DistributedSubscriptionManager - Set client for subscription: tls:4 to R06-MDT (ANDROID-039F74DF-A25A-426F-BA41-2C7D417F21DE) source=192.168.1.182:63723
+2025-11-21-17:30:48.344 [epollEventLoopGroup-4-7] INFO c.b.m.s.DistributedSubscriptionManager - Added Subscription: id=tls:6 source=192.168.1.184
+2025-11-21-17:31:40.734 [CallsignAssignmentExecutor-0] INFO c.b.m.s.DistributedSubscriptionManager - Set client for subscription: tls:6 to R06 (ANDROID-C2C1C15A-1943-449D-8611-C66FCF9D7E74) source=192.168.1.184:61456
+2025-11-21-17:28:32.519 [epollEventLoopGroup-4-3] ERROR c.b.m.n.n.h.NioNettyHandlerBase - NioNettyServerHandler error. Cause: recvAddress(..) failed: Connection reset by peer. Additional info: Remote address: 192.168.1.184; Remote port: 61393; Local port: 8089; Peer certificate Subject DN: CN=OmniTAKiPhone, OU=TAK, O=RoeTAK, L=Nashville, ST=TN, C=US;
+2025-11-21-17:28:32.536 [RemoveSubscriptionPool-0] INFO c.b.m.s.DistributedSubscriptionManager - Removed Subscription: tls:2
+2025-11-21-17:29:01.200 [epollEventLoopGroup-4-4] ERROR c.b.m.n.n.h.NioNettyHandlerBase - NioNettyServerHandler error. Cause: recvAddress(..) failed: Connection reset by peer. Additional info: Remote address: 192.168.1.182; Remote port: 63698; Local port: 8089; Peer certificate Subject DN: CN=OmniTAKMacOS, OU=TAK, O=RoeTAK, L=Nashville, ST=TN, C=US;
+2025-11-21-17:29:01.207 [RemoveSubscriptionPool-0] INFO c.b.m.s.DistributedSubscriptionManager - Removed Subscription: tls:3
+2025-11-21-17:29:15.854 [epollEventLoopGroup-4-5] INFO c.b.m.s.DistributedSubscriptionManager - Added Subscription: id=tls:4 source=192.168.1.182
+2025-11-21-17:29:29.865 [epollEventLoopGroup-4-6] INFO c.b.m.s.DistributedSubscriptionManager - Added Subscription: id=tls:5 source=192.168.1.182
+2025-11-21-17:29:29.966 [CallsignAssignmentExecutor-0] INFO c.b.m.s.DistributedSubscriptionManager - Set client for subscription: tls:5 to ROMEO MDT (72300025-8056-4F3A-8BC9-B3DBADB8137D) source=192.168.1.182:60724
+2025-11-21-17:29:45.658 [CallsignAssignmentExecutor-0] INFO c.b.m.s.DistributedSubscriptionManager - Set client for subscription: tls:4 to R06-MDT (ANDROID-039F74DF-A25A-426F-BA41-2C7D417F21DE) source=192.168.1.182:63723
+2025-11-21-17:30:48.344 [epollEventLoopGroup-4-7] INFO c.b.m.s.DistributedSubscriptionManager - Added Subscription: id=tls:6 source=192.168.1.184
+2025-11-21-17:31:40.734 [CallsignAssignmentExecutor-0] INFO c.b.m.s.DistributedSubscriptionManager - Set client for subscription: tls:6 to R06 (ANDROID-C2C1C15A-1943-449D-8611-C66FCF9D7E74) source=192.168.1.184:61456
+2025-11-21-17:35:43.951 [epollEventLoopGroup-4-7] ERROR c.b.m.n.n.h.NioNettyHandlerBase - NioNettyServerHandler error. Cause: recvAddress(..) failed: Connection reset by peer. Additional info: Remote address: 192.168.1.184; Remote port: 61456; Local port: 8089; Peer certificate Subject DN: CN=OmniTAKiPhone, OU=TAK, O=RoeTAK, L=Nashville, ST=TN, C=US;
+2025-11-21-17:35:43.965 [RemoveSubscriptionPool-0] INFO c.b.m.s.DistributedSubscriptionManager - Removed Subscription: tls:6
+2025-11-21-17:36:15.751 [epollEventLoopGroup-4-8] INFO c.b.m.s.DistributedSubscriptionManager - Added Subscription: id=tls:7 source=192.168.1.184
+2025-11-21-17:36:28.944 [epollEventLoopGroup-4-5] ERROR c.b.m.n.n.h.NioNettyHandlerBase - NioNettyServerHandler error. Cause: recvAddress(..) failed: Connection reset by peer. Additional info: Remote address: 192.168.1.182; Remote port: 63723; Local port: 8089; Peer certificate Subject DN: CN=OmniTAKMacOS, OU=TAK, O=RoeTAK, L=Nashville, ST=TN, C=US;
+2025-11-21-17:36:28.955 [RemoveSubscriptionPool-0] INFO c.b.m.s.DistributedSubscriptionManager - Removed Subscription: tls:4
+2025-11-21-17:36:45.718 [CallsignAssignmentExecutor-0] INFO c.b.m.s.DistributedSubscriptionManager - Set client for subscription: tls:7 to R06 (ANDROID-C2C1C15A-1943-449D-8611-C66FCF9D7E74) source=192.168.1.184:61475
+2025-11-21-17:36:54.936 [epollEventLoopGroup-4-1] INFO c.b.m.s.DistributedSubscriptionManager - Added Subscription: id=tls:8 source=192.168.1.182
+2025-11-21-17:37:24.562 [CallsignAssignmentExecutor-0] INFO c.b.m.s.DistributedSubscriptionManager - Set client for subscription: tls:8 to R06-MDT (ANDROID-039F74DF-A25A-426F-BA41-2C7D417F21DE) source=192.168.1.182:63745

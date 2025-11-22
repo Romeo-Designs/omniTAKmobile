@@ -1,0 +1,48 @@
+*.DS_Store
+
+/bazel-*
+
+**/archive-url
+
+scripts/valdi-swift-toolchain
+
+# Binaries
+scripts/mirroring/bin
+.nlo-venv
+**deploy_manifest.txt
+# Node.js
+node_modules/
+package-lock.json
+
+# Xcode
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/
+*.xcworkspace/xcuserdata/
+DerivedData/
+build/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xcuserstate
+*.xcodeproj/project.pbxproj.backup*
+*.xcframework.zip
+
+# Rust build artifacts
+crates/target/
+*.rustc_info.json
+
+# Android native libraries (built in CI)
+modules/omnitak_mobile/android/native/lib/**/*.a
+
+# Local bazel config
+.bazelrc.local
+
+# Docker build output
+build-output/
+
+
+# Davia
+.davia/
+.github/prompts/davia-documentation.md
+WARP.md

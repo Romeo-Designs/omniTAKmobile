@@ -1,0 +1,68 @@
+load("@aspect_rules_js//js:defs.bzl", "js_binary")
+load("@bazel_skylib//rules:native_binary.bzl", "native_binary")
+load(
+    "@valdi//bzl:prebuilt_tools.bzl",
+    "bundle_js",
+    "pngquant_linux",
+    "pngquant_macos",
+    "valdi_compiler_companion_files",
+)
+
+filegroup(
+    name = "sqldelight_compiler",
+    srcs = [],
+    visibility = ["//visibility:public"],
+)
+
+native_binary(
+    name = "valdi_compiler",
+    src = select(
+        {
+            "@bazel_tools//src/conditions:darwin": "compiler/macos/valdi_compiler",
+            "@bazel_tools//src/conditions:linux_x86_64": "compiler/linux/valdi_compiler",
+        },
+    ),
+    out = "valdi_compiler",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "valdi_compiler_toolbox",
+    actual = "@valdi//valdi/compiler/toolbox:valdi_compiler_toolbox",
+    visibility = ["//visibility:public"],
+)
+
+native_binary(
+    name = "pngquant",
+    src = select(
+        {
+            "@bazel_tools//src/conditions:darwin": pngquant_macos(),
+            "@bazel_tools//src/conditions:linux_x86_64": pngquant_linux(),
+        },
+    ),
+    out = "pngquant",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "valdi_standalone",
+    actual = "@valdi//valdi:valdi_standalone",
+    visibility = ["//visibility:public"],
+)
+
+js_binary(
+    name = "valdi_compiler_companion",
+    copy_data_to_bin = False,
+    data = valdi_compiler_companion_files(),
+    entry_point = bundle_js(),
+    env = {
+        "NODE_ENV": "production",
+    },
+    node_options = [
+        # "--inspect-brk", # allows you to debug the companion using chrome://inspect in Chrome
+        "--max-old-space-size=4096",
+        "--enable-source-maps",
+    ],
+    visibility = ["//visibility:public"],
+    # log_level = "debug", # increase verbosity of logs if you need to debug anything
+)

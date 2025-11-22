@@ -1,0 +1,22 @@
+{
+  "name": "@snapchat/eslint-plugin-valdi",
+  "version": "1.0.2",
+  "description": "ESLint rules for the Valdi project",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "npm exec --package=typescript@5.7.2 tsc",
+    "watch": "tsc --watch",
+    "test": "npm run build && mocha --require tests/mocha-setup.mjs -R progress -c dist/tests/**/*.js",
+    "prepare": "npm run build",
+    "preinstall": "npm run build"
+  },
+  "author": "elee2@snapchat.com",
+  "license": "ISC",
+  "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@typescript-eslint/utils": "^6.21.0",
+    "eslint": "^8.27.0",
+    "typescript": "^5.3.3"
+  }
+}

@@ -1,0 +1,272 @@
+CLIENT: Failure to determine if this machine is in the process of shutting down, err=1/Operation not permitted
+LSPrefs: could not find untranslocated node for <FSNode 0x711131d00> { isDir = ?, path = '/private/var/folders/bb/tcc5y7hn21d9d18rz6z831f80000gn/X/D2CEEB50-ED09-5666-B2A2-42F90FCEF5FB/d/Wrapper/OmniTAKMobile.app' }, proceeding on the assumption it is not translocated: Error Domain=NSPOSIXErrorDomain Code=1 "Operation not permitted"
+LSPrefs: could not find untranslocated node for <FSNode 0x711131d00> { isDir = ?, path = '/private/var/folders/bb/tcc5y7hn21d9d18rz6z831f80000gn/X/D2CEEB50-ED09-5666-B2A2-42F90FCEF5FB/d/Wrapper/OmniTAKMobile.app' }, proceeding on the assumption it is not translocated: Error Domain=NSPOSIXErrorDomain Code=1 "Operation not permitted"
+LSPrefs: could not find untranslocated node for <FSNode 0x711131d00> { isDir = ?, path = '/private/var/folders/bb/tcc5y7hn21d9d18rz6z831f80000gn/X/D2CEEB50-ED09-5666-B2A2-42F90FCEF5FB/d/Wrapper/OmniTAKMobile.app' }, proceeding on the assumption it is not translocated: Error Domain=NSPOSIXErrorDomain Code=1 "Operation not permitted"
+Loaded 2 conversations from file
+Loaded 2 messages from file
+Loaded 6 participants from file
+ChatManager loaded: 2 conversations, 2 messages, 6 participants
+Cannot start broadcasting: TAKService, LocationManager not configured
+Cannot start broadcasting: TAKService, LocationManager not configured
+📥 Loading saved unit type: a-f-G-U-C
+Error retrieving battery status: result=-536870207 percent=2 hasExternalConnected=1 isCharging=12 isFullyCharged=158
+PositionBroadcastService initialized with UID: ANDROID-039F74DF-A25A-426F-BA41-2C7D417F21DE
+Loaded 0 lines from new format
+Loaded drawings - Markers: 0, Lines: 0, Circles: 0, Polygons: 0
+🔧 TAKService.init() - Creating new TAKService instance: ObjectIdentifier(0x0000000711381180)
+CoTEventHandler: Configured with TAKService and ChatManager
+🔧 TAKService.init() - Initialization complete for instance: ObjectIdentifier(0x0000000711381180)
+🌐 MultiServerFederation initialized
+📂 Loaded 1 point markers
+📂 Loaded 1 waypoints
+📂 Loaded 0 routes
+Loaded 0 saved tracks
+CoTEventHandler: Notification permissions granted
+LSPrefs: could not find untranslocated node for <FSNode 0x711131d00> { isDir = ?, path = '/private/var/folders/bb/tcc5y7hn21d9d18rz6z831f80000gn/X/D2CEEB50-ED09-5666-B2A2-42F90FCEF5FB/d/Wrapper/OmniTAKMobile.app' }, proceeding on the assumption it is not translocated: Error Domain=NSPOSIXErrorDomain Code=1 "Operation not permitted"
+Failed to locate resource named "default.csv"
+CAMetalLayer ignoring invalid setDrawableSize width=0.000000 height=0.000000
+🔌 TAKService.connect() called with host=192.168.1.20, port=8089, protocol=tcp, tls=true, cert=OmniTAKMacOS
+🌐 Using explicit IPv4: 192.168.1.20
+🔐 Configuring client certificate: OmniTAKMacOS
+🔐 Loading certificate from CertificateManager: OmniTAKMacOS
+✅ Client certificate loaded successfully
+🔒 Using TLS/SSL (TLS 1.2-1.3, legacy cipher suites enabled, accepting self-signed certs)
+🔌 Auto-connecting to: RoeTAK (192.168.1.20:8089)
+Position broadcasting stopped
+Position broadcasting started with interval: 30.0s
+Position broadcasting stopped
+Position broadcasting started with interval: 30.0s
+🔧 ChatManager.configure() called - takService instance: ObjectIdentifier(0x0000000711381180), isConnected: false
+🔧 ChatManager.configure() completed - stored takService is now: SET
+📭 No pending messages to process
+⏳ Directtls: Waiting to connect: POSIXErrorCode(rawValue: 50): Network is down
+⏳ Directtls: Waiting to connect: POSIXErrorCode(rawValue: 50): Network is down
+Failed to locate resource named "scene-iosmac@2x.styl"
+Failed to locate resource named "scene-iosmac@2x.styl"
+Failed to locate resource named "scene-iosmac.styl"
+✅ Location authorization granted
+📍 Started location updates
+Location authorization granted for track recording
+🔓 Accepting server certificate (self-signed CA)
+✅ Directtls: Connected to 192.168.1.20:8089
+✅ DirectTCP Connected to TAK server: 192.168.1.20:8089
+📥 DirectNetwork: Received 766 bytes
+📡 Rust FFI also initialized (connection ID: 1)
+📨 DirectNetwork: Complete message #1 extracted (727 chars)
+📥 DirectNetwork: Received 436 bytes
+📨 DirectNetwork: Complete message #2 extracted (397 chars)
+📥 TAKService: Processing message #1
+📥 TAKService: Processing message #2
+CoTMessageParser: Received TAK Protocol Version message (t-x-takp-v)
+CoTEventHandler: Position update from R06 at (36.160035843295724, -86.79966105546893)
+Saved 6 participants to file
+Saved 2 conversations to file
+Saved 6 participants to file
+🆕 Creating marker for R06
+🖼️ Rendering marker image for UNKNOWN with type a-u-G
+=== AttributeGraph: cycle detected through attribute 20504 ===
+=== AttributeGraph: cycle detected through attribute 20504 ===
+=== AttributeGraph: cycle detected through attribute 52584 ===
+=== AttributeGraph: cycle detected through attribute 52048 ===
+=== AttributeGraph: cycle detected through attribute 20504 ===
+=== AttributeGraph: cycle detected through attribute 20504 ===
+=== AttributeGraph: cycle detected through attribute 20504 ===
+=== AttributeGraph: cycle detected through attribute 20504 ===
+=== AttributeGraph: cycle detected through attribute 20504 ===
+=== AttributeGraph: cycle detected through attribute 20504 ===
+=== AttributeGraph: cycle detected through attribute 20504 ===
+=== AttributeGraph: cycle detected through attribute 20504 ===
+=== AttributeGraph: cycle detected through attribute 20504 ===
+=== AttributeGraph: cycle detected through attribute 20504 ===
+=== AttributeGraph: cycle detected through attribute 167128 ===
+=== AttributeGraph: cycle detected through attribute 166976 ===
+=== AttributeGraph: cycle detected through attribute 167312 ===
+=== AttributeGraph: cycle detected through attribute 167312 ===
+=== AttributeGraph: cycle detected through attribute 167312 ===
+=== AttributeGraph: cycle detected through attribute 167312 ===
+=== AttributeGraph: cycle detected through attribute 167312 ===
+=== AttributeGraph: cycle detected through attribute 167312 ===
+=== AttributeGraph: cycle detected through attribute 167312 ===
+=== AttributeGraph: cycle detected through attribute 167312 ===
+=== AttributeGraph: cycle detected through attribute 167312 ===
+=== AttributeGraph: cycle detected through attribute 175456 ===
+=== AttributeGraph: cycle detected through attribute 175456 ===
+=== AttributeGraph: cycle detected through attribute 175456 ===
+=== AttributeGraph: cycle detected through attribute 175456 ===
+=== AttributeGraph: cycle detected through attribute 175456 ===
+=== AttributeGraph: cycle detected through attribute 175456 ===
+✅ Image rendered: (108.0, 100.0)
+⚙️ Configuring R06: a-f-G-UCI
+🖼️ Rendering marker image for UNKNOWN with type a-f-G-UCI
+✅ Image rendered: (108.0, 100.0)
+🖼️ Rendering marker image for R06 with type a-f-G-UCI
+✅ Image rendered: (108.0, 100.0)
+🖼️ Rendering marker image for R06 with type a-f-G-UCI
+✅ Image rendered: (108.0, 100.0)
+🖼️ Rendering marker image for R06 with type a-f-G-UCI
+✅ Image rendered: (108.0, 100.0)
+📥 DirectNetwork: Received 843 bytes
+📨 DirectNetwork: Complete message #3 extracted (804 chars)
+📥 TAKService: Processing message #3
+CoTEventHandler: Position update from R06 at (36.160035843295724, -86.79966105546893)
+Saved 6 participants to file
+Saved 2 conversations to file
+Saved 6 participants to file
+📥 DirectNetwork: Received 948 bytes
+📨 DirectNetwork: Complete message #4 extracted (435 chars)
+📨 DirectNetwork: Complete message #5 extracted (435 chars)
+📤 Sent CoT message via DirectTCP
+📤 DirectNetwork: Sent 728 bytes
+Position broadcast #1 at CLLocationCoordinate2D(latitude: 36.15991743118084, longitude: -86.79956706682282)
+📥 TAKService: Processing message #4
+CoTMessageParser: Received Data Delete message (t-x-d-d)
+📥 TAKService: Processing message #5
+CoTMessageParser: Received Data Delete message (t-x-d-d)
+Unable to obtain a task name port right for pid 406: (os/kern) failure (0x5)
+📍 Annotation selected: Optional<MKAnnotation>
+✅ CoT marker selected: R06
+✅ Set marker as selected
+✅ Setting showMarkerInfoPanel = true
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+Invalid frame dimension (negative or non-finite).
+📍 Annotation selected: Optional<MKAnnotation>
+✅ CoT marker selected: R06
+✅ Set marker as selected
+✅ Setting showMarkerInfoPanel = true
+📤 Sent CoT message via DirectTCP
+📤 DirectNetwork: Sent 728 bytes
+Position broadcast #2 at CLLocationCoordinate2D(latitude: 36.15991743118084, longitude: -86.79956706682282)
+Loaded 0 saved tracks
+🔍 Loading current unit type: a-f-G-U-C
+🔍 UserDefaults has: a-f-G-U-C
+No symbol named 'satellite' found in system symbol set
+🎯 Saving unit type: a-f-G-UCSF
+🎯 After save, broadcastService.userUnitType = a-f-G-UCSF
+🎯 Directly saved to UserDefaults: a-f-G-UCSF
+📤 Sent CoT message via DirectTCP
+📤 DirectNetwork: Sent 729 bytes
+Position broadcast #3 at CLLocationCoordinate2D(latitude: 36.15991743118084, longitude: -86.79956706682282)
+📤 Immediately broadcast position with new unit type: a-f-G-UCSF
+Registration timer expired, but client is still registering!
+cannot add handler to 4 from 1 - dropping
+cannot add handler to 3 from 1 - dropping
+cannot add handler to 4 from 1 - dropping
+cannot add handler to 3 from 1 - dropping
+ViewBridge to RemoteViewService Terminated: Error Domain=com.apple.ViewBridge Code=18 "(null)" UserInfo={com.apple.ViewBridge.error.hint=this process disconnected remote view controller -- benign unless unexpected, com.apple.ViewBridge.error.description=NSViewBridgeErrorCanceled}
+📤 Sent CoT message via DirectTCP
+📤 DirectNetwork: Sent 729 bytes
+Position broadcast #4 at CLLocationCoordinate2D(latitude: 36.15998938086365, longitude: -86.79958057110201)
+cannot add handler to 4 from 1 - dropping
+cannot add handler to 3 from 1 - dropping
+cannot add handler to 4 from 1 - dropping
+cannot add handler to 3 from 1 - dropping
+cannot add handler to 4 from 1 - dropping
+cannot add handler to 3 from 1 - dropping
+cannot add handler to 4 from 1 - dropping
+cannot add handler to 3 from 1 - dropping
+🔍 Loading current unit type: a-f-G-UCSF
+🔍 UserDefaults has: a-f-G-UCSF
+No symbol named 'satellite' found in system symbol set
+🎯 Saving unit type: a-f-G-US
+🎯 After save, broadcastService.userUnitType = a-f-G-US
+🎯 Directly saved to UserDefaults: a-f-G-US
+📤 Sent CoT message via DirectTCP
+📤 DirectNetwork: Sent 727 bytes
+Position broadcast #5 at CLLocationCoordinate2D(latitude: 36.15998938086365, longitude: -86.79958057110201)
+📤 Immediately broadcast position with new unit type: a-f-G-US
+🔍 Loading current unit type: a-f-G-US
+🔍 UserDefaults has: a-f-G-US
+No symbol named 'satellite' found in system symbol set
+No symbol named 'helicopter.fill' found in system symbol set
+No symbol named 'helicopter' found in system symbol set
+No symbol named 'helicopter' found in system symbol set
+📤 Sent CoT message via DirectTCP
+📤 DirectNetwork: Sent 727 bytes
+Position broadcast #6 at CLLocationCoordinate2D(latitude: 36.15998938086365, longitude: -86.79958057110201)
+🎯 Saving unit type: a-f-G-UH
+🎯 After save, broadcastService.userUnitType = a-f-G-UH
+🎯 Directly saved to UserDefaults: a-f-G-UH
+📤 Sent CoT message via DirectTCP
+Position broadcast #7 at CLLocationCoordinate2D(latitude: 36.15998938086365, longitude: -86.79958057110201)
+📤 Immediately broadcast position with new unit type: a-f-G-UH
+📤 DirectNetwork: Sent 727 bytes
+Error retrieving battery status: result=-536870207 percent=1 hasExternalConnected=1 isCharging=163 isFullyCharged=246
+📤 Sent CoT message via DirectTCP
+📤 DirectNetwork: Sent 727 bytes
+Position broadcast #8 at CLLocationCoordinate2D(latitude: 36.16001350567542, longitude: -86.79959334514751)
+📥 DirectNetwork: Received 843 bytes
+📨 DirectNetwork: Complete message #6 extracted (804 chars)
+📥 TAKService: Processing message #6
+CoTEventHandler: Position update from R06 at (36.160023277997745, -86.79959631441626)
+Saved 6 participants to file
+Saved 2 conversations to file
+Saved 6 participants to file
+🖼️ Rendering marker image for R06 with type a-f-G-U-C
+=== AttributeGraph: cycle detected through attribute 20504 ===
+=== AttributeGraph: cycle detected through attribute 20504 ===
+=== AttributeGraph: cycle detected through attribute 52584 ===
+=== AttributeGraph: cycle detected through attribute 52048 ===
+=== AttributeGraph: cycle detected through attribute 20504 ===
+=== AttributeGraph: cycle detected through attribute 20504 ===
+=== AttributeGraph: cycle detected through attribute 20504 ===
+=== AttributeGraph: cycle detected through attribute 20504 ===
+=== AttributeGraph: cycle detected through attribute 118412 ===
+=== AttributeGraph: cycle detected through attribute 118412 ===
+=== AttributeGraph: cycle detected through attribute 118808 ===
+=== AttributeGraph: cycle detected through attribute 118808 ===
+=== AttributeGraph: cycle detected through attribute 118808 ===
+=== AttributeGraph: cycle detected through attribute 118808 ===
+=== AttributeGraph: cycle detected through attribute 20504 ===
+=== AttributeGraph: cycle detected through attribute 20504 ===
+=== AttributeGraph: cycle detected through attribute 20504 ===
+=== AttributeGraph: cycle detected through attribute 20504 ===
+✅ Image rendered: (108.0, 100.0)
+🖼️ Rendering marker image for R06 with type a-f-G-U-C
+✅ Image rendered: (108.0, 100.0)
+🖼️ Rendering marker image for R06 with type a-f-G-U-C
+✅ Image rendered: (108.0, 100.0)

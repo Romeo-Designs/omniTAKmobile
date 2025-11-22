@@ -1,0 +1,156 @@
+Loaded 3 conversations from file
+Loaded 10 messages from file
+Loaded 7 participants from file
+ChatManager loaded: 3 conversations, 10 messages, 7 participants
+Cannot start broadcasting: TAKService, LocationManager not configured
+Cannot start broadcasting: TAKService, LocationManager not configured
+📥 Loading saved unit type: a-f-G-U-C
+PositionBroadcastService initialized with UID: ANDROID-C2C1C15A-1943-449D-8611-C66FCF9D7E74
+Loaded 0 lines from new format
+Loaded drawings - Markers: 0, Lines: 0, Circles: 0, Polygons: 0
+🔧 TAKService.init() - Creating new TAKService instance: ObjectIdentifier(0x000000010654cf00)
+CoTEventHandler: Configured with TAKService and ChatManager
+🔧 TAKService.init() - Initialization complete for instance: ObjectIdentifier(0x000000010654cf00)
+🌐 MultiServerFederation initialized
+CoTEventHandler: Notification permissions granted
+📂 Loaded 12 point markers
+📂 Loaded 2 waypoints
+📂 Loaded 0 routes
+Loaded 0 saved tracks
+Failed to locate resource named "default.csv"
+Connection error: Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.PerfPowerTelemetryClientRegistrationService was invalidated: Connection init failed at lookup with error 159 - Sandbox restriction." UserInfo={NSDebugDescription=The connection to service named com.apple.PerfPowerTelemetryClientRegistrationService was invalidated: Connection init failed at lookup with error 159 - Sandbox restriction.}
+(+[PPSClientDonation isRegisteredSubsystem:category:]) Permission denied: Maps / SpringfieldUsage
+(+[PPSClientDonation sendEventWithIdentifier:payload:]) Invalid inputs: payload={
+    isSPR = 0;
+}
+CAMetalLayer ignoring invalid setDrawableSize width=0.000000 height=0.000000
+🔌 TAKService.connect() called with host=192.168.1.20, port=8089, protocol=ssl, tls=true, cert=OmniTAKiPhone
+🌐 Using explicit IPv4: 192.168.1.20
+🔐 Configuring client certificate: OmniTAKiPhone
+🔐 Loading certificate from CertificateManager: OmniTAKiPhone
+✅ Client certificate loaded successfully
+🔒 Using TLS/SSL (TLS 1.2-1.3, legacy cipher suites enabled, accepting self-signed certs)
+🔌 Auto-connecting to: RoeTAK (192.168.1.20:8089)
+Position broadcasting stopped
+Position broadcasting started with interval: 30.0s
+Position broadcasting stopped
+Position broadcasting started with interval: 30.0s
+🔧 ChatManager.configure() called - takService instance: ObjectIdentifier(0x000000010654cf00), isConnected: false
+🔧 ChatManager.configure() completed - stored takService is now: SET
+📭 No pending messages to process
+✅ Location authorization granted
+📍 Started location updates
+Location authorization granted for track recording
+🔓 Accepting server certificate (self-signed CA)
+✅ Directtls: Connected to 192.168.1.20:8089
+📥 DirectNetwork: Received 726 bytes
+📨 DirectNetwork: Complete message #1 extracted (687 chars)
+📥 DirectNetwork: Received 436 bytes
+📨 DirectNetwork: Complete message #2 extracted (397 chars)
+Connection error: Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.PerfPowerTelemetryClientRegistrationService was invalidated: Connection init failed at lookup with error 159 - Sandbox restriction." UserInfo={NSDebugDescription=The connection to service named com.apple.PerfPowerTelemetryClientRegistrationService was invalidated: Connection init failed at lookup with error 159 - Sandbox restriction.}
+(+[PPSClientDonation isRegisteredSubsystem:category:]) Permission denied: Maps / SpringfieldUsage
+(+[PPSClientDonation sendEventWithIdentifier:payload:]) Invalid inputs: payload={
+    isSPR = 1;
+}
+✅ DirectTCP Connected to TAK server: 192.168.1.20:8089
+📡 Rust FFI also initialized (connection ID: 1)
+📥 TAKService: Processing message #1
+📥 TAKService: Processing message #2
+CoTMessageParser: Received TAK Protocol Version message (t-x-takp-v)
+CoTEventHandler: Position update from R06-MDT at (36.15998938086365, -86.79958057110201)
+Saved 7 participants to file
+Saved 3 conversations to file
+Saved 7 participants to file
+🆕 Creating marker for R06-MDT
+🖼️ Rendering marker image for UNKNOWN with type a-u-G
+=== AttributeGraph: cycle detected through attribute 16920 ===
+=== AttributeGraph: cycle detected through attribute 16920 ===
+=== AttributeGraph: cycle detected through attribute 48920 ===
+=== AttributeGraph: cycle detected through attribute 48464 ===
+=== AttributeGraph: cycle detected through attribute 16920 ===
+=== AttributeGraph: cycle detected through attribute 16920 ===
+=== AttributeGraph: cycle detected through attribute 16920 ===
+=== AttributeGraph: cycle detected through attribute 16920 ===
+=== AttributeGraph: cycle detected through attribute 16920 ===
+=== AttributeGraph: cycle detected through attribute 16920 ===
+=== AttributeGraph: cycle detected through attribute 16920 ===
+=== AttributeGraph: cycle detected through attribute 16920 ===
+=== AttributeGraph: cycle detected through attribute 16920 ===
+=== AttributeGraph: cycle detected through attribute 16920 ===
+=== AttributeGraph: cycle detected through attribute 161096 ===
+=== AttributeGraph: cycle detected through attribute 160944 ===
+=== AttributeGraph: cycle detected through attribute 161304 ===
+=== AttributeGraph: cycle detected through attribute 161304 ===
+=== AttributeGraph: cycle detected through attribute 161304 ===
+=== AttributeGraph: cycle detected through attribute 161304 ===
+=== AttributeGraph: cycle detected through attribute 161304 ===
+=== AttributeGraph: cycle detected through attribute 161304 ===
+=== AttributeGraph: cycle detected through attribute 161304 ===
+=== AttributeGraph: cycle detected through attribute 161304 ===
+=== AttributeGraph: cycle detected through attribute 161304 ===
+=== AttributeGraph: cycle detected through attribute 169224 ===
+=== AttributeGraph: cycle detected through attribute 169224 ===
+=== AttributeGraph: cycle detected through attribute 169224 ===
+=== AttributeGraph: cycle detected through attribute 169224 ===
+=== AttributeGraph: cycle detected through attribute 169224 ===
+=== AttributeGraph: cycle detected through attribute 169224 ===
+✅ Image rendered: (108.0, 100.0)
+⚙️ Configuring R06-MDT: a-f-G-UH
+🖼️ Rendering marker image for UNKNOWN with type a-f-G-UH
+✅ Image rendered: (108.0, 100.0)
+🖼️ Rendering marker image for R06-MDT with type a-f-G-UH
+✅ Image rendered: (108.0, 100.0)
+🖼️ Rendering marker image for R06-MDT with type a-f-G-UH
+✅ Image rendered: (108.0, 100.0)
+🖼️ Rendering marker image for R06-MDT with type a-f-G-UH
+✅ Image rendered: (108.0, 100.0)
+Connection error: Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.PerfPowerTelemetryClientRegistrationService was invalidated: Connection init failed at lookup with error 159 - Sandbox restriction." UserInfo={NSDebugDescription=The connection to service named com.apple.PerfPowerTelemetryClientRegistrationService was invalidated: Connection init failed at lookup with error 159 - Sandbox restriction.}
+(+[PPSClientDonation isRegisteredSubsystem:category:]) Permission denied: Maps / SpringfieldUsage
+(+[PPSClientDonation sendEventWithIdentifier:payload:]) Invalid inputs: payload={
+    isSPR = 0;
+}
+Connection error: Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.PerfPowerTelemetryClientRegistrationService was invalidated: Connection init failed at lookup with error 159 - Sandbox restriction." UserInfo={NSDebugDescription=The connection to service named com.apple.PerfPowerTelemetryClientRegistrationService was invalidated: Connection init failed at lookup with error 159 - Sandbox restriction.}
+(+[PPSClientDonation isRegisteredSubsystem:category:]) Permission denied: Maps / SpringfieldUsage
+📥 DirectNetwork: Received 803 bytes
+📨 DirectNetwork: Complete message #3 extracted (764 chars)
+📥 TAKService: Processing message #3
+CoTEventHandler: Position update from R06-MDT at (36.16001350567542, -86.79959334514751)
+Saved 7 participants to file
+Saved 3 conversations to file
+Saved 7 participants to file
+🖼️ Rendering marker image for R06-MDT with type a-f-G-UH
+=== AttributeGraph: cycle detected through attribute 16920 ===
+=== AttributeGraph: cycle detected through attribute 16920 ===
+=== AttributeGraph: cycle detected through attribute 48920 ===
+=== AttributeGraph: cycle detected through attribute 48464 ===
+=== AttributeGraph: cycle detected through attribute 16920 ===
+=== AttributeGraph: cycle detected through attribute 16920 ===
+=== AttributeGraph: cycle detected through attribute 16920 ===
+=== AttributeGraph: cycle detected through attribute 16920 ===
+=== AttributeGraph: cycle detected through attribute 16920 ===
+=== AttributeGraph: cycle detected through attribute 16920 ===
+=== AttributeGraph: cycle detected through attribute 16920 ===
+=== AttributeGraph: cycle detected through attribute 16920 ===
+=== AttributeGraph: cycle detected through attribute 16920 ===
+=== AttributeGraph: cycle detected through attribute 16920 ===
+=== AttributeGraph: cycle detected through attribute 161096 ===
+=== AttributeGraph: cycle detected through attribute 160944 ===
+=== AttributeGraph: cycle detected through attribute 161304 ===
+=== AttributeGraph: cycle detected through attribute 161304 ===
+=== AttributeGraph: cycle detected through attribute 161304 ===
+=== AttributeGraph: cycle detected through attribute 161304 ===
+=== AttributeGraph: cycle detected through attribute 161304 ===
+=== AttributeGraph: cycle detected through attribute 161304 ===
+=== AttributeGraph: cycle detected through attribute 161304 ===
+=== AttributeGraph: cycle detected through attribute 161304 ===
+=== AttributeGraph: cycle detected through attribute 161304 ===
+=== AttributeGraph: cycle detected through attribute 169224 ===
+=== AttributeGraph: cycle detected through attribute 169224 ===
+=== AttributeGraph: cycle detected through attribute 169224 ===
+=== AttributeGraph: cycle detected through attribute 169224 ===
+=== AttributeGraph: cycle detected through attribute 169224 ===
+=== AttributeGraph: cycle detected through attribute 169224 ===
+✅ Image rendered: (108.0, 100.0)
+📤 Sent CoT message via DirectTCP
+📤 DirectNetwork: Sent 767 bytes
+Position broadcast #1 at CLLocationCoordinate2D(latitude: 36.160023277997745, longitude: -86.79959631441626)

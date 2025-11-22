@@ -1,0 +1,191 @@
+load("//bzl/valdi:valdi_module.bzl", "valdi_module")
+load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
+load("@rules_kotlin//kotlin:android.bzl", "kt_android_library")
+load("//bzl:client_objc_library.bzl", "client_objc_library")
+
+####################
+## OmniTAK Mobile Module Build Configuration
+##
+## This BUILD file configures:
+## - TypeScript sources compiled via valdi_module
+## - iOS native libraries (XCFramework + Swift bridge + MapLibre wrapper)
+## - Android native libraries (JNI + Kotlin bridge + MapLibre wrapper)
+## - Native dependencies for Rust FFI integration
+####################
+
+#####################################
+# iOS Native Libraries
+#####################################
+
+# Reference the XCFramework from the ios/native subpackage
+alias(
+    name = "omnitak_mobile_xcframework",
+    actual = "//modules/omnitak_mobile/ios/native:OmniTAKMobile.xcframework",
+    visibility = ["//visibility:private"],
+)
+
+# Objective-C wrapper for MapLibre GL Native
+# Provides SCMapLibreMapView custom view integration
+# TODO: Re-enable when MapLibre framework is integrated
+# client_objc_library(
+#     name = "ios_maplibre_wrapper",
+#     srcs = ["ios/maplibre/SCMapLibreMapView.m"],
+#     hdrs = ["ios/maplibre/SCMapLibreMapView.h"],
+#     copts = [
+#         "-fno-exceptions",
+#         "-Wno-deprecated-declarations",
+#     ],
+#     sdk_frameworks = [
+#         "UIKit",
+#         "CoreLocation",
+#         "QuartzCore",
+#     ],
+#     deps = [
+#         "@valdi//valdi_core:valdi_core_objc",
+#         # MapLibre would be added here when integrated via CocoaPods or SPM
+#         # For now, it's expected to be available at link time
+#     ],
+#     visibility = ["//visibility:private"],
+# )
+
+# Reference Swift bridge from the ios/native subpackage
+alias(
+    name = "ios_native_bridge",
+    actual = "//modules/omnitak_mobile/ios/native:OmniTAKNativeBridge",
+    visibility = ["//visibility:private"],
+)
+
+# Combined iOS native dependencies
+# This aggregates all iOS-specific native code
+filegroup(
+    name = "ios_native_deps",
+    srcs = [],
+    visibility = ["//visibility:private"],
+)
+
+#####################################
+# Android Native Libraries
+#####################################
+
+# Import Rust static libraries for Android
+# These are built separately using build_android.sh and placed in lib/ directories
+
+cc_import(
+    name = "omnitak_mobile_android_arm64",
+    static_library = "android/native/lib/arm64-v8a/libomnitak_mobile.a",
+    visibility = ["//visibility:private"],
+)
+
+cc_import(
+    name = "omnitak_mobile_android_armv7",
+    static_library = "android/native/lib/armeabi-v7a/libomnitak_mobile.a",
+    visibility = ["//visibility:private"],
+)
+
+cc_import(
+    name = "omnitak_mobile_android_x86_64",
+    static_library = "android/native/lib/x86_64/libomnitak_mobile.a",
+    visibility = ["//visibility:private"],
+)
+
+cc_import(
+    name = "omnitak_mobile_android_x86",
+    static_library = "android/native/lib/x86/libomnitak_mobile.a",
+    visibility = ["//visibility:private"],
+)
+
+# Platform-specific Android library selector
+# Selects the correct architecture based on target platform
+alias(
+    name = "omnitak_mobile_android_rust",
+    actual = select({
+        "@platforms//cpu:aarch64": ":omnitak_mobile_android_arm64",
+        "@platforms//cpu:armv7": ":omnitak_mobile_android_armv7",
+        "@platforms//cpu:x86_64": ":omnitak_mobile_android_x86_64",
+        "@platforms//cpu:x86_32": ":omnitak_mobile_android_x86",
+        "//conditions:default": ":omnitak_mobile_android_arm64",
+    }),
+    visibility = ["//visibility:private"],
+)
+
+# JNI C++ bridge for Android (prebuilt)
+# Handles Kotlin <-> C FFI <-> Rust communication
+# Note: Built separately with Android NDK and imported as prebuilt library
+cc_import(
+    name = "android_jni_bridge",
+    static_library = "android/native/lib/arm64-v8a/libomnitak_jni.a",
+    alwayslink = True,
+    visibility = ["//visibility:private"],
+)
+
+# Kotlin native bridge
+# Provides OmniTAKNativeBridge class for TypeScript integration
+kt_android_library(
+    name = "android_native_bridge",
+    srcs = ["android/native/OmniTAKNativeBridge.kt"],
+    deps = [
+        "@android_mvn//:androidx_core_core_ktx",
+        "@android_mvn//:org_jetbrains_kotlin_kotlin_stdlib",
+    ],
+    visibility = ["//visibility:private"],
+)
+
+# Kotlin MapLibre wrapper
+# Provides MapLibreMapView custom view integration
+kt_android_library(
+    name = "android_maplibre_wrapper_kt",
+    srcs = glob(["android/maplibre/**/*.kt"]),
+    deps = [
+        "@android_mvn//:androidx_core_core_ktx",
+        "@android_mvn//:androidx_appcompat_appcompat",
+        "@android_mvn//:org_jetbrains_kotlin_kotlin_stdlib",
+        # MapLibre dependencies would be added here
+        # "@android_mvn//:org_maplibre_gl_android_sdk",
+        # "@android_mvn//:org_maplibre_gl_android_plugin_annotation_v9",
+    ],
+    visibility = ["//visibility:private"],
+)
+
+#####################################
+# Main Valdi Module
+#####################################
+
+valdi_module(
+    name = "omnitak_mobile",
+    srcs = glob([
+        "src/**/*.ts",
+        "src/**/*.tsx",
+    ]) + [
+        "tsconfig.json",
+    ],
+    android_output_target = "release",
+    ios_module_name = "SCCOmniTAKMobile",
+    ios_output_target = "release",
+    module_yaml = "module.yaml",
+    single_file_codegen = False,  # Fix: Generate multiple files for complex module
+    res = glob([
+        "res/**/*.jpeg",
+        "res/**/*.jpg",
+        "res/**/*.png",
+        "res/**/*.svg",
+        "res/**/*.webp",
+    ]),
+    visibility = ["//visibility:public"],
+    deps = [
+        "//src/valdi_modules/src/valdi/valdi_core",
+        "//src/valdi_modules/src/valdi/valdi_tsx",
+    ],
+    # iOS-specific native dependencies
+    ios_deps = [
+        # ":ios_maplibre_wrapper",  # TODO: Re-enable when MapLibre is integrated
+        ":ios_native_bridge",
+    ],
+    # Android-specific native dependencies
+    android_deps = [
+        ":android_native_bridge",
+        ":android_maplibre_wrapper_kt",
+        ":android_jni_bridge",
+    ],
+    # Language configuration - use both Objective-C and Swift
+    ios_language = "objc, swift",
+)

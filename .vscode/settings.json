@@ -1,0 +1,4 @@
+{
+    "sarif-viewer.connectToGithubCodeScanning": "off",
+    "sweetpad.build.xcodeWorkspacePath": "apps/omnitak/OmniTAKMobile.xcodeproj/project.xcworkspace"
+}

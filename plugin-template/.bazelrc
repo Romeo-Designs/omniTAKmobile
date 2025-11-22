@@ -1,0 +1,36 @@
+# Bazel configuration for OmniTAK plugins
+
+# Import iOS configuration from main OmniTAK project
+try-import %workspace%/../../.bazelrc.ios
+
+# Plugin-specific settings
+build --incompatible_enable_cc_toolchain_resolution
+
+# iOS settings
+build:ios --apple_platform_type=ios
+build:ios --cpu=ios_arm64
+build:ios --ios_minimum_os=14.0
+
+# Code signing for plugins
+# Default: ad-hoc signing (for simulator and unsigned builds)
+build:ios --ios_signing_cert_name=-
+
+# Device signing: uses "Apple Development" by default
+# Override in .bazelrc.local with your specific signing identity
+build:ios_device --ios_signing_cert_name="Apple Development"
+
+# Import local developer configuration (gitignored)
+# Create .bazelrc.local to override signing settings for your machine
+try-import %workspace%/.bazelrc.local
+
+# Swift settings
+build:ios --swiftcopt=-enable-testing
+build:ios --swiftcopt=-whole-module-optimization
+
+# Optimization
+build:debug --compilation_mode=dbg
+build:release --compilation_mode=opt
+build:release --strip=always
+
+# Output
+build --symlink_prefix=bazel-

@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  android-builder:
+    build:
+      context: .
+      dockerfile: Dockerfile.android
+    image: omnitak-android-builder:latest
+    container_name: omnitak-android-build
+    platform: linux/amd64
+    volumes:
+      # Mount the project directory
+      - .:/workspace
+      # Cache Bazel build artifacts
+      - bazel-cache:/root/.cache/bazel
+      # Cache Cargo/Rust artifacts
+      - cargo-cache:/root/.cargo
+    working_dir: /workspace
+    environment:
+      - ANDROID_HOME=/opt/android-sdk
+      - ANDROID_NDK_HOME=/opt/android-sdk/ndk-bundle
+    # Keep container running for interactive use
+    stdin_open: true
+    tty: true
+
+volumes:
+  bazel-cache:
+  cargo-cache:
