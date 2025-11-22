@@ -18,7 +18,6 @@ This document focuses on the parts relevant to developers extending or integrati
 ### High‑Level Components
 
 - **Core Rust crates (`crates/*`)**
-  
   - `omnitak-core`: foundational types, configuration, shared utilities.
   - `omnitak-cot`: Cursor‑on‑Target (CoT) data structures and serialization.
   - `omnitak-cert`: certificate and TLS handling, including enrollment.
@@ -27,19 +26,16 @@ This document focuses on the parts relevant to developers extending or integrati
   - `omnitak-mobile`: mobile FFI wrapper around the core/client functionality.
 
 - **Mobile integration**
-  
   - `crates/omnitak-mobile/include/omnitak_mobile.h`: C FFI API surface.
   - `crates/omnitak-mobile/src`: Rust implementation of the FFI bridge.
   - Android/iOS platform projects and glue code (Bazel and native build systems).
 
 - **Tooling**
-  
   - `tools/ci`: CI helper scripts for building/testing key targets.
   - `tools/zstd`: vendored zstd binaries and Bazel integration.
   - Dockerfiles and scripts for reproducible builds (esp. Android).
 
 - **Build systems**
-  
   - **Bazel**: primary orchestrator for multi‑language builds.
   - **Cargo**: Rust workspace management and crate builds.
   - **Gradle/Xcode**: used indirectly via platform projects.
@@ -212,11 +208,9 @@ The `crates/target` directory is standard Cargo build output and should not be e
 When adding a new feature to the mobile API:
 
 1. **Add Rust functionality**:
-   
    - Implement the feature in `omnitak-core` / `omnitak-client` / `omnitak-server` as appropriate.
 
 2. **Expose via `omnitak-mobile`**:
-   
    - Add a new Rust FFI function in `crates/omnitak-mobile/src`:
      - Ensure `extern "C"` and `#[no_mangle]`.
      - Use only C‑compatible types in the signature.
@@ -224,12 +218,10 @@ When adding a new feature to the mobile API:
    - If needed, add new C structs/enums and mirror them in Rust.
 
 3. **Threading and safety**:
-   
    - Ensure that any callbacks are invoked on a thread acceptable to the platform (often a background thread; UI updates must be marshaled by platform code).
    - Document whether functions are thread‑safe and how handles can be shared.
 
 4. **Versioning**:
-   
    - Consider how changes affect ABI compatibility.
    - Avoid breaking changes to existing function signatures where possible.
 
@@ -296,7 +288,6 @@ cargo run -p omnitak-server --example basic_server
 ### Mobile Build Tooling
 
 - **iOS**:
-  
   - `omnitak-mobile` builds as a `staticlib`.
   - Integrated into Xcode projects via:
     - Bazel‑generated Xcode projects or
@@ -304,7 +295,6 @@ cargo run -p omnitak-server --example basic_server
   - There may be helper scripts (e.g., `build_ios.sh`) under `crates/omnitak-mobile` or root scripts to produce iOS artifacts.
 
 - **Android**:
-  
   - `omnitak-mobile` builds as a `cdylib` (shared library).
   - Integrated via:
     - JNI wrappers in Android modules.
@@ -314,7 +304,6 @@ cargo run -p omnitak-server --example basic_server
     - `client`: likely a reference client app.
 
 - **Docker**:
-  
   - Used for reproducible Android builds and zstd compilation.
   - Look for Dockerfiles and scripts at the repo root and under `tools/zstd`.
 
@@ -418,13 +407,11 @@ Or target specific modules as needed.
 ### 4. Mobile Integration
 
 - **iOS**:
-  
   - Build `omnitak-mobile` static library (via Bazel or helper scripts).
   - Add the library and `omnitak_mobile.h` to your Xcode project.
   - Write Swift/Obj‑C wrappers around the C API.
 
 - **Android**:
-  
   - Build the `cdylib` for the required ABIs.
   - Integrate with Gradle and JNI.
   - Use the `client` platform project as a reference.
