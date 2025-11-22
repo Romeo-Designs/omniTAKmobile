@@ -1,6 +1,7 @@
 # Coding Patterns & Best Practices
 
 ## Table of Contents
+
 - [Overview](#overview)
 - [MVVM Pattern](#mvvm-pattern)
 - [Combine Framework](#combine-framework)
@@ -43,7 +44,7 @@ struct ChatMessage: Identifiable, Codable, Equatable {
     let messageText: String
     let timestamp: Date
     var status: MessageStatus
-    
+
     // Computed properties OK
     var isRecent: Bool {
         Date().timeIntervalSince(timestamp) < 300
@@ -56,6 +57,7 @@ enum MessageStatus: String, Codable {
 ```
 
 **Anti-patterns**:
+
 ```swift
 // ❌ Avoid classes for simple models
 class ChatMessage {  // Use struct instead
@@ -80,32 +82,32 @@ struct ChatMessage {
 class ChatManager: ObservableObject {
     // Singleton for shared state
     static let shared = ChatManager()
-    
+
     // Published state triggers UI updates
     @Published var messages: [ChatMessage] = []
     @Published var conversations: [Conversation] = []
     @Published var unreadCount: Int = 0
-    
+
     // Dependencies
     private var takService: TAKService?
     private let storage = ChatStorageManager.shared
-    
+
     // Private init for singleton
     private init() {
         loadMessages()
     }
-    
+
     // Public methods for business logic
     func sendMessage(text: String, to conversationId: String) {
         // 1. Create model
         let message = ChatMessage(...)
-        
+
         // 2. Update state
         messages.append(message)
-        
+
         // 3. Persist
         storage.saveMessage(message)
-        
+
         // 4. Network operation
         takService?.send(cotMessage: generateCoT(from: message))
     }
@@ -113,11 +115,12 @@ class ChatManager: ObservableObject {
 ```
 
 **Service Layer Pattern**:
+
 ```swift
 // ✅ Service for specific functionality
 class PositionBroadcastService: ObservableObject {
     static let shared = PositionBroadcastService()
-    
+
     @Published var isEnabled: Bool = false {
         didSet {
             if isEnabled {
@@ -127,15 +130,15 @@ class PositionBroadcastService: ObservableObject {
             }
         }
     }
-    
+
     @Published var updateInterval: TimeInterval = 30.0 {
         didSet {
             restartTimer()
         }
     }
-    
+
     private var timer: Timer?
-    
+
     private func startBroadcasting() {
         timer = Timer.scheduledTimer(
             withTimeInterval: updateInterval,
@@ -158,11 +161,11 @@ class PositionBroadcastService: ObservableObject {
 struct ChatView: View {
     // Observe manager
     @ObservedObject var chatManager = ChatManager.shared
-    
+
     // Local state
     @State private var messageText: String = ""
     @State private var showNewConversation: Bool = false
-    
+
     var body: some View {
         NavigationView {
             List {
@@ -188,6 +191,7 @@ struct ChatView: View {
 **View Best Practices**:
 
 1. **Extract Subviews** for readability:
+
 ```swift
 // ✅ Good - extracted subview
 struct ChatView: View {
@@ -215,6 +219,7 @@ struct ChatView: View {
 ```
 
 2. **Use ViewModifiers** for reusable styling:
+
 ```swift
 // ✅ Good - custom view modifier
 struct TacticalButtonStyle: ViewModifier {
@@ -245,7 +250,7 @@ Button("Send") { }
 class ChatService: ObservableObject {
     private let chatManager = ChatManager.shared
     private var cancellables = Set<AnyCancellable>()
-    
+
     init() {
         // Subscribe to manager updates
         chatManager.$messages
@@ -253,7 +258,7 @@ class ChatService: ObservableObject {
                 self?.updateConversations(with: messages)
             }
             .store(in: &cancellables)
-        
+
         // Combine multiple publishers
         chatManager.$messages
             .combineLatest(chatManager.$conversations)
@@ -268,6 +273,7 @@ class ChatService: ObservableObject {
 ### Common Combine Operators
 
 **debounce**: Delay rapid updates
+
 ```swift
 searchTextField.$text
     .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
@@ -278,6 +284,7 @@ searchTextField.$text
 ```
 
 **removeDuplicates**: Skip duplicate values
+
 ```swift
 locationManager.$location
     .removeDuplicates { $0?.coordinate == $1?.coordinate }
@@ -288,6 +295,7 @@ locationManager.$location
 ```
 
 **map**: Transform values
+
 ```swift
 chatManager.$unreadCount
     .map { count in count > 0 ? "\(count)" : "" }
@@ -302,11 +310,12 @@ chatManager.$unreadCount
 ### State Management
 
 **@State**: Local view state
+
 ```swift
 struct MyView: View {
     @State private var isExpanded: Bool = false
     @State private var selectedItem: Item?
-    
+
     var body: some View {
         // Use state in UI
     }
@@ -314,10 +323,11 @@ struct MyView: View {
 ```
 
 **@ObservedObject**: External observable object
+
 ```swift
 struct MyView: View {
     @ObservedObject var manager = MyManager.shared
-    
+
     var body: some View {
         // Automatically updates when manager changes
     }
@@ -325,10 +335,11 @@ struct MyView: View {
 ```
 
 **@StateObject**: View-owned observable object
+
 ```swift
 struct MyView: View {
     @StateObject private var viewModel = MyViewModel()
-    
+
     var body: some View {
         // ViewModel lifecycle tied to view
     }
@@ -336,12 +347,13 @@ struct MyView: View {
 ```
 
 **@EnvironmentObject**: Dependency injection
+
 ```swift
 // App level
 @main
 struct OmniTAKMobileApp: App {
     @StateObject var locationManager = LocationManager()
-    
+
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -410,11 +422,11 @@ class ChatCoTGenerator {
     ) -> String {
         // 1. Create unique CoT UID
         let cotUID = "GeoChat.\(message.senderUID).\(message.recipientCallsign).\(Int(message.timestamp.timeIntervalSince1970))"
-        
+
         // 2. Format timestamps
         let time = ISO8601DateFormatter().string(from: message.timestamp)
         let stale = ISO8601DateFormatter().string(from: message.timestamp.addingTimeInterval(300))
-        
+
         // 3. Build XML
         let xml = """
         <?xml version="1.0" encoding="UTF-8"?>
@@ -429,7 +441,7 @@ class ChatCoTGenerator {
             </detail>
         </event>
         """
-        
+
         return xml
     }
 }
@@ -455,11 +467,11 @@ extension String {
 class CoTMessageParser {
     func parseCoTMessage(_ xml: String) -> CoTEvent? {
         guard let data = xml.data(using: .utf8) else { return nil }
-        
+
         let parser = XMLParser(data: data)
         let delegate = CoTParserDelegate()
         parser.delegate = delegate
-        
+
         guard parser.parse() else { return nil }
         return delegate.cotEvent
     }
@@ -469,10 +481,10 @@ class CoTParserDelegate: NSObject, XMLParserDelegate {
     var cotEvent: CoTEvent?
     private var currentElement = ""
     private var currentAttributes: [String: String] = [:]
-    
+
     func parser(_ parser: XMLParser, didStartElement elementName: String, attributes: [String: String]) {
         currentElement = elementName
-        
+
         if elementName == "event" {
             // Parse event attributes
             cotEvent = CoTEvent(
@@ -483,7 +495,7 @@ class CoTParserDelegate: NSObject, XMLParserDelegate {
             )
         }
     }
-    
+
     func parser(_ parser: XMLParser, foundCharacters string: String) {
         // Parse element content
         if currentElement == "remarks" {
@@ -503,9 +515,9 @@ class CoTParserDelegate: NSObject, XMLParserDelegate {
 // ✅ Good Singleton
 class MyManager: ObservableObject {
     static let shared = MyManager()
-    
+
     @Published var state: [Item] = []
-    
+
     private init() {
         // Initialize
         loadState()
@@ -523,7 +535,7 @@ let manager = MyManager.shared
 class MyService {
     private let takService: TAKService
     private let locationManager: LocationManager
-    
+
     func configure(takService: TAKService, locationManager: LocationManager) {
         self.takService = takService
         self.locationManager = locationManager
@@ -542,12 +554,12 @@ class MyService {
 func fetchData() async throws -> Data {
     let url = URL(string: "https://api.example.com/data")!
     let (data, response) = try await URLSession.shared.data(from: url)
-    
+
     guard let httpResponse = response as? HTTPURLResponse,
           (200...299).contains(httpResponse.statusCode) else {
         throw NetworkError.invalidResponse
     }
-    
+
     return data
 }
 
@@ -569,7 +581,7 @@ func fetchData() async throws -> Data {
 func connect(completion: @escaping (Bool) -> Void) {
     DispatchQueue.global().async {
         let success = self.performConnection()
-        
+
         DispatchQueue.main.async {
             completion(success)
         }
@@ -589,7 +601,7 @@ enum NetworkError: LocalizedError {
     case invalidResponse
     case timeout
     case certificateError(String)
-    
+
     var errorDescription: String? {
         switch self {
         case .connectionFailed:
@@ -636,20 +648,20 @@ import XCTest
 
 class ChatManagerTests: XCTestCase {
     var manager: ChatManager!
-    
+
     override func setUp() {
         super.setUp()
         manager = ChatManager()
     }
-    
+
     func testSendMessage() {
         // Arrange
         let text = "Test message"
         let conversationId = "test-123"
-        
+
         // Act
         manager.sendMessage(text: text, to: conversationId)
-        
+
         // Assert
         XCTAssertEqual(manager.messages.count, 1)
         XCTAssertEqual(manager.messages.first?.messageText, text)
@@ -662,7 +674,7 @@ class ChatManagerTests: XCTestCase {
 ```swift
 class MockTAKService: TAKService {
     var sentMessages: [String] = []
-    
+
     override func send(cotMessage: String, priority: MessagePriority) {
         sentMessages.append(cotMessage)
     }
@@ -672,9 +684,9 @@ class MockTAKService: TAKService {
 func testMessageSending() {
     let mockService = MockTAKService()
     chatManager.configure(takService: mockService, locationManager: LocationManager())
-    
+
     chatManager.sendMessage(text: "Test", to: "conv-1")
-    
+
     XCTAssertEqual(mockService.sentMessages.count, 1)
 }
 ```
@@ -716,4 +728,4 @@ func testMessageSending() {
 
 ---
 
-*Last Updated: November 22, 2025*
+_Last Updated: November 22, 2025_
