@@ -1,430 +1,284 @@
 # API Documentation
 
-This project is an iOS app (SwiftUI, Combine, URLSession, Network framework) that **consumes external APIs** rather than serving HTTP APIs itself. The “API surface” is comprised of:
+This project is an iOS SwiftUI mobile client, not a traditional HTTP server. It **does not expose REST/GraphQL endpoints**; instead it:
 
-* Local Swift service classes (used by UI & managers)
-* Network protocols to TAK servers (TCP/UDP/TLS, XML CoT)
-* HTTP-based external APIs (ArcGIS Portal/Online, elevation, etc.)
+* Opens persistent **TCP/UDP/TLS connections** to TAK servers (Cursor-on-Target message exchange).
+* Consumes several **external HTTP APIs**, notably ArcGIS Portal/Online and elevation services.
+* Exposes a rich **internal service API** (Swift classes) used by views and managers.
 
-There is **no HTTP server** or REST API exposed by the app; instead, you integrate by configuring it to talk to your TAK server and external map services.
-
-Below, “APIs Served” documents the *internal service APIs* that other code in this app uses, because there are no public HTTP endpoints.
+Below, “APIs Served” focuses on the logical/protocol-level interfaces this app presents to TAK and other peers, plus the Swift services developers will integrate with inside the app. “External Dependencies” focuses on concrete HTTP services used.
 
 ---
 
 ## APIs Served by This Project
 
-### Technology Stack & Frameworks
+### Technology Stack & Framework
 
-- Language: Swift
-- UI: SwiftUI + UIKit wrappers (map controllers)
-- Concurrency: Combine + async/await
-- Networking:
-  - `Network` framework (`NWConnection`) for TAK (TCP/UDP/TLS)
-  - `URLSession` for HTTP(S) (ArcGIS, elevation, etc.)
-- Persistence: `UserDefaults`, lightweight storage managers
-- No embedded HTTP server; no REST/gRPC/GraphQL server.
+- **Platform:** iOS
+- **UI:** SwiftUI + UIKit map controllers
+- **Language:** Swift
+- **Networking:**
+  - `Network` framework (`NWConnection`) for TCP/UDP/TLS connections to TAK servers.
+  - `URLSession` for REST-like HTTP calls (ArcGIS, Elevation, etc.).
+- **State/DI:** `ObservableObject` services with `@Published` properties; mostly singletons (`.shared`).
 
-### Core Service Endpoints (Internal Swift APIs)
+Entry point:
 
-These are *Swift service classes* accessed by UI, managers, and other services.
+```swift
+// OmniTAKMobile/Core/OmniTAKMobileApp.swift
+@main
+struct OmniTAKMobileApp: App {
+    var body: some Scene {
+        WindowGroup {
+            ATAKMapView()
+        }
+    }
+}
+```
 
-#### `TAKService`
+There is **no HTTP server** or web framework; all “endpoints” below are protocol-level (TAK CoT) and internal Swift APIs.
 
-**Purpose:** Core communication layer with a TAK server (sending/receiving CoT XML over TCP/UDP/TLS).
+---
 
-**File:** `OmniTAKMobile/Services/TAKService.swift`  
-**Related:** Direct network layer `DirectTCPSender` (same file, excerpted above).
+### Endpoints
 
-**Key Published Properties:**
+#### 1. TAK Connectivity & CoT Messaging
 
-- `@Published var isConnected: Bool`
-- `@Published var connectionStatus: String` (e.g., “Disconnected”, “Connected”)
-- `@Published var messagesSent: Int`
-- `@Published var messagesReceived: Int`
-- `@Published var bytesSent: Int`
-- `@Published var bytesReceived: Int`
+**Component:** `TAKService` + `DirectTCPSender`  
+**Files:**
+- `OmniTAKMobile/Services/TAKService.swift`
+- `OmniTAKMobile/Services/TAKService.swift` (top portion: `DirectTCPSender` as shown)
 
-**Important Methods (from `docs/API/Services.md` and code):**
+**Purpose:** Maintain a network connection to a TAK server and send/receive CoT XML messages over TCP, UDP, or TLS.
 
-- `connect(host: String, port: UInt16, protocolType: String, useTLS: Bool, certificateName: String?, certificatePassword: String?, allowLegacyTLS: Bool, completion: (Bool) -> Void)`
-  - Wraps `DirectTCPSender.connect`.
-  - Establishes a TCP/UDP/TLS connection to a TAK server.
+##### Protocol-Level Endpoint
+
+The app behaves like a TAK client:
+
+- **Remote Endpoint (TAK server):**
+  - **Protocol:** TCP / UDP / TLS over TCP
+  - **Host:** Configurable (e.g., `192.168.1.10` or hostname)
+  - **Port:** Configurable (e.g., `8087` for UDP / `8088` TCP / `8089` TLS; depends on server configuration)
+  - **Application Protocol:** Cursor-on-Target (CoT) XML messages, newline-delimited.
+
+The client:
+- Connects to a configured TAK server.
+- Sends CoT messages representing position (PLI), chat, digital pointer, teams, etc.
+- Receives CoT messages from the server, parses via `CoTMessageParser`, and dispatches to managers/services.
+
+##### Internal Swift API
+
+`TAKService` (documented in `docs/API/Services.md`) exposes:
+
+- `connect(host:port:protocolType:useTLS:certificateName:certificatePassword:completion:)`
 - `disconnect()`
-  - Cancels the `NWConnection`, stops receive loop, updates state.
-- `send(cotMessage: String, priority: MessagePriority)`
-  - Sends a CoT XML message over the current connection.
-  - Likely increments `messagesSent` and `bytesSent`.
 - `reconnect()`
-  - Attempts to re-establish a dropped connection, using last-known configuration.
+- `send(cotMessage:priority:)`
+- Various statistics via `@Published` properties (messagesSent, messagesReceived, bytesSent, bytesReceived, isConnected, connectionStatus).
 
-**Underlying “Transport API”: `DirectTCPSender`**
+`DirectTCPSender` handles the actual socket connection:
 
-`DirectTCPSender` is the low-level network client:
+```swift
+func connect(
+    host: String,
+    port: UInt16,
+    protocolType: String = "tcp",
+    useTLS: Bool = false,
+    certificateName: String? = nil,
+    certificatePassword: String? = nil,
+    allowLegacyTLS: Bool = false,
+    completion: @escaping (Bool) -> Void
+)
+```
 
-- `func connect(host: String, port: UInt16, protocolType: String = "tcp", useTLS: Bool = false, certificateName: String? = nil, certificatePassword: String? = nil, allowLegacyTLS: Bool = false, completion: @escaping (Bool) -> Void)`
-  
-  - Uses `NWConnection` to create a `.tcp`, `.udp`, or TLS-over-TCP connection.
-  - TLS settings:
-    - Supports TLS 1.2–1.3 by default; optionally allows TLS 1.0–1.1 (`allowLegacyTLS`).
-    - Adds several legacy cipher suites to match older TAK servers.
-    - **Disables server certificate verification** (`sec_protocol_options_set_verify_block` always calls `complete(true)`), accepting self-signed TAK server certs.
-    - Optionally loads a client certificate (`.p12`) and sets it as local identity.
-  - For `localhost` / `127.0.0.1`, forces `.loopback` interface and `preferNoProxies` for dev.
-  - On `.ready` state:
-    - Calls `onConnectionStateChanged?(true)`
-    - Starts `startReceiveLoop()` to read incoming bytes and parse messages.
-  - On `.failed` or `.cancelled`:
-    - Logs errors, calls `onConnectionStateChanged?(false)`, calls completion with `false`.
+**Description**
 
-- `var onMessageReceived: ((String) -> Void)?`
-  
-  - Called when a full message (typically CoT XML) is assembled from the internal receive buffer.
+Connects to the TAK server using the specified protocol:
 
-- Internal buffering:
-  
-  - Maintains `receiveBuffer: String` with a lock to handle fragmented XML over TCP.
-  - Increments `bytesReceived` and `messagesReceived`.
+- `protocolType`: `"tcp"`, `"udp"`, or `"tls"` (case-insensitive).
+- `useTLS`: when true, configures a TLS session with optional client certificate and legacy cipher suites for TAK compatibility.
 
-**Usage Example (from docs):**
+Once connected, `DirectTCPSender`:
+
+- Starts a continuous receive loop using `NWConnection.receive`.
+- Accumulates raw bytes in `receiveBuffer`.
+- Extracts and validates complete CoT XML messages using `CoTMessageParser.extractCompleteMessages / isValidCoTMessage`.
+- Invokes `onMessageReceived(message: String)` callback on the main queue for each valid CoT.
+
+**Request**
+
+- **Transport:** NWConnection to TAK endpoint.
+- **Application Data (Outbound):**  
+  - Messages are raw XML strings terminated with `\n`.
+  - Example (simplified PLI CoT):
+
+    ```xml
+    <event
+      version="2.0"
+      type="a-f-G-U-C"
+      uid="ANDROID-12345"
+      time="2025-11-22T10:00:00Z"
+      start="2025-11-22T10:00:00Z"
+      stale="2025-11-22T10:05:00Z"
+      how="m-g">
+      <point lat="35.1234" lon="-97.1234" hae="250.0" ce="50.0" le="50.0"/>
+      <detail>
+        <contact callsign="R06"/>
+        <!-- Additional detail elements -->
+      </detail>
+    </event>
+    ```
+
+- **Headers:** None at application level; TLS handshake used for TLS mode.
+
+**Response**
+
+- **Inbound Data:**  
+  - Raw CoT XML messages from the server, potentially fragmented at TCP level.
+  - Messages are reassembled, validated, and passed to `onMessageReceived`.
+
+**Authentication**
+
+- **Transport Layer:**
+  - TLS with potential client certificate authentication:
+    - Client loads `.p12` identity via `loadClientCertificate(name:password:)`:
+      - Searches:
+        1. `CertificateManager.shared.certificates` / Keychain.
+        2. Documents directory: `Documents/Certificates/<name>.p12`.
+        3. App bundle: `<name>.p12`.
+    - TLS verification is overridden to accept TAK’s self-signed certificates:
+
+      ```swift
+      sec_protocol_options_set_verify_block(secOptions, { metadata, trust, complete in
+          complete(true)   // Accept all server certificates
+      }, .main)
+      ```
+
+    - TLS versions:
+      - Default: min TLS 1.2, max TLS 1.3.
+      - With `allowLegacyTLS = true`: min forced to TLS 1.0.
+    - Cipher suites: explicit list including modern and legacy RSA/AES GCM/CBC suites.
+
+- **Application Layer:**
+  - TAK-level authentication (UID, callsign, etc.) is embedded in CoT messages and TAK server config, not in HTTP-like headers.
+
+**Error Handling**
+
+- Connection state updates:
+
+  ```swift
+  connection?.stateUpdateHandler = { state in
+      switch state {
+      case .ready: onConnectionStateChanged?(true); startReceiveLoop()
+      case .failed(let error): onConnectionStateChanged?(false); completion(false)
+      case .waiting(let error): /* log */
+      case .cancelled: onConnectionStateChanged?(false)
+      default: break
+      }
+  }
+  ```
+
+- Receive errors:
+  - On receive error, logs error and stops that receive invocation; outer service may initiate reconnection.
+- Buffer safety:
+  - Warn if `receiveBuffer.count > 100_000`.
+  - If `> 1_000_000`, log and clear buffer (malformed data protection).
+- Send errors:
+  - Logs via completion block of `connection.send`.
+
+**Examples**
+
+Connect with TLS and client certificate:
 
 ```swift
 let takService = TAKService()
 takService.connect(
-    host: "192.168.1.100",
+    host: "tak.example.mil",
     port: 8089,
     protocolType: "tls",
     useTLS: true,
-    certificateName: "mycert",
-    certificatePassword: "password"
+    certificateName: "omnitak-client",
+    certificatePassword: "atakatak"
 ) { success in
     if success {
-        print("Connected to TAK server")
+        let cot = CoTGenerator.generatePLI(/* ... */)
+        takService.send(cotMessage: cot, priority: .normal)
     }
 }
 ```
 
-**Error Handling & Resilience:**
-
-- Uses `NWConnection.stateUpdateHandler` to react to `.ready`, `.failed`, `.waiting`, `.cancelled`.
-- Logs detailed connection state in DEBUG builds.
-- `reconnect()` logic is maintained at the `TAKService` level (see `docs/API/Services.md`).
-- No exponential backoff is visible in the snippet; likely managed by higher-level managers or user actions.
-
-**Authentication & Security:**
-
-- No HTTP-style auth; TAK uses:
-  - Optional mutual TLS (client certificate configured via `certificateName` and `.p12` file in `Resources`).
-  - Accepts self-signed server certificates by design.
-- Optional “legacy TLS” mode for older servers (TLS 1.0/1.1 and weaker ciphers).
-
----
-
-#### `ChatService`
-
-**Purpose:** CoT-based chat system on top of TAK transport.
-
-**File:** `OmniTAKMobile/Services/ChatService.swift`  
-**Doc:** `docs/API/Services.md`, `docs/Features/ChatSystem.md`
-
-**Core API:**
-
-- Singleton: `ChatService.shared`
-- Published properties:
-  - `messages: [ChatMessage]`
-  - `conversations: [Conversation]`
-  - `participants: [ChatParticipant]`
-  - `unreadCount: Int`
-  - `queuedMessages: [QueuedMessage]`
-
-**Key Methods:**
-
-- `configure(takService: TAKService, locationManager: LocationManager)`
-  - Wires dependencies; must be called before actual usage.
-- `sendTextMessage(_ text: String, to conversationId: String)`
-  - Converts a text message to CoT XML (using `ChatCoTGenerator`), sends via `TAKService`.
-  - Adds to local `messages` and queues when offline.
-- `sendLocationMessage(location: CLLocation, to conversationId: String)`
-  - Sends current location in a chat message.
-- `processQueue()`
-  - Attempts to send `queuedMessages` when network/TAK connection becomes available.
-- `markAsRead(_ conversationId: String)`
-  - Updates `unreadCount` and per-conversation status.
-
-**Error Handling & Resilience:**
-
-- Queues messages while offline or not connected.
-- Retries queued messages in `processQueue()`.
-- Actual retry policy (intervals, max attempts) is implemented in `ChatService.swift` and documented in `docs/Features/ChatSystem.md`.
-
-**Authentication:**
-
-- Inherits TAKService’s network authentication; no separate chat-specific auth.
-
----
-
-#### `PositionBroadcastService`
-
-**Purpose:** Periodic PLI (position) broadcasting to TAK.
-
-**File:** `OmniTAKMobile/Services/PositionBroadcastService.swift`  
-**Doc:** `docs/API/Services.md`
-
-**Core API:**
-
-- Singleton: `PositionBroadcastService.shared`
-
-- Published properties:
-  
-  - `isEnabled: Bool` – global on/off for broadcasting.
-  - `updateInterval: TimeInterval` – seconds between PLIs.
-  - `staleTime: TimeInterval`
-  - `lastBroadcastTime: Date?`
-  - `broadcastCount: Int`
-  - Identity metadata:
-    - `userCallsign: String` (default `"R06"`)
-    - `userUID: String` (unique id)
-    - `teamColor: String` (e.g., "Dark Blue")
-    - `teamRole: String` (e.g., "Team Lead")
-    - `userUnitType: String` (e.g., `"a-f-G-U-C"` Mil-Std-2525)
-
-**Key Methods:**
-
-- `configure(takService: TAKService, locationManager: LocationManager)`
-- `startBroadcasting()`
-  - Schedules periodic broadcasts using timers/Combine.
-- `stopBroadcasting()`
-- `broadcastPositionNow()`
-  - Immediately emits a PLI CoT event.
-- `setUpdateInterval(_ interval: TimeInterval)`
-
-**Error Handling & Resilience:**
-
-- Skips broadcasts if no valid GPS fix or TAK connection.
-- Uses Combine timers; should cancel cleanly to avoid leaks.
-
-**Authentication:**
-
-- Uses TAKService’s connection; no extra auth.
-
----
-
-#### `TrackRecordingService`
-
-**Purpose:** Record breadcrumb trails for movement tracking, with live metrics.
-
-**File:** `OmniTAKMobile/Services/TrackRecordingService.swift`  
-**Doc:** `docs/API/Services.md`, `docs/Features/MapSystem.md`
-
-**Core API:**
-
-- Singleton: `TrackRecordingService.shared`
-
-- Published properties:
-  
-  - `isRecording: Bool`
-  - `isPaused: Bool`
-  - `currentTrack: Track?`
-  - `savedTracks: [Track]`
-  - Live metrics: `liveDistance`, `liveSpeed`, `liveAverageSpeed`, `liveElevationGain`.
-
-**Key Methods (inferred from docs):**
-
-- `startRecording()`
-- `pauseRecording()`
-- `resumeRecording()`
-- `stopAndSaveTrack(name: String?)`
-- `discardCurrentTrack()`
-- Hooks into location updates and persists via `BreadcrumbTrailService`/storage managers.
-
-**Error Handling:**
-
-- Validates GPS availability, handles missing elevation data gracefully.
-
----
-
-#### `ArcGISPortalService`
-
-**Purpose:** Authenticate against and query ArcGIS Portal/Online REST APIs for content.
-
-**File:** `OmniTAKMobile/Services/ArcGISPortalService.swift`  
-**Models:** `OmniTAKMobile/Models/ArcGISModels.swift`
-
-**Singleton & State:**
+Connect over UDP:
 
 ```swift
-class ArcGISPortalService: ObservableObject {
-    static let shared = ArcGISPortalService()
-
-    @Published var isAuthenticated: Bool = false
-    @Published var credentials: ArcGISCredentials?
-    @Published var portalItems: [ArcGISPortalItem] = []
-    @Published var isLoading: Bool = false
-    @Published var lastError: String = ""
-    @Published var searchQuery: String = ""
-    @Published var selectedItemType: ArcGISItemType?
-    @Published var currentPage: Int = 1
-    @Published var totalResults: Int = 0
-    @Published var hasMoreResults: Bool = false
-}
+takService.connect(
+    host: "192.168.1.50",
+    port: 8087,
+    protocolType: "udp",
+    useTLS: false
+) { success in /* ... */ }
 ```
 
-**Configuration:**
+---
 
-- `userDefaultsKey = "com.omnitak.arcgis.credentials"`
-- `pageSize = 25`
-- `session: URLSession` with:
-  - `timeoutIntervalForRequest = 30`
-  - `timeoutIntervalForResource = 60`
+#### 2. Internal Service APIs (Swift)
 
-**Default URLs:**
+These are used by OmniTAK’s views/managers. They aren’t network endpoints but are crucial “APIs” for app integration.
 
-- `arcGISOnlineURL = "https://www.arcgis.com"`
-- `arcGISOnlineSharingURL = "https://www.arcgis.com/sharing/rest"`
+Below are key services that drive how CoT and external calls are used.
 
-**Public Methods:**
+##### 2.1 ChatService
 
-1. **`authenticate(portalURL: String = arcGISOnlineURL, username: String, password: String) async throws`**
-   
-   - Builds token URL: `"{portalURL}/sharing/rest/generateToken"`.
-   - Request:
-     - Method: `POST`
-     - Headers:
-       - `Content-Type: application/x-www-form-urlencoded`
-     - Body params:
-       - `username`: ArcGIS username
-       - `password`: ArcGIS password
-       - `referer`: `"OmniTAK-iOS"`
-       - `expiration`: `60*24*7` minutes (7 days)
-       - `f`: `"json"`
-   - Response:
-     - Expects HTTP 200.
-     - JSON:
-       - On success: `{ "token": "...", "expires": <epoch_ms>, ... }`
-       - On error: `{ "error": { "message": "..." } }`
-   - Errors:
-     - Invalid URL → `ArcGISError.networkError("Invalid portal URL")`
-     - Non-200 HTTP → `ArcGISError.networkError("HTTP <code>")`
-     - Error JSON → `ArcGISError.invalidCredentials`
-     - Missing fields → `ArcGISError.parseError("Missing token in response")`
-   - On success:
-     - Creates `ArcGISCredentials` and saves them (UserDefaults).
-     - Sets `isAuthenticated = true`.
+**File:** `OmniTAKMobile/Services/ChatService.swift`  
+**Description:** Handles chat conversations, including message queuing and retry via TAKService/CoT.
 
-2. **`authenticateWithToken(portalURL: String = arcGISOnlineURL, token: String, username: String = "token_user", expiration: Date = Date().addingTimeInterval(3600))`**
-   
-   - Creates `ArcGISCredentials` directly with a pre-obtained token.
-   - Marks service as authenticated and saves credentials.
+**Core API (from `docs/API/Services.md`):**
 
-3. **`signOut()`**
-   
-   - Clears `credentials`, `isAuthenticated`, and all portal-related state.
-   - Removes credentials from `UserDefaults`.
-
-4. **`searchContent(query: String = "", itemType: ArcGISItemType? = nil, sortField: String = "modified", sortOrder: String = "desc", page: Int = 1) async throws`**
-   
-   - Requires `isAuthenticated == true` and valid `credentials`.
-   - Validates token via `creds.isValid`, else throws `ArcGISError.tokenExpired`.
-   - Builds URL:
-     - Base: `"{creds.portalURL}/sharing/rest/search"`
-     - Query parameters (inferred from rest of file):
-       - `q`: search text including item type filters.
-       - `num`: `pageSize`
-       - `start`: `(page - 1) * pageSize + 1`
-       - `sortField`, `sortOrder`
-       - `token`: `creds.token`
-       - `f`: `"json"`
-   - Sets `isLoading`, resets errors, updates pagination state before and after.
-   - Parses JSON into `ArcGISPortalItem`s and pagination fields.
-
-**Authentication & Security:**
-
-- Standard ArcGIS token-based auth with username/password or existing token.
-- Tokens and user info persisted into `UserDefaults` under a scoped key.
-- Token validity is checked before each call; expired tokens cause explicit errors.
-
-**Error Handling & Resilience:**
-
-- Throws domain-specific errors (`ArcGISError`).
-- Maintains UI-oriented state (`lastError`, `isLoading`) for presenting messages.
-- Network timeouts are enforced at `URLSessionConfiguration` level.
+- `configure(takService:locationManager:)`
+- `sendTextMessage(_:to:)`
+- `sendLocationMessage(location:to:)`
+- `processQueue()`
+- `markAsRead(_:)`
 
 **Usage Example:**
 
 ```swift
-Task {
-    do {
-        try await ArcGISPortalService.shared.authenticate(
-            portalURL: ArcGISPortalService.arcGISOnlineURL,
-            username: "user@example.com",
-            password: "secret"
-        )
-        try await ArcGISPortalService.shared.searchContent(
-            query: "basemap",
-            itemType: .webMap
-        )
-    } catch {
-        print("ArcGIS error: \(error)")
-    }
-}
+ChatService.shared.configure(takService: takService, locationManager: locationManager)
+
+ChatService.shared.sendTextMessage("Ready to proceed", to: conversationId)
 ```
 
----
+Messages are turned into CoT chat events and routed through `TAKService`.
 
-#### Other Notable Services
+##### 2.2 PositionBroadcastService
 
-From `OmniTAKMobile/Services` and `docs/API/Services.md` (not all code shown here, but APIs are implemented, not just planned):
+**File:** `PositionBroadcastService.swift`  
+**Purpose:** Automatic PLI broadcasts at configurable intervals.
 
-- `ArcGISFeatureService`
-  
-  - Wraps feature service queries (REST `/FeatureServer` endpoints).
-  - Uses `ArcGISCredentials.token` for authorization (`token` query parameter).
-  - Handles spatial queries for overlays and operational layers.
+Key aspects:
 
-- `ElevationAPIClient` / `ElevationProfileService`
-  
-  - HTTP calls to an elevation service (URL configured; see `ElevationAPIClient.swift`).
-  - Returns `ElevationProfile` models (`ElevationProfileModels.swift`).
-  - Implements request timeouts and `Result`/`async` error propagation.
+- Uses LocationManager for GPS fixes.
+- Uses TAKService to send PLI CoT messages.
+- Exposes `isEnabled`, `updateInterval`, user identity fields (`userCallsign`, `userUID`, `teamColor`, `userUnitType`).
 
-- `LineOfSightService`, `TerrainVisualizationService`
-  
-  - Call elevation/terrain APIs and perform client-side calculations.
+**Example:**
 
-- `MissionPackageSyncService`
-  
-  - Syncs TAK “mission packages” (files/data) likely via CoT-based tasks or HTTP endpoints if configured.
+```swift
+let pliService = PositionBroadcastService.shared
+pliService.configure(takService: takService, locationManager: locationManager)
+pliService.userCallsign = "Alpha-1"
+pliService.updateInterval = 30.0
+pliService.isEnabled = true
+```
 
-- `NavigationService`, `TurnByTurnNavigationService`, `RoutePlanningService`
-  
-  - Can use external routing APIs if configured; otherwise rely on map SDK.
+##### 2.3 TrackRecordingService, EmergencyBeaconService, DigitalPointerService, TeamService, MeasurementService, RangeBearingService, ElevationProfileService, LineOfSightService
 
-- `OfflineMapManager`, `OfflineTileOverlay`, `TileDownloader`
-  
-  - Use HTTP(S) GET requests to LOS/WMTS/XYZ tile servers with configurable URL templates.
-  - Implement caching, retry on network errors.
+Each of these:
 
-Each of these services follows the same patterns: Swift singleton, `@Published` UI state, and `URLSession` or `TAKService` under the hood.
+- Is documented in `docs/API/Services.md`.
+- Uses TAKService and/or external services to send CoT, compute measurements, and update map overlays.
+- They **do not expose network endpoints**; they shape how CoT is generated and how external APIs are called.
 
----
-
-### Request/Response Models & Validation
-
-Models are in `OmniTAKMobile/Models/`:
-
-- `ArcGISModels.swift`
-  - `ArcGISCredentials`, `ArcGISPortalItem`, `ArcGISError`, `ArcGISItemType`.
-- `CASRequestModels.swift`, `MEDEVACModels.swift`, `SPOTREPModels.swift`, etc.
-  - Encode mission/MEDEVAC/CAS/SPOTREP reports into CoT or attach data packages.
-
-Validation patterns:
-
-- Most network calls:
-  - Use `guard` to validate URLs and presence of required config fields.
-  - Throw descriptive errors (e.g., `ArcGISError.networkError`, `ArcGISError.portalNotConfigured`, etc.).
-- Request models:
-  - Often use Swift structs with `Codable` for JSON requests.
-  - Ensure required fields are non-empty before sending (see individual service implementations).
+See `docs/API/Services.md`, `docs/API/Managers.md`, and `docs/API/Models.md` for method signatures and model types.
 
 ---
 
@@ -432,45 +286,74 @@ Validation patterns:
 
 #### TAK Connectivity
 
-- Transport: TCP/UDP or TLS over TCP using `NWConnection`.
-- Options:
-  - `protocolType` string + `useTLS` boolean.
-  - TLS 1.2–1.3 by default; optional legacy TLS 1.0–1.1.
-- Server Certificates:
-  - Server cert verification is disabled by a `verify_block` that always accepts; this is intentional for self-signed TAK servers.
-  - This is a security tradeoff; recommended for closed/disconnected networks.
-- Client Certificates:
-  - `.p12` certificate file in `OmniTAKMobile/Resources/omnitak-mobile.p12`.
-  - Loaded via Security.framework (`SecIdentity`) and attached to TLS options.
-  - Default password is `"atakatak"` unless overridden.
+- **TLS Support:**
+  - Uses `NWProtocolTLS.Options` with configurable minimum TLS version.
+  - Legacy TLS (1.0/1.1) is allowed only if explicitly requested (`allowLegacyTLS = true`).
+  - Explicit cipher suites added to support older TAK servers:
+    - `TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384`
+    - `TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256`
+    - `TLS_RSA_WITH_AES_256_GCM_SHA384`
+    - `TLS_RSA_WITH_AES_128_GCM_SHA256`
+    - Legacy CBC suites (AES_256_CBC_SHA, AES_128_CBC_SHA).
 
-#### ArcGIS
+- **Server Certificate Validation:**
+  - Verification is effectively disabled:
 
-- Token authentication using username/password or pre-issued token.
-- Tokens stored in `UserDefaults` under `com.omnitak.arcgis.credentials`.
-- `ArcGISCredentials.isValid` is checked to avoid silent use of expired tokens.
-- No refresh token mechanism in this snippet; user is expected to re-authenticate.
+    ```swift
+    sec_protocol_options_set_verify_block(secOptions, { _, _, complete in
+        complete(true)
+    }, .main)
+    ```
 
-#### General
+  - This is intentionally done for self-signed TAK CA environments but has security implications.
+  - For production, ideally restrict accepted CA or use OS trust store.
 
-- No OAuth flows or web-based login on-device.
-- No API keys hard-coded in repo for external services; config typically provided via settings or environment (see docs/guidebook).
+- **Client Certificate Authentication:**
+  - Optional; when certificateName is provided:
+    1. Try `CertificateManager.shared` (Keychain).
+    2. Try `Documents/Certificates/<name>.p12`.
+    3. Try bundle `<name>.p12`.
+  - If found and password is valid, configures `sec_protocol_options_set_local_identity`.
+
+- **Loopback Optimization:**
+  - For hosts containing `"127.0.0.1"` or `"localhost"`:
+    - `parameters.requiredInterfaceType = .loopback`
+    - Disables proxies.
+
+#### ArcGIS Authentication
+
+Handled via `ArcGISPortalService` (see External API Dependencies), but in brief:
+
+- Acquires tokens via `generateToken` POST with username/password.
+- Saves `ArcGISCredentials` (portalURL, username, token, expiration, referer).
+- Persists in `UserDefaults` under `com.omnitak.arcgis.credentials`.
+- Exposes `authenticate` and `authenticateWithToken`.
+
+Security considerations:
+
+- Username/password are sent over HTTPS.
+- Token is stored locally; ensure device security and consider Keychain for highly sensitive environments.
 
 ---
 
 ### Rate Limiting & Constraints
 
-- `URLSessionConfiguration`:
-  - Per-request timeout: 30 seconds.
-  - Resource timeout: 60 seconds.
-- ArcGIS pagination:
-  - `pageSize = 25` results per search page.
-- Position broadcast:
-  - `updateInterval` is configurable; default 30 seconds.
-- Track recording:
-  - Sample rate based on device’s location updates, often filtered by distance/time.
+There is no explicit global rate-limiting library, but the following constraints apply:
 
-There is no explicit self-imposed rate limiter beyond these; external services (ArcGIS, tile servers) may enforce their own quotas.
+- **Network Timeouts:**
+  - `ArcGISPortalService`: `URLSessionConfiguration` with `timeoutIntervalForRequest = 30`, `timeoutIntervalForResource = 60`.
+  - Similar patterns likely in `ElevationAPIClient` (not shown here but by convention).
+
+- **Position Broadcast:**
+  - Controlled via `updateInterval` default ~30 seconds; prevents excessive PLI spam.
+
+- **Emergency Beacon:**
+  - Rapid PLI updates but typically limited in practice; ensure not to set extremely low intervals.
+
+- **Buffer Protection (CoT Receive):**
+  - `receiveBuffer` size monitored; resets if > 1,000,000 chars to protect memory.
+
+For external integrators: TAK server itself may enforce rate limits on CoT messages; follow your server’s guidance.
 
 ---
 
@@ -478,250 +361,338 @@ There is no explicit self-imposed rate limiter beyond these; external services (
 
 ### Services Consumed
 
-#### 1. TAK Server (COT/Chat/PLI)
+#### 1. ArcGIS Portal / ArcGIS Online
 
-- **Service Name & Purpose:**
-  
-  - TAK (Tactical Assault Kit) server for situational awareness, PLI, chat, mission data.
+**Service Name:** ArcGISPortalService  
+**File:** `OmniTAKMobile/Services/ArcGISPortalService.swift`  
+**Purpose:** Authenticate with ArcGIS Portal/Online, search items, and manage credentials.
 
-- **Transport:**
-  
-  - TCP/UDP/TLS via `NWConnection`.
-  - Protocol: Cursor-on-Target (CoT) XML over sockets.
+##### Base URL / Configuration
 
-- **Configuration:**
-  
-  - Host, port, protocol, TLS choice, and certs are configured by user (see `QuickConnectView`, `TAKServersView`, docs/CONNECTING_TO_TAK_SERVER.md).
+- Defaults:
 
-- **Endpoints Used:**
-  
-  - Not HTTP; single socket endpoint (host:port).
-  - UDP/TCP unframed stream/messages with CoT XML.
+  ```swift
+  static let arcGISOnlineURL = "https://www.arcgis.com"
+  static let arcGISOnlineSharingURL = "https://www.arcgis.com/sharing/rest"
+  ```
 
-- **Authentication Method:**
-  
-  - Optional mutual TLS with a client certificate (`omnitak-mobile.p12` or user-provided).
-  - Server certificate verification is disabled to support self-signed TAK servers.
+- `ArcGISCredentials` contains:
+  - `portalURL: String` (e.g., custom ArcGIS Enterprise URL)
+  - `username: String`
+  - `token: String`
+  - `tokenExpiration: Date`
+  - `referer: String`
 
-- **Error Handling:**
-  
-  - Uses `NWConnection.stateUpdateHandler`.
-  - Logs `failed` and `waiting` errors.
-  - Notifies via `onConnectionStateChanged` and `TAKService`’s `@Published` fields.
+- `URLSession` config:
 
-- **Retry / Circuit Breaking:**
-  
-  - `reconnect()` logic in `TAKService`.
-  - No dedicated circuit-breaker library; reconnection is controlled by service and UI.
+  ```swift
+  let config = URLSessionConfiguration.default
+  config.timeoutIntervalForRequest = 30
+  config.timeoutIntervalForResource = 60
+  session = URLSession(configuration: config)
+  ```
 
-- **Integration Pattern:**
-  
-  - `TAKService` as central socket transport.
-  - Higher-level services (Chat, PositionBroadcastService, MissionPackageSyncService, etc.) encode their function as CoT events or data packages and send via `TAKService`.
+##### Endpoints Used
+
+1. **Generate Token**
+
+   - **Method/Path:** `POST {portalURL}/sharing/rest/generateToken`
+   - **Request:**
+     - Headers:
+       - `Content-Type: application/x-www-form-urlencoded`
+     - Body (form-encoded):
+
+       | Field      | Description                             |
+       |-----------|-----------------------------------------|
+       | `username`| ArcGIS username                         |
+       | `password`| ArcGIS password                         |
+       | `referer` | Arbitrary string, e.g., `OmniTAK-iOS`   |
+       | `expiration` | Minutes (e.g., `10080` = 7 days)     |
+       | `f`       | Response format, `"json"`               |
+
+   - **Response (Success):**
+
+     ```json
+     {
+       "token": "abc123...",
+       "expires": 1732257623000,
+       "ssl": true
+     }
+     ```
+
+   - **Response (Error):**
+
+     ```json
+     {
+       "error": {
+         "code": 400,
+         "message": "Invalid username or password.",
+         "details": []
+       }
+     }
+     ```
+
+   - **Error mapping:**
+     - `ArcGISError.invalidCredentials` when `"error"` is present.
+     - `ArcGISError.networkError` for invalid URL, non-200 status, or generic network issues.
+     - `ArcGISError.parseError` if token is missing.
+
+2. **Search Portal Content**
+
+   - **Method/Path:** `GET {credentials.portalURL}/sharing/rest/search`
+   - **Request:**
+     - Query parameters:
+
+       | Param      | Description                                  |
+       |-----------|----------------------------------------------|
+       | `q`       | Search query; may include `type:"<type>"`   |
+       | `sortField` | Field to sort by, e.g., `modified`        |
+       | `sortOrder` | `asc` or `desc`                           |
+       | `start`   | Start index (page offset)                   |
+       | `num`     | Page size (here `pageSize = 25`)            |
+       | `token`   | ArcGIS token                                |
+       | `f`       | `json`                                      |
+
+   - **Response (Success):**
+     - Parsed into `ArcGISSearchResponse` (includes `results`, `total`, `start`, etc.).
+   - **Response (Error):**
+     - If `"error"` present:
+       - Codes `498` / `499` => `ArcGISError.tokenExpired`
+       - Other => `ArcGISError.serviceError(message)`
+
+   - **Auth & State Preconditions:**
+
+     ```swift
+     guard isAuthenticated, let creds = credentials else {
+         throw ArcGISError.portalNotConfigured
+     }
+
+     if !creds.isValid {
+         throw ArcGISError.tokenExpired
+     }
+     ```
+
+##### Authentication Method
+
+- **Token-based:**
+  - Primary flow: username/password → `/generateToken` → token persisted.
+  - Alternatively: `authenticateWithToken(portalURL:token:username:expiration:)` for pre-provisioned tokens.
+
+##### Error Handling & Resilience
+
+- Thrown errors (to be caught by caller):
+
+  - `ArcGISError.networkError(message)` – URL invalid, non-200 HTTP, or `URLSession` problems.
+  - `ArcGISError.invalidCredentials` – invalid username/password.
+  - `ArcGISError.portalNotConfigured` – using search without having called authenticate.
+  - `ArcGISError.tokenExpired` – token invalid or expired (codes 498/499 or `creds.isValid == false`).
+  - `ArcGISError.parseError(message)` – unexpected JSON structure.
+
+- **Retry Patterns:**
+  - No built-in automatic retries.
+  - Caller is expected to catch `tokenExpired` and re-authenticate, then retry search.
+
+**Usage Example:**
+
+```swift
+do {
+    try await ArcGISPortalService.shared.authenticate(
+        portalURL: "https://www.arcgis.com",
+        username: "user",
+        password: "secret"
+    )
+
+    try await ArcGISPortalService.shared.searchContent(
+        query: "type:Feature Layer",
+        itemType: .featureService,
+        sortField: "modified",
+        sortOrder: "desc",
+        page: 1
+    )
+} catch ArcGISError.invalidCredentials {
+    // Show login error
+} catch ArcGISError.tokenExpired {
+    // Prompt for re-login
+} catch {
+    // Generic error handling
+}
+```
 
 ---
 
-#### 2. ArcGIS Portal / ArcGIS Online
+#### 2. Elevation and Terrain Services
 
-- **Service Name & Purpose:**
-  
-  - ArcGIS Portal / Online REST API for map content discovery and authentication.
+**Files:**
 
-- **Base URLs:**
-  
-  - `https://www.arcgis.com` (default portal)
-  - `https://www.arcgis.com/sharing/rest` (sharing REST services)
-  - User can configure alternate Portal URLs (e.g., on-prem).
+- `OmniTAKMobile/Services/ElevationAPIClient.swift`
+- `OmniTAKMobile/Services/ElevationProfileService.swift`
+- `OmniTAKMobile/Services/LineOfSightService.swift` (mentioned in docs)
 
-- **Endpoints Used:**
-  
-  - `POST {portalURL}/sharing/rest/generateToken`
-    - Form data token generation as described above.
-  - `GET {portalURL}/sharing/rest/search`
-    - For searching content (web maps, layers, etc.)
-  - Additional endpoints (`content/items`, `export`, `feature services`) are used by `ArcGISFeatureService` and offline map services, not fully listed here but implemented.
+Although full `ElevationAPIClient.swift` content wasn’t shown, the naming and usage in `ElevationProfileService` strongly imply:
 
-- **Authentication:**
-  
-  - Token-based:
-    - Request token via `/generateToken` with username/password.
-    - Pass `token` query parameter in subsequent calls.
+- A service making HTTP calls to a DEM/Elevation API.
+- Generating profiles for routes and single-point elevation queries.
 
-- **Error Handling:**
-  
-  - Non-200 or invalid responses throw `ArcGISError`.
-  - JSON `"error"` fields are checked and mapped to `.invalidCredentials` or `.parseError`.
-  - UI is updated via `lastError` and `isLoading`.
+**Conceptual API (based on `docs/API/Services.md`):**
 
-- **Retry / Circuit Breaking:**
-  
-  - No built-in retry loops beyond user-initiated actions.
-  - Timeouts on `URLSession` handle hung connections.
+- `ElevationProfileService.generateProfile(for: [CLLocationCoordinate2D])` – asynchronous, uses `ElevationAPIClient` to fetch elevation samples along a path.
+- `ElevationProfileService.fetchElevation(at: CLLocationCoordinate2D)` – likely calls underlying HTTP endpoint (e.g., `/elevation?lat=...&lon=...`).
 
-- **Integration Pattern:**
-  
-  - `ArcGISPortalService` is the core integration point.
-  - `ArcGISFeatureService`, `OfflineMapManager`, and the map controllers use it to authenticate and then work with item URLs and services.
+**Typical Request/Response:**
+
+- **Method/Path:** `GET https://<elevation-service>/elevation?lat=<>&lon=<>` or similar.
+- **Response (JSON):** heights array or single point elevation.
+- **Errors:** network/timeouts; non-200 responses; JSON parsing failures.
+
+Consult `OmniTAKMobile/Services/ElevationAPIClient.swift` for exact endpoints in your environment; they may be configurable (e.g., pointing to TAK server plugins, USGS, or custom services).
 
 ---
 
-#### 3. Elevation / Terrain Services
+#### 3. Misc External HTTP Integrations
 
-- **Service Name & Purpose:**
-  
-  - Elevation/terrain services used by:
-    - `ElevationAPIClient`
-    - `ElevationProfileService`
-    - `LineOfSightService`
-    - `TerrainVisualizationService`
+Other services in `OmniTAKMobile/Services/` may consume HTTP APIs depending on your deployment:
 
-- **Base URL / Configuration:**
-  
-  - Set in `ElevationAPIClient.swift` (see that file for the exact endpoint).
-  - Likely a REST endpoint accepting polyline or point lists.
+- `ArcGISFeatureService.swift`
+- `ArcGISTileSource.swift` (in Map/TileSources)
+- `MissionPackageSyncService.swift`
+- `VideoStreamService.swift`
 
-- **Endpoints Used:**
-  
-  - Typical pattern (inferred):
-    - `GET /elevation?points=...` or `POST /elevation` with JSON body.
-    - Returns profile data used to populate `ElevationProfile` models.
+The filenames indicate:
 
-- **Authentication Method:**
-  
-  - Could be anonymous, API-key-based, or token-based, depending on configured service; not hard-coded in repo.
+- **ArcGISFeatureService:** interacts with ArcGIS feature layer REST endpoints (`/FeatureServer/...`).
+- **ArcGISTileSource / OfflineTileOverlay:** fetches map tiles either from online ArcGIS services or cached offline sources.
+- **VideoStreamService:** likely consumes RTSP/HTTP video streams; specifics depend on your TAK video infrastructure.
+- **MissionPackageSyncService:** may call TAK server REST endpoints for mission package lists and binary downloads.
 
-- **Error Handling:**
-  
-  - Wraps `URLSession` results in `Result` or `async throws`.
-  - Invalid responses or HTTP codes mapped to domain errors used by view models.
+For exact method/property contracts, see:
 
-- **Integration Pattern:**
-  
-  - Stateless calls from services; no permanent connection.
-  - Combined with local calculations (e.g., LOS).
-
----
-
-#### 4. Map Tile / Feature Servers
-
-- **Service Name & Purpose:**
-  
-  - Standard web tile servers (XYZ/WMTS), and possibly ArcGIS feature services.
-
-- **Base URL / Configuration:**
-  
-  - Configured via map settings UI (e.g. custom URL templates).
-  - Implemented in:
-    - `ArcGISTileSource.swift`
-    - `OfflineTileOverlay.swift`
-    - `TileDownloader.swift`
-    - `ArcGISFeatureService.swift`
-
-- **Endpoints Used:**
-  
-  - Tile templates, e.g.: `https://server/{z}/{x}/{y}.png`
-  - ArcGIS Feature Server endpoints, e.g. `.../FeatureServer/0/query`.
-
-- **Authentication:**
-  
-  - Some sources might use ArcGIS tokens; others may be public.
-  - Any protected sources rely on previously obtained credentials or include query params/headers.
-
-- **Error Handling & Resilience:**
-  
-  - Catches network errors, caches tiles offline, and falls back to cached content when offline.
-  - Retry behavior is limited and tuned to user experience (no infinite loops).
+- `docs/API/Services.md`
+- The individual Swift service files.
 
 ---
 
 ### Integration Patterns
 
-- **Centralized Services & Observability:**
-  
-  - Each external integration has a dedicated `Service` singleton.
-  - Services `@Publish` state for SwiftUI views to observe.
+1. **TAK-centric CoT Pattern**
 
-- **Separation of Concerns:**
-  
-  - UI views call high-level service APIs (e.g., `startBroadcasting()`, `searchContent`).
-  - Networking details are abstracted behind services; consumers never manipulate raw `URLSession` or `NWConnection`.
+   - All tactical interactions (chat, position, geofences, teams, digital pointer, emergency beacon) are eventually represented as CoT XML.
+   - Flow:
 
-- **Resilience & Offline Behavior:**
-  
-  - Chat queues messages locally when offline.
-  - PLI broadcasting checks connectivity and location availability.
-  - Offline maps work via pre-downloaded tiles and overlays.
+     ```
+     UI View -> Manager (e.g., ChatManager, GeofenceManager) 
+             -> Domain Service (ChatService, PositionBroadcastService, etc.)
+             -> TAKService
+             -> DirectTCPSender (NWConnection)
+             -> TAK Server
+     ```
 
-- **Configuration-driven:**
-  
-  - TAK server parameters are user-configured (see `CONNECTING_TO_TAK_SERVER.md`).
-  - ArcGIS portals and API endpoints can be customized.
-  - Certificates and TLS settings can be customized to support legacy servers.
+   - Incoming CoT:
+
+     ```
+     TAK Server -> DirectTCPSender.receive
+                 -> CoTMessageParser.extractCompleteMessages
+                 -> CoTEventHandler / Managers
+                 -> Services and UI update
+     ```
+
+2. **External REST Integration Pattern**
+
+   - ArcGIS and Elevation:
+
+     ```
+     UI View (e.g., ArcGISPortalView, ElevationProfileView)
+       -> ArcGISPortalService / ElevationProfileService
+       -> URLSession-based client
+       -> External REST endpoint
+       -> Decoders / domain models
+       -> Published properties -> UI
+     ```
+
+   - Errors bubble back as Swift `Error`s; views observe `@Published lastError` or use `do/try/catch`.
+
+3. **Singleton Services & Observable State**
+
+   - Most services are singletons:
+
+     ```swift
+     class ArcGISPortalService: ObservableObject {
+         static let shared = ArcGISPortalService()
+         @Published var isAuthenticated: Bool
+         ...
+     }
+     ```
+
+   - Views access via `@StateObject` or `@ObservedObject` to automatically update when network results arrive.
+
+4. **Configuration & Secrets**
+
+   - **ArcGIS credentials:** stored in `UserDefaults` (`userDefaultsKey = "com.omnitak.arcgis.credentials"`).
+   - **Certificates:** stored via:
+     - `CertificateManager` (Keychain-based).
+     - `Documents/Certificates/*.p12` for enrolled certs (see `CertificateEnrollmentService`/view).
+     - Bundle `.p12` for built-in test/dev client certs.
+   - Network endpoints (TAK host/port, ArcGIS base URL, etc.) are chosen via settings UI (`NetworkPreferencesView`, `TAKServersView`, etc.) and persisted locally (see managers and storage files).
 
 ---
 
 ## Available Documentation
 
-### In-Repo Documentation Paths
+### Internal API & Developer Docs
 
-- **Top-Level Docs:** `/docs`
-  
-  - `Architecture.md` – overall app architecture.
-  - `errors.md` – error handling patterns and error types.
-  - `guidebook.md`, `userguide.md` – high-level usage and architecture.
+Located under `./docs`:
 
-- **API-Focused:**
-  
-  - `/docs/API/Services.md`
-    - Comprehensive service API reference (ChatService, TAKService, PositionBroadcastService, TrackRecordingService, etc.).
-  - `/docs/API/Models.md`
-    - Data models (CoT, chat, map, mission, etc.).
-  - `/docs/API/Managers.md`
-    - Managers that orchestrate services and storage.
+- **High-Level Architecture:**
+  - `docs/Architecture.md`
+  - `docs/guidebook.md`
+  - `docs/userguide.md`
+  - `docs/errors.md` (error-handling patterns)
+
+- **API-Level Docs:**
+  - `docs/API/Services.md` – primary reference for all service classes:
+    - TAKService, ChatService, PositionBroadcastService, TrackRecordingService, EmergencyBeaconService, DigitalPointerService, TeamService, MeasurementService, RangeBearingService, ElevationProfileService, LineOfSightService, etc.
+  - `docs/API/Managers.md` – describes Manager layer (e.g., ChatManager, CoTFilterManager, OfflineMapManager).
+  - `docs/API/Models.md` – describes data models (CoT models, Chat models, Tracks, Routes, etc.).
 
 - **Developer Guides:**
-  
-  - `/docs/DeveloperGuide/GettingStarted.md`
-  - `/docs/DeveloperGuide/CodebaseNavigation.md`
-  - `/docs/DeveloperGuide/CodingPatterns.md`
-    - Explain the singleton service pattern, Combine usage, and conventions.
+  - `docs/DeveloperGuide/GettingStarted.md` – how to build and run, environment setup.
+  - `docs/DeveloperGuide/CodebaseNavigation.md` – how files are organized.
+  - `docs/DeveloperGuide/CodingPatterns.md` – common patterns (ObservableObject, singletons, network patterns).
 
-- **Feature Docs:**
-  
-  - `/docs/Features/Networking.md`
-    - TAK connectivity, DirectTCPSender, TLS/legacy TLS, federation.
-  - `/docs/Features/ChatSystem.md`
-    - Chat message flow, retry, CoT formats.
-  - `/docs/Features/MapSystem.md`
-    - Map controllers, overlays, tile sources, offline maps.
-  - `/docs/Features/CoTMessaging.md`
-    - CoT formats, message generators/parsers.
-
-- **UI & Integration Guides:**
-  
-  - `OmniTAKMobile/Resources/Documentation/`
+- **Feature-Specific Guides:**
+  - `OmniTAKMobile/Resources/Documentation/`:
     - `CHAT_FEATURE_README.md`
-    - `OFFLINE_MAPS_INTEGRATION.md`
-    - `WAYPOINT_INTEGRATION_GUIDE.md`
     - `FILTER_INTEGRATION_GUIDE.md`
-    - etc.
+    - `KML_INTEGRATION_GUIDE.md`
+    - `OFFLINE_MAPS_INTEGRATION.md`
+    - `RADIAL_MENU_INTEGRATION_GUIDE.md`
+    - `WAYPOINT_INTEGRATION_GUIDE.md`
+    - `MESHTASTIC_PROTOBUF_README.md`
+    - `UI_LAYOUT_REFERENCE.md`
+    - `USAGE_EXAMPLES.swift` – concrete usage snippets of services and managers.
 
-- **TAK Connectivity & TLS:**
-  
-  - `CONNECTING_TO_TAK_SERVER.md`
-  - `TLS_LEGACY_SUPPORT.md`
+### Documentation Quality Evaluation
 
-### Documentation Quality
-
-- **Coverage:** High. Most major services and features have dedicated docs.
-- **Accuracy:** Matches current implementation (Swift sources and docs are consistent, not aspirational).
-- **Gaps:**
-  - External elevation API and some routing endpoints are not fully documented as external API contracts; refer directly to `ElevationAPIClient.swift`, `LineOfSightService.swift`, etc., for exact URL forms.
-  - No single consolidated external-API catalog; this document fills much of that role.
+- **Coverage:**  
+  - Services and managers are well-documented in `docs/API/`.  
+  - Feature-level docs give concrete integration patterns and code examples.
+- **Gaps:**  
+  - No formal OpenAPI/Swagger or gRPC proto specs (appropriate since the app is a client, not a server).
+  - External elevation service details (base URL, exact contract) are not fully captured in the visible docs; refer directly to `ElevationAPIClient.swift` and deployment config.
+  - Some legacy / backup Swift files are present; they should not be considered authoritative for new development (e.g., `*.backup` files).
 
 ---
 
-If you want, I can next:
+### Summary for Integrators
 
-- Enumerate each service in `OmniTAKMobile/Services/` with method signatures and integration notes, or
-- Extract and document the exact HTTP shapes (paths, query params, JSON schemas) for the elevation and feature services.
+- **If you’re integrating with OmniTAK as a TAK server admin:**
+  - Ensure TAK server supports TCP/UDP/TLS ports configured in the app.
+  - Provide client certificates (P12) and CA if using mutual TLS.
+  - Understand that the client accepts self-signed server certs by design.
+  - CoT event formats follow standard TAK conventions (PLI, chat, markers); see `CoT` models and services.
+
+- **If you’re extending the app:**
+  - Use existing services (`TAKService`, `ChatService`, `PositionBroadcastService`, etc.) rather than creating new sockets or URLSessions.
+  - Follow patterns in `docs/API/Services.md` and `USAGE_EXAMPLES.swift`.
+  - For new external REST integrations, mirror `ArcGISPortalService` / `ElevationAPIClient` design: `URLSession`, strongly-typed models, clear error enums, `ObservableObject` with `@Published` state, and async/await or Combine as appropriate.
+
+This documentation should give you a complete picture of what this project “serves” (CoT over TCP/UDP/TLS) and what it “consumes” (ArcGIS, elevation, and TAK-related services), along with the internal APIs you’ll use to build features.

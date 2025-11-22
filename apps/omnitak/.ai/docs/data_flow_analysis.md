@@ -2,1002 +2,799 @@
 
 ## Data Models Overview
 
-### Model Layer Structure
+OmniTAK Mobile is strongly model‑driven: almost all feature data lives in Swift `struct` models that are `Codable`, `Identifiable`, and often `Equatable`. Models are grouped by domain in `OmniTAKMobile/Models/`.
 
-All primary data models live under `OmniTAKMobile/Models/` and are documented in `docs/API/Models.md`. They are almost uniformly:
+Key patterns (from `docs/API/Models.md` and model files):
 
-- `struct`-based
-- `Codable` (for JSON/plist persistence and network payloads)
-- `Identifiable` (for SwiftUI `List` and diffing)
-- `Equatable` (for value comparisons and change detection)
+- **Protocols**
+  - `Identifiable` – gives each entity a stable `id` for SwiftUI lists and persistence.
+  - `Codable` – enables JSON/Plist and file storage.
+  - `Equatable` – supports diffing, deduplication, and comparison.
 
-Key model groups:
+- **Naming**
+  - Singular model names: `ChatMessage`, `Conversation`, `Track`, `Waypoint`, `TAKServer`, etc.
+  - Suffix `Model` only where necessary (e.g. `CoTFilterModel`).
 
-- **CoT / Map / Tracking**
-  - `CoTEvent` (CoT event payload)
-  - `EnhancedCoTMarker` (map marker + trail)
-  - `Track`, `TrackPoint` (breadcrumb trails)
-  - `Waypoint`, `Route`, `OfflineMapRegion`, etc.
-- **Chat / Messaging**
-  - `ChatMessage`
-  - `Conversation`
-  - `ChatParticipant`
-  - `ImageAttachment`
-  - `QueuedMessage`
-- **Teams / Tactical**
-  - `Team`, `TeamMember`
-  - `SPOTREP`, `SALUTE`, `MEDEVACRequest`, etc.
-- **Servers / Certificates / Settings**
-  - `TAKServer`
-  - `TAKCertificate`
-  - Various config structs for networking, offline maps, broadcast settings, etc.
-- **Domain-Specific Models**
-  - `Geofence`, `GeofenceEvent`
-  - `Measurement`, `ElevationProfile`, `LineOfSightRequest/Result`
-  - `VideoStream`, `MissionPackage`, `DataPackage` models
+Representative models and their roles in data flow:
 
-#### Example: CoTEvent
+### CoT / Tactical Awareness
 
-File: `OmniTAKMobile/Models/CoTModels.swift` (referenced in `docs/API/Models.md`)
+- **`CoTEvent`** (documented in `docs/API/Models.md`, code in `OmniTAKMobile/Models/CoTModels.swift` – referenced):
+  - Represents a normalized CoT event:
+    - Identity & timing: `id`, `uid`, `type`, `time`, `start`, `stale`, `how`.
+    - Location: `coordinate: CLLocationCoordinate2D`, `hae`, `ce`, `le`.
+    - Detail: `callsign`, `team`, `role`, `remarks`.
+  - Used as the canonical in‑app representation of CoT XML “event” elements.
 
-```swift
-struct CoTEvent: Identifiable, Codable, Equatable {
-    let id: String              // UUID or UID from message
-    let uid: String             // CoT UID (e.g., "ANDROID-123")
-    let type: String            // CoT type (e.g., "a-f-G-U-C")
-    let time: Date
-    let start: Date
-    let stale: Date
-    let how: String             // acquisition method
+- **`EnhancedCoTMarker`** (`Models/ArcGISModels.swift` & `docs/API/Models.md`):
+  - UI‑oriented structure mapping CoT events onto map markers:
+    - `uid`, `coordinate`, `callsign`, `type`, `team`, `lastUpdate`.
+    - Trail: `trailCoordinates`, `trailTimestamps`.
+    - Status: `battery`, `speed`, `course`, computed `isStale`.
+  - Acts as a *view model* for displaying SA on map overlays.
 
-    // Location
-    let coordinate: CLLocationCoordinate2D
-    let hae: Double
-    let ce: Double
-    let le: Double
+- **`EmergencyAlert`** (in `CoTMessageParser.swift`):
+  - Not `Codable`, but `Identifiable` + `Equatable`.
+  - Fields: `uid`, `alertType`, `callsign`, `coordinate`, `timestamp`, `message`, `cancel`.
+  - Produced only by parsing CoT XML, consumed by alert handling UI/services.
 
-    // Detail
-    let callsign: String
-    let team: String?
-    let role: String?
-    let remarks: String?
-}
-```
+### Chat System
 
-This is the core normalized representation of a CoT message used across services, map rendering, and filtering.
+From `docs/API/Models.md` and `OmniTAKMobile/Models/ChatModels.swift`:
 
-#### Example: ChatMessage
+- **`ChatMessage`**
+  - `id` (message UID), `senderUID`, `senderCallsign`, `recipientUID`, `recipientCallsign`, `messageText`, `timestamp`.
+  - `coordinate: CLLocationCoordinate2D?` for location‐aware messages.
+  - `attachment: ImageAttachment?` for photo/file.
+  - `status: MessageStatus` (pending/sending/sent/delivered/failed).
+  - `isRead: Bool`.
 
-File: `OmniTAKMobile/Models/ChatModels.swift`
+- **`MessageStatus`** (`enum String, Codable`)
+  - Lifecycle states used by queueing, delivery, and UI.
 
-```swift
-struct ChatMessage: Identifiable, Codable, Equatable {
-    let id: String
-    let senderUID: String
-    let senderCallsign: String
-    let recipientUID: String
-    let recipientCallsign: String
-    let messageText: String
-    let timestamp: Date
+- **`Conversation`**
+  - `id`, `[ChatParticipant]`, `[ChatMessage]`, `unreadCount`, `lastMessage`, `isGroupChat`, `name`.
+  - Represents logical thread / chat room; used heavily in `ChatManager` for UI and persistence.
 
-    var coordinate: CLLocationCoordinate2D?
-    var attachment: ImageAttachment?
-    var status: MessageStatus = .pending
-    var isRead: Bool = false
-}
-```
+- **`ChatParticipant`**
+  - `id` = CoT UID, `callsign`, `endpoint`, `lastSeen`, `isOnline`, `coordinate`.
 
-This is the canonical in‑memory and persisted representation of a chat item; it is transformed to/from CoT/GeoChat XML for transport.
+- **`ImageAttachment`**
+  - Metadata + multiple storage/transmission forms:
+    - Disk: `localPath`, `thumbnailPath`.
+    - Wire: `base64Data`.
+    - Remote: `remoteURL`.
+  - Used by `PhotoAttachmentService` and chat flows.
 
-### Model Roles
+- **Queue Models (`ChatStorageManager.swift`)**
+  - `QueuedMessageStatus` (`pending`, `sending`, `failed`, `completed`).
+  - `QueuedMessage: Codable, Identifiable`
+    - `message: ChatMessage`
+    - `xmlPayload: String` (the actual GeoChat CoT XML for wire)
+    - `retryCount`, `createdAt`, `lastAttempt`, `status`.
+  - These models are specifically for offline/unstable network handling.
 
-- **Canonical domain state** for each feature (chat, map, teams, routes, etc.).
-- **Boundary types** between:
-  - Views and Managers (UI <-> view models).
-  - Managers and Services (view models <-> business logic).
-  - Services and Storage layer (business logic <-> persistence).
-  - Services and network serialization (domain <-> XML/JSON CoT).
+### Server & Certificate Models
 
-No business logic is embedded in models; they are purely data structures, sometimes with simple computed properties like `EnhancedCoTMarker.isStale`.
+Described in `docs/API/Managers.md`:
+
+- **`TAKServer`** (code in `Models`):
+  - Holds server connection details: name, host, port, protocol (`tls`/`tcp`), TLS flags, etc.
+  - Persisted by `ServerManager` to `UserDefaults`.
+
+- **`TAKCertificate`** (in `Models` / certificate flows):
+  - Metadata for .p12 client certs (common name, expiration, keychain reference).
+  - Managed by `CertificateManager` & `CertificateEnrollmentService`.
+
+### Offline Maps, Routes, Tracks, Waypoints, etc.
+
+Other model groups are consistent:
+
+- **Routes/Tracks**: `Route`, `RouteWaypoint`, `Track`, `TrackPoint` in `RouteModels.swift` / `TrackModels.swift`. Used by `TrackRecordingService`, `RoutePlanningService`, `RouteStorageManager`.
+- **Waypoints**: `Waypoint` in `WaypointModels.swift`, associated with CoT waypoint events and persistent waypoint lists.
+- **Geofences, Echelons, Teams, Video streams, Offline maps**: each has its own model file and is used by its associated Manager + Service.
+
+### Summary
+
+- **Domain models** are simple, typed Swift structs with minimal logic.
+- **Transport/protocol** is almost always transformed into these models before entering app logic (CoT XML → `CoTEvent`, GeoChat XML → `ChatMessage`).
+- **Persistence** uses these models directly via `Codable` (JSON files, `UserDefaults`).
 
 ---
 
 ## Data Transformation Map
 
-This section focuses on *how* data moves and is transformed between layers, using the main subsystems as exemplars.
+This section focuses on how data changes shape as it crosses boundaries: network ↔ CoT ↔ domain models ↔ storage ↔ UI.
 
-### Global Architectural Data Path
+### 1. CoT XML → Internal Models
 
-From `docs/Architecture.md` and `docs/API/*`:
+**Entry point:** CoT XML strings arriving from TAK server through `TAKService`.
 
-1. **External I/O**
-   - Network (TAK server, ELEVATION API, Meshtastic, ArcGIS services)
-   - Files (KML/KMZ, data packages)
-   - Sensors (GPS, device orientation, video)
-2. **Service Layer** (`Services/`)
-   - Parses/serializes external formats (CoT XML, GeoChat XML, protobuf, KML, REST JSON).
-   - Transforms external payloads into domain models.
-3. **Manager Layer** (`Managers/`)
-   - Holds app‑level state using domain models.
-   - Coordinates Services and Storage.
-4. **Storage Layer** (`Storage/`)
-   - Reads/writes domain models to persistent stores (UserDefaults, files, local caches).
-5. **View Layer** (`Views/`, `Map/`, `UI/`)
-   - Subscribes via Combine to manager state (`@Published` properties).
-   - Transforms domain models to view models / visual elements.
+- **`TAKService`** (docs/API/Services.md):
+  - Reads raw XML from underlying Rust/iOS framework (the `omnitak_mobile` xcframework).
+  - For each message, it dispatches XML to `CoTMessageParser.parse(xml:)`.
 
-The transformation pattern is largely unidirectional:
+- **`CoTMessageParser.parse(xml:)`** (`CoTMessageParser.swift`):
 
-```text
-External Data <-> Service-specific DTOs <-> Domain Models
-Domain Models <-> Storage Formats (JSON/plist/files)
-Domain Models -> Published State -> Views
-User Input -> Views -> Managers -> Services/Storage
+  ```swift
+  static func parse(xml: String) -> CoTEventType? {
+      guard let eventType = extractAttribute("type", from: xml) else { ... }
+
+      if eventType.hasPrefix("a-") {
+          if let cotEvent = parsePositionUpdate(xml: xml) {
+              return .positionUpdate(cotEvent)
+          }
+      } else if eventType == "b-t-f" {
+          if let chatMessage = parseChatMessage(xml: xml) {
+              return .chatMessage(chatMessage)
+          }
+      } else if eventType.hasPrefix("b-a-") {
+          if let alert = parseEmergencyAlert(xml: xml) {
+              return .emergencyAlert(alert)
+          }
+      } else if eventType == "b-m-p-w" || eventType.hasPrefix("b-m-p-s-p-i") {
+          if let cotEvent = parseWaypoint(xml: xml) {
+              return .waypoint(cotEvent)
+          }
+      } else if eventType == "t-x-takp-v" { ... } // logged & ignored
+      ...
+      return .unknown(eventType)
+  }
+  ```
+
+  Transformations:
+
+  - **Type inspection** (`type` attribute) determines which parser is used.
+  - Each parser extracts data using custom regex/string helpers (`extractAttribute`, `extractPoint`, `extractDetail`, `extractTimestamp`, etc.).
+  - Output is polymorphic:
+    - `CoTEventType.positionUpdate(CoTEvent)`
+    - `CoTEventType.chatMessage(ChatMessage)`
+    - `CoTEventType.emergencyAlert(EmergencyAlert)`
+    - `CoTEventType.waypoint(CoTEvent)`
+    - `CoTEventType.unknown(String)`
+
+- **`parsePositionUpdate(xml:)`**:
+  - Extracts `uid`, `type`, `<point>` lat/lon/hae/ce/le.
+  - Maps to `CoTEvent`:
+
+    ```swift
+    return CoTEvent(
+        uid: uid,
+        type: typeStr,
+        time: time,
+        point: point,
+        detail: detail
+    )
+    ```
+
+  - Here `detail` is a custom struct defined in CoT models for callsign/team/remarks.
+
+- **`parseChatMessage(xml:)`**:
+  - Delegates to `ChatXMLParser.parseGeoChatMessage(xml:)` (defined in `CoT/Parsers/ChatXMLParser.swift`, documented in `ChatSystem.md`).
+  - That parser uses `XMLParser` to reconstruct a `ChatMessage` from GeoChat CoT events.
+
+- **`parseEmergencyAlert(xml:)`**:
+  - Parses `EmergencyAlert` by:
+    - Attributes from `<event>` and `<emergency>` elements.
+    - `<remarks>` for message text.
+    - `<point>` for coordinates.
+  - Normalises alert types via `AlertType.from(type:)`.
+
+**Downstream flow:**
+
+- `TAKService` or `CoTEventHandler` (file `CoTEventHandler.swift`) receive `CoTEventType` and dispatch:
+  - Position updates → Map managers / `MapStateManager` / `BreadcrumbTrailService`.
+  - Chat messages → `ChatManager.processIncomingMessage(_:)`.
+  - Emergency alerts → dedicated manager/view.
+  - Waypoints → `WaypointManager`.
+
+### 2. Domain Models → CoT XML (Outbound)
+
+Several generators convert internal models back to CoT XML.
+
+#### Chat: `ChatManager` → `ChatCoTGenerator` → `TAKService`
+
+From `ChatSystem.md`:
+
+- **Sending message from UI:**
+
+  ```swift
+  func sendMessage(text: String, to conversationId: String) {
+      guard let conversation = getConversation(id: conversationId) else { return }
+
+      let message = ChatMessage(
+          id: UUID().uuidString,
+          senderUID: currentUserId,
+          senderCallsign: currentUserCallsign,
+          recipientUID: conversation.recipientUID,
+          recipientCallsign: conversation.name,
+          messageText: text,
+          timestamp: Date(),
+          status: .pending
+      )
+
+      messages.append(message)
+      updateConversation(with: message)
+
+      let cotXML = ChatCoTGenerator.generateChatMessage(
+          from: message,
+          senderLocation: locationManager?.location?.coordinate
+      )
+
+      takService?.send(cotMessage: cotXML, priority: .high)
+
+      updateMessageStatus(message.id, status: .sent)
+  }
+  ```
+
+- **Transformation steps:**
+  1. **UI** (e.g. `ConversationView`) captures user text.
+  2. `ChatManager` builds a `ChatMessage` with local metadata.
+  3. `ChatCoTGenerator.generate...` transforms this model to protocol‑compliant `String` (GeoChat CoT XML).
+  4. `TAKService.send(cotMessage:priority:)` takes XML string, passes to Rust/iOS underlying library for network transmission.
+  5. Queue logic (if TAK not connected) wraps this XML + `ChatMessage` in a `QueuedMessage` stored by `ChatStorageManager`.
+
+- **`ChatCoTGenerator.generateGeoChatCoT`** (in `CoT/Generators/ChatCoTGenerator.swift`):
+
+  ```swift
+  static func generateGeoChatCoT(message: ChatMessage, conversation: Conversation) -> String {
+      ...
+      let uid = "GeoChat.\(message.senderId).\(conversation.id).\(message.id)"
+      let chatType = "b-t-f"
+      let chatRoom = conversation.title
+
+      let xml = """
+      <?xml version="1.0" encoding="UTF-8"?>
+      <event version="2.0" uid="\(uid)" type="\(chatType)" time="\(timeStr)" start="\(startStr)" stale="\(staleStr)" how="h-g-i-g-o">
+          <point lat="0.0" lon="0.0" hae="0.0" ce="9999999" le="9999999"/>
+          <detail>
+              <__chat id="\(conversation.id)" chatroom="\(chatRoom)" senderCallsign="\(message.senderCallsign)">
+                  <chatgrp uid0="\(message.senderId)" uid1="\(conversation.id)" id="\(conversation.id)"/>
+              </__chat>
+              <link uid="\(message.senderId)" type="a-f-G" relation="p-p"/>
+              <remarks source="\(message.senderId)" time="\(startStr)">\(escapeXML(message.messageText))</remarks>
+              <__serverdestination destinations="\(conversation.id)"/>
+          </detail>
+      </event>
+      """
+      return xml
+  }
+  ```
+
+  - **Important:** This is a *pure transformation* from strongly typed `ChatMessage`/`Conversation` → XML string; any XML quirks (escaping, attribute names) are isolated here.
+  - `escapeXML` ensures message text does not break XML.
+
+#### PLI, Waypoints, etc.
+
+Similar generators exist:
+
+- `GeofenceCoTGenerator.swift`
+- `MarkerCoTGenerator.swift`
+- `TeamCoTGenerator.swift`
+
+These transform models like `Waypoint`, `Team`, `Geofence` into specific CoT event types.
+
+### 3. Domain Models ↔ Persistence Models
+
+In this codebase, **domain models are directly made `Codable`**, so there is no separate persistence DTO layer. The main transformations are:
+
+- **Encoding strategies**:
+  - `JSONEncoder` with `dateEncodingStrategy = .iso8601`.
+- **Storage formats**:
+  - JSON files in app documents directory.
+  - `UserDefaults` for simple key/value and small arrays.
+
+Examples:
+
+- **ChatPersistence** (`ChatPersistence.swift`):
+
+  ```swift
+  func saveConversations(_ conversations: [Conversation]) {
+      let encoder = JSONEncoder()
+      encoder.dateEncodingStrategy = .iso8601
+      let data = try encoder.encode(conversations)
+      try data.write(to: conversationsURL)
+  }
+
+  func loadConversations() -> [Conversation] {
+      let data = try Data(contentsOf: conversationsURL)
+      let decoder = JSONDecoder()
+      decoder.dateDecodingStrategy = .iso8601
+      return try decoder.decode([Conversation].self, from: data)
+  }
+  ```
+
+- **ChatStorageManager**:
+
+  ```swift
+  func loadQueuedMessages() -> [QueuedMessage] {
+      guard let data = defaults.data(forKey: queuedMessagesKey) else { return [] }
+      return (try? decoder.decode([QueuedMessage].self, from: data)) ?? []
+  }
+
+  func saveQueuedMessages(_ messages: [QueuedMessage]) {
+      if let data = try? encoder.encode(messages) {
+          defaults.set(data, forKey: queuedMessagesKey)
+      }
+  }
+  ```
+
+Other Storage modules (`RouteStorageManager`, `TeamStorageManager`, `DrawingPersistence`) follow similar patterns: encode domain models directly to JSON.
+
+### 4. Domain Models ↔ View State
+
+- **Managers as ViewModels** (`Managers/*.swift`):
+  - `ObservableObject` + `@Published` state.
+  - Models (e.g. `[Conversation]`, `[Waypoint]`) are exposed directly to SwiftUI views.
+- **Views** (`Views/*`):
+  - Use `@ObservedObject` / `@EnvironmentObject` to bind to managers.
+  - They don’t transform data beyond basic filtering/sorting for display.
+
+Example from architecture doc:
+
+```swift
+struct ChatView: View {
+    @ObservedObject var chatManager: ChatManager
+
+    var body: some View {
+        List(chatManager.conversations) { conversation in
+            ConversationRow(conversation: conversation)
+        }
+    }
+}
 ```
 
-### CoT Events & Map Markers
-
-Primary files:
-
-- `CoTMessageParser.swift`
-- `CoTEventHandler.swift`
-- `CoTFilterCriteria.swift`
-- `MapOverlayCoordinator.swift` / `EnhancedMapViewController.swift`
-- Models: `CoTModels.swift`, `TrackModels.swift`, `PointMarkerModels.swift`
-
-**Inbound (Network → Map):**
-
-1. **Raw data from TAK server**
-   
-   - `TAKService` receives CoT XML strings over TLS/UDP/TCP.
-   - Updates counters: `messagesReceived`, `bytesReceived`.
-
-2. **Parsing**
-   
-   - `CoTMessageParser` transforms XML into domain types:
-     - CoT XML → `CoTEvent` (primary)
-     - GeoChat XML → chat/message DTOs, then to `ChatMessage`
-   - Any low‑level DTOs are immediately converted to the main models.
-
-3. **Filtering & Distribution**
-   
-   - `CoTEventHandler`:
-     - Receives `CoTEvent`.
-     - Applies `CoTFilterCriteria` (user filter settings).
-     - Routes:
-       - Position events → map marker models (`EnhancedCoTMarker`).
-       - Chat events → chat flow (`ChatService` / `ChatManager`).
-       - Tactical reports → SPOTREP/MEDEVAC models.
-   - Map specific transformations:
-     - `CoTEvent` → `EnhancedCoTMarker` (adds trail and marker state).
-     - For breadcrumbs, `TrackRecordingService` may also transform location samples into `Track`/`TrackPoint`.
-
-4. **Map Rendering**
-   
-   - `MapOverlayCoordinator`, `EnhancedMapViewController`, overlays in `Map/Overlays/` transform:
-     - `EnhancedCoTMarker`, `Track` → `MKAnnotation`, `MKOverlay` or Esri overlay objects.
-   - These derived view models are *not persisted*; they mirror domain models in memory.
-
-**Outbound (Map/Position → Network):**
-
-1. **Domain state**
-   
-   - `PositionBroadcastService` uses the current location (`CLLocation`) and user settings (`userUID`, `userCallsign`, `teamColor`, `userUnitType`) to create a broadcasting payload.
-
-2. **Generation**
-   
-   - CoT generator utilities (e.g., `TeamCoTGenerator`, `MarkerCoTGenerator`, `GeofenceCoTGenerator`, `ChatCoTGenerator`) build XML:
-     - Domain models → CoT/GeoChat XML string.
-
-3. **Sending**
-   
-   - `TAKService.send(cotMessage:priority:)` sends XML over the network.
-
-### Chat Flow
-
-Primary files:
-
-- `ChatService.swift`
-- `ChatManager.swift`
-- Storage: `ChatPersistence.swift`, `ChatStorageManager.swift`
-- CoT/Chat XML: `ChatCoTGenerator.swift`, `ChatXMLParser.swift`, `ChatXMLGenerator.swift`
-- Models: `ChatModels.swift`
-
-**Outbound (User → Network):**
-
-1. **User Input**
-   
-   - `ChatView`, `ConversationView` capture text/photos.
-   
-   - UI calls into `ChatManager` (view model):
-     
-     ```swift
-     chatManager.sendMessage(text, to: recipientUID)
-     ```
-
-2. **Manager → Service**
-   
-   - `ChatManager` delegates to `ChatService`:
-     
-     ```swift
-     let message = chatService.createMessage(text, recipient)
-     chatService.send(message)
-     persistence.save(message)
-     ```
-   
-   - Transformation:
-     
-     - Raw UI strings → `ChatMessage` domain model (fills IDs, timestamps).
-     - Domain model → queued state (`QueuedMessage`) if offline.
-
-3. **Service → CoT XML**
-   
-   - `ChatService` uses `ChatCoTGenerator` / `ChatXMLGenerator`:
-     - `ChatMessage` (+ optional `coordinate`, `ImageAttachment`) → GeoChat CoT XML string.
-
-4. **Network Send**
-   
-   - `ChatService` calls `TAKService.send(cotMessage:priority:)`.
-   - On success:
-     - Update `ChatMessage.status` (e.g., `.sent` → `.delivered` based on ACK CoT).
-     - Push updated models back to `ChatManager` via Combine.
-
-5. **Persistence**
-   
-   - `ChatPersistence` / `ChatStorageManager`:
-     - Append/update message in JSON/plist store.
-     - Maintain message indices for each `Conversation`.
-
-**Inbound (Network → UI):**
-
-1. **TAKService receives GeoChat CoT XML.**
-
-2. **Chat XML Parsing**
-   
-   - `ChatXMLParser`:
-     - XML → intermediate DTOs / fields (sender UID, callsign, text, time, optional coordinate).
-   - `ChatService` converts these into `ChatMessage` domain models.
-
-3. **Conversation Aggregation**
-   
-   - `ChatService` or `ChatStorageManager` computes:
-     - `Conversation` models: group by participants, compute `lastMessage`, `unreadCount`.
-
-4. **State Propagation**
-   
-   - `ChatService` updates:
-     - `@Published var messages`, `conversations`, `participants`, `unreadCount`.
-   - `ChatManager` mirrors or derives secondary state (sorting/filtering, current conversation, UI flags).
-
-5. **View Updates**
-   
-   - `ChatView` / `ConversationView` observe `ChatManager`:
-     - Domain models → SwiftUI cells (`ConversationRow`, `MessageBubble`).
-
-### Server & Certificate Configuration
-
-Primary files:
-
-- `ServerManager.swift`
-- `CertificateManager.swift`
-- `NetworkPreferencesView.swift`, `TAKServersView.swift`
-- `CertificateEnrollmentService.swift`, `CertificateEnrollmentView.swift`
-
-**Server config data flow:**
-
-1. **User Inputs**
-   
-   - In `TAKServersView`, user creates/edits `TAKServer` (host, port, protocol, TLS).
-   
-   - View calls:
-     
-     ```swift
-     ServerManager.shared.addServer(server)
-     ```
-
-2. **Manager State**
-   
-   - `ServerManager`:
-     
-     - Maintains `@Published var servers: [TAKServer]`.
-     
-     - On change: `didSet` triggers persist:
-       
-       ```swift
-       private func saveServers() {
-           if let encoded = try? JSONEncoder().encode(servers) {
-               UserDefaults.standard.set(encoded, forKey: "tak_servers")
-           }
-       }
-       ```
-
-3. **App Startup**
-   
-   - `ServerManager` loads servers from `UserDefaults` using `JSONDecoder`.
-   - This is a typical pattern repeated for other settings.
-
-4. **Connection**
-   
-   - On selecting a server:
-     
-     - `ServerManager.selectServer(_:)` sets `selectedServer` and triggers:
-       
-       ```swift
-       takService.connect(host:..., port:..., protocolType:..., useTLS:..., certificateName:..., certificatePassword:...)
-       ```
-
-**Certificates flow:**
-
-1. **Certificate Import**
-   
-   - `CertificateManagementView` / `CertificateEnrollmentView` read `.p12` file.
-   
-   - Pass raw `Data` and password to:
-     
-     ```swift
-     CertificateManager.shared.importCertificate(from: data, password: password)
-     ```
-
-2. **CertificateManager**
-   
-   - Validates & parses the `.p12` into `TAKCertificate` metadata.
-   - Persists into Keychain (`saveCertificate`) and an in‑memory list (`@Published var certificates`).
-   - Likely also encodes some metadata to `UserDefaults` for fast lookup.
-
-3. **Usage**
-   
-   - `TAKService` is configured with certificate name/password when connecting.
-
-### Offline Maps & Tile Caching
-
-Primary files:
-
-- `OfflineMapModels.swift`
-- `OfflineTileOverlay.swift`
-- `OfflineTileCache.swift`
-- `TileDownloader.swift`
-- `OfflineMapManager.swift`
-- Docs: `OFFLINE_MAPS_INTEGRATION.md`
-
-**Data flow:**
-
-1. **User selects offline region in `OfflineMapsView`.**
-
-2. **`OfflineMapManager`**
-   
-   - Creates `OfflineMapRegion` model (bounds, zoom, identifier).
-   - Hands to `TileDownloader`.
-
-3. **`TileDownloader`**
-   
-   - Computes tile URLs (ArcGIS or other sources).
-   - Downloads images, storing file data through `OfflineTileCache`.
-
-4. **`OfflineTileCache`**
-   
-   - Provides a mapping: (x, y, zoom, source) → local file path or memory cache.
-   - Likely uses file system directories keyed by region/source.
-   - Maintains domain models for downloaded regions (saved via `Codable` into disk).
-
-5. **Map Rendering**
-   
-   - `OfflineTileOverlay` reads from `OfflineTileCache`:
-     - Tile coordinate → `Data` or `UIImage`.
-   - This is a pure transformation from domain/coordinate space to UI texture.
-
-### Tracks & Breadcrumbs
-
-Primary files:
-
-- `TrackModels.swift`
-- `TrackRecordingService.swift`
-- `BreadcrumbTrailOverlay.swift`
-- `BreadcrumbTrailService.swift`
-- `TrackOverlayRenderer.swift`
-
-**Data flow:**
-
-1. **Location updates (`CLLocation` source).**
-
-2. **`TrackRecordingService`**
-   
-   - On each location:
-     - Transform `CLLocation` → `TrackPoint` model (time, lat/lon, altitude, speed).
-     - Append to `currentTrack`.
-   - Computes live metrics:
-     - `liveDistance`, `liveSpeed`, `liveAverageSpeed`, `liveElevationGain`.
-
-3. **Persisting tracks**
-   
-   - On stop/save:
-     - `currentTrack` appended to `savedTracks`.
-     - Persisted via `Codable` to disk (`TrackPersistence` pattern similar to `ChatPersistence`).
-
-4. **Rendering**
-   
-   - Map controllers/overlays transform:
-     - `Track` (array of `TrackPoint`s) → polyline overlays.
-
-### KML/KMZ and Data Packages
-
-Primary files:
-
-- `KMLParser.swift`, `KMZHandler.swift`, `KMLMapIntegration.swift`, `KMLOverlayManager.swift`
-- `DataPackageManager.swift`, `DataPackageModels.swift`
-- Views: `KMLImportView.swift`, `DataPackageImportView.swift`
-
-**Data flow:**
-
-1. **File import**
-   
-   - User opens KML/KMZ (from Files / data package).
-   - `KMZHandler` unzips, extracts KML.
-   - `KMLParser`:
-     - KML → model structs (waypoints, routes, overlays).
-
-2. **Integration**
-   
-   - `KMLMapIntegration` and `KMLOverlayManager` map these models to:
-     - `Waypoint` / `Route` domain models.
-     - Map overlays (polygons, polylines) for drawing.
-
-3. **Persistence**
-   
-   - These derived models can be:
-     - Saved (via `RouteStorageManager`, `WaypointManager`).
-     - Or kept only in memory for session display.
+Transformation is minimal: UI components read `Conversation` items as-is.
 
 ---
 
 ## Storage Interactions
 
-### Primary Storage Mechanisms
+Storage is implemented via a small set of concrete persistence classes under `OmniTAKMobile/Storage` and some uses of `UserDefaults` in managers.
 
-1. **UserDefaults**
-   
-   - Simple configuration and small lists:
-     
-     - `TAKServer` list in `ServerManager`.
-     - Broadcast settings, user preferences.
-   
-   - Persistence pattern:
-     
-     ```swift
-     if let encoded = try? JSONEncoder().encode(model) {
-         UserDefaults.standard.set(encoded, forKey: "key")
-     }
-     ```
+### 1. File-Based JSON Storage
 
-2. **File System (Documents / Caches)**
-   
-   - Chat history (`ChatPersistence`).
-   - Tracks and routes (`RouteStorageManager`).
-   - Offline map tiles and metadata (`OfflineTileCache`).
-   - Data packages, attachments (e.g., `ImageAttachment.localPath`).
+**ChatPersistence** (`ChatPersistence.swift`):
 
-3. **Keychain**
-   
-   - Certificates and TLS credentials via `CertificateManager`.
+- **Scope:** Chat history and participants.
+- **Files:**
+  - `conversations.json`
+  - `messages.json`
+  - `participants.json`
+- **Location:** App’s Documents directory:
 
-4. **In‑memory Caches**
-   
-   - Map tiles, overlays (managed by `OfflineTileCache`, `ArcGISTileSource`).
-   - Ephemeral state inside managers (`@Published` arrays and dictionaries).
+  ```swift
+  private func getDocumentsDirectory() -> URL {
+      FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+  }
+  ```
 
-### Storage Layer Files
+- **Encoding/decoding:**
+  - Uses `JSONEncoder`/`JSONDecoder` with ISO‑8601 date strategies.
+  - Writes atomically to disk; errors are printed to console.
 
-- `OmniTAKMobile/Storage/ChatPersistence.swift`
-- `OmniTAKMobile/Storage/ChatStorageManager.swift`
-- `OmniTAKMobile/Storage/RouteStorageManager.swift`
-- `OmniTAKMobile/Storage/TeamStorageManager.swift`
-- `OmniTAKMobile/Storage/DrawingPersistence.swift`
-- Map tile caching via `OfflineTileCache.swift`
+- **Migration:**
+  - `migrateFromUserDefaults()` reads any legacy JSON from `UserDefaults` keys (`chat_conversations`, etc.), decodes, writes to files, then clears the old keys.
 
-**ChatPersistence pattern:**
+**DrawingPersistence**, `RouteStorageManager`, `TeamStorageManager`:
 
-Although the full code isn’t shown in docs, its documented behavior is:
+- Similar pattern: JSON in Documents:
+  - `RouteStorageManager` handles `Track`/`Route` objects.
+  - `TeamStorageManager` handles `Team` and membership lists.
+  - Errors are logged but not thrown to UI; managers must handle potential empty results.
 
-- `save(_ message: ChatMessage)`:
-  - Append to conversation file (per‑conversation JSON) or a global messages store.
-- `loadConversations()`:
-  - Decode `[Conversation]` from JSON.
-- Data structure:
-  - Domain models (`ChatMessage`, `Conversation`) are directly persisted as JSON using `Codable`.
+### 2. UserDefaults-Based Storage
 
-**RouteStorageManager:**
+- **ChatStorageManager** (`ChatStorageManager.swift`):
+  - Stores queued outbound messages under key `com.omnitak.chat.queue`.
+  - Lifecycle:
+    - On app launch or ChatManager initialization: `queuedMessages = storage.loadQueuedMessages()`.
+    - On modification: `storage.saveQueuedMessages(queuedMessages)`.
 
-- Stores `Route` models (waypoints, names, settings) as:
-  - `Codable` JSON in `Documents/routes/` or a similar folder.
-- Provides CRUD:
-  - create/update/delete/list routes.
+- **ServerManager** (`Managers/ServerManager.swift`, from docs):  
+
+  ```swift
+  private func saveServers() {
+      if let encoded = try? JSONEncoder().encode(servers) {
+          UserDefaults.standard.set(encoded, forKey: "tak_servers")
+      }
+  }
+  ```
+
+  - On start: attempts to load/deserialize the same key.
+  - Used to persist user’s configured TAK endpoints.
+
+- Similar patterns likely used in other managers for simple preferences (e.g., broadcast interval, map settings).
+
+### 3. Keychain / Secure Storage
+
+- **CertificateManager** (docs/API/Managers.md):
+  - Methods:
+    - `importCertificate(from:password:)` – parse .p12.
+    - `saveCertificate(_:data:password:)` – writes to iOS Keychain.
+    - `getCertificateData(for:)` – reads from Keychain when establishing TLS connections.
+  - Data is not directly serialised with `Codable`; instead, uses Security APIs.
+
+### 4. External/Remote Storage
+
+- **TAK Server**: Actual authoritative state lives on TAK servers. The app’s local storage is mostly:
+  - Cache (chat history, contacts, tracks).
+  - Last-known configuration (servers, certs, UI settings).
+
+- **ArcGIS / Offline Maps**:
+  - Offline map downloads are managed by `OfflineMapManager` + `OfflineTileCache` and persisted as local tile packages; details reside in those service/storage classes.
 
 ---
 
 ## Validation Mechanisms
 
-Validation appears in three main tiers:
+Validation is distributed across several layers: model construction, parsing, and managers.
 
-1. **UI‑level Input Constraints**
-   
-   - Forms restrict options (pickers for server protocol, team roles).
-   - Use SwiftUI validation (disable buttons on invalid state, etc.).
+### 1. Parsing-Level Validation
 
-2. **Manager/Service-level Validation**
-   
-   - Methods guard against invalid inputs before processing or persisting.
-   
-   Examples (as documented):
-   
-   - `CertificateManager.importCertificate(from:password:)`:
-     - Throws `CertificateError` on bad data/password.
-   - `TAKService.connect(...)`:
-     - Validates host, port, and TLS parameters; updates `connectionStatus` accordingly.
-   - `PositionBroadcastService`:
-     - Validates `updateInterval` and `staleTime` (sane ranges, e.g., not zero/negative).
-   - `ChatService.sendTextMessage(_:to:)`:
-     - Ensures non‑empty text and a valid recipient; if offline, enqueues instead of sending.
+**CoTMessageParser**:
 
-3. **Model-level Sanity / Derived Validity**
-   
-   - Models themselves don’t enforce invariants, but computed properties communicate status.
-   
-   Example:
-   
-   ```swift
-   var isStale: Bool {
-       Date().timeIntervalSince(lastUpdate) > 300
-   }
-   ```
+- **Structural validation:**  
+  For each parser, required attributes must be present; otherwise returns `nil`.
 
-4. **Parsing/Deserialization Validation**
-   
-   - `CoTMessageParser`, `ChatXMLParser`, `KMLParser`:
-     - Handle malformed/partial data.
-     - Use optional fields, default values, or drop invalid events.
-   - Meshtastic Protobuf:
-     - `MeshtasticProtobufParser` verifies message types and structure.
+  ```swift
+  guard let uid = extractAttribute("uid", from: xml),
+        let typeStr = extractAttribute("type", from: xml),
+        let point = extractPoint(from: xml) else {
+      return nil
+  }
+  ```
 
-5. **Error Handling Patterns**
-   
-   - Many services are `ObservableObject` and surface errors as:
-     - `@Published var lastError: Error?` or `@Published var errorMessage: String?`.
-   - For critical operations (e.g., certificates, server connection):
-     - Throwing APIs + user‑visible alerts in views.
+- **Event type validation:**  
+  Events with unsupported `type` get mapped to `.unknown(eventType)`; some known, unhandled types are logged and ignored (`t-x-takp-v`, `t-x-d-d`).
+
+- **Chat parsing:**  
+  If `ChatXMLParser` fails to parse GeoChat, `parseChatMessage` returns `nil`, which drops the message before it reaches chat flows.
+
+**EmergencyAlert** parsing:
+
+- Validates that `<emergency>` tag exists and tries to extract a valid `type`; falls back to `.custom` if unknown.
+
+### 2. Model Construction Validation
+
+**Managers** enforce logical rules before creating models:
+
+- `ChatManager.sendMessage`:
+  - Validates conversation existence (`guard let conversation = getConversation...`).
+  - Sets proper `senderUID`/`recipientUID` from current state.
+  - Ensures duplicate message IDs don’t exist when processing inbound messages:
+
+    ```swift
+    guard !messages.contains(where: { $0.id == message.id }) else { return }
+    ```
+
+- `ServerManager.addServer` (from docs):
+  - Typically ensures nonempty host/port range.
+  - May deduplicate servers by host/port.
+
+### 3. Service-Level Validation
+
+Examples inferred from docs:
+
+- **ChatService**:
+  - When sending, ensures `takService.isConnected` or enqueues into `queuedMessages`.
+  - `processQueue()` updates `QueuedMessageStatus` and increments `retryCount`.
+  - Likely stops retry after N attempts and marks as `.failed`.
+
+- **PositionBroadcastService**:
+  - Checks if location permissions are granted and `isEnabled` before broadcasting.
+  - Validates update interval and stale time.
+
+- **CertificateEnrollmentService**:
+  - Validates certificate formats, CN, expiration.
+
+### 4. UI-Level Validation
+
+- Many views validate user input before invoking managers (as documented in feature docs):
+  - E.g., `ServerPickerView`, `NetworkPreferencesView`, `CASRequestView`, `MEDEVACRequestView` ensure required fields are filled.
+  - `ChatView` / `ConversationView` may disable send button on empty text.
+
+Error handling strategy:
+
+- **Parsing & Storage**: log errors with `print("Failed to ...: \(error)")`, then fallback to defaults (empty arrays).
+- **Managers**: Fail fast with `guard` and early returns; UI often shows a passive failure (no crash, operation just doesn’t occur).
+- **Network**: `TAKService` exposes human-readable `connectionStatus` and counters (`messagesSent`, etc.) for diagnosing issues.
 
 ---
 
 ## State Management Analysis
 
-### Core Pattern: MVVM with Combine
+State is primarily managed with **Combine** + `ObservableObject` managers, which act as feature-level view models.
 
-From `docs/Architecture.md`:
+### 1. Managers as ViewModels
 
-- **Views** (`Views/`, `Map/Controllers/`) use:
-  - `@ObservedObject` or `@EnvironmentObject` to subscribe to **Managers**.
-- **Managers** (ViewModels, in `Managers/`):
-  - Conform to `ObservableObject`.
-  - Use `@Published` for bindable properties.
-  - Delegate heavy work to Services and Storage.
-- **Services**:
-  - Some are `ObservableObject` when UI needs direct state, but often they are accessed via Managers.
+From `docs/API/Managers.md` and architecture:
 
-### Managers as State Hubs
+- Each manager:
+  - `class XManager: ObservableObject`
+  - `@Published` properties for UI-bound state.
+  - Singleton via `static let shared` or injected into views.
 
-Documented managers include:
+Examples:
 
-- `ServerManager`
-- `CertificateManager`
-- `ChatManager`
-- `CoTFilterManager`
-- `DrawingToolsManager`
-- `GeofenceManager`
-- `MeasurementManager`
-- `MeshtasticManager`
-- `OfflineMapManager`
-- `WaypointManager`
-- `DataPackageManager`
-- `MapStateManager` (for current map mode, overlays toggles)
+- **ChatManager**:
+  - `@Published var messages: [ChatMessage]`
+  - `@Published var conversations: [Conversation]`
+  - `@Published var participants: [ChatParticipant]`
+  - `@Published var unreadCount: Int`
+  - Also holds dependencies: `takService`, `locationManager`, `storage`.
 
-Common behavior:
+- **ServerManager**:
+  - `@Published var servers: [TAKServer]`
+  - `@Published var selectedServer: TAKServer?`
+  - `@Published var activeServerIndex: Int`
 
-1. **Initialization**
-   
-   - Some are singletons (`static let shared`).
-   - Others are injected into SwiftUI environment.
+- **PositionBroadcastService / TrackRecordingService / TeamService / GeofenceService**:
+  - Cohesive state specific to their domain (`isEnabled`, `isRecording`, `savedTracks`, `teams`, etc.).
 
-2. **State Synchronization**
-   
-   - On initialization, managers load persisted data (UserDefaults / disk).
-   - They subscribe to relevant Services via Combine or method callbacks.
+### 2. Lifecycle of State
 
-3. **Auto‑Save**
-   
-   - Use `didSet` on `@Published` properties:
-     - On change → call persistence (`saveX`, `persistY`).
+- **Initialization**:
+  - Managers often have `configure(...)` methods called from app bootstrap (`OmniTAKMobileApp.swift`) to wire dependencies:
+    - Example from docs:
 
-4. **UI‑Specific Derived State**
-   
-   - For example, `ChatManager`:
-     - Derived `unreadCount`, sorted `conversations`, currently open `Conversation`.
+      ```swift
+      func configure(takService: TAKService, chatManager: ChatManager) {
+          self.takService = takService
+          self.chatManager = chatManager
+      }
+      ```
 
-5. **Interaction with Services**
-   
-   - Managers abstract away services from views; e.g.:
-     
-     ```swift
-     func sendMessage(_ text: String, to recipient: String) {
-         let message = chatService.createMessage(text, recipient)
-         chatService.send(message)
-         persistence.save(message)
-     }
-     ```
-   
-   - This creates a clear data flow path: View → Manager → Service → TAKService/Storage.
+  - Managers that persist data load on startup:
+    - `ChatManager.configure` calls `loadMessages()` which uses `ChatPersistence`.
+    - `ServerManager` loads servers from `UserDefaults`.
 
-### Map & Overlay State
+- **Mutation**:
+  - Methods on managers mutate `@Published` arrays or properties.
+  - Many mutations trigger side effects:
+    - Save to persistence (`ChatPersistence`, `RouteStorageManager`).
+    - Send CoT via services.
+    - Update derived properties (e.g., `unreadCount`).
 
-- `MapStateManager` (in `Map/Controllers`) centralizes:
-  
-  - Active overlays (aka toggles for MGRS grid, compass, trail).
-  - Selection state (selected marker, selected track).
-  - Cursor mode / interaction mode.
+- **Observation**:
+  - Views bind to these managers with `@ObservedObject` or `@EnvironmentObject`.
+  - Combine automatically updates views when `@Published` changes.
 
-- Overlays like `BreadcrumbTrailOverlay`, `UnitTrailOverlay`, `MeasurementOverlay` read from:
-  
-  - Managers (`TrackRecordingService`, `MeasurementManager`).
-  - Domain models (e.g., `Track`, `Measurement`).
+### 3. Shared vs Local State
 
-These overlays are derived state only; they are recomputed from the underlying models when the managers’ `@Published` properties change.
+- **Global/Shared singletons**:
+  - `TAKService.shared`, `ChatService.shared`, `PositionBroadcastService.shared`, etc.
+  - `ChatManager.shared`, `ServerManager.shared`, etc.
+
+  Used where there is a clear single source of truth across the app.
+
+- **Injected instances**:
+  - Some views accept non-singleton `ObservableObject` references for testing or modularity.
+  - Feature docs emphasize dependency injection patterns.
+
+### 4. Caching
+
+- **Short-term in-memory cache**:
+  - `messages`, `conversations`, `participants`, `tracks`, etc. all live in managers as in-memory caches.
+  - Underlying services may maintain their own ephemeral cache (e.g. `OfflineTileCache` for map tiles).
+
+- **Long-term offline cache**:
+  - Persisted via JSON files and `UserDefaults` as described above.
+  - On startup, this state is loaded and rehydrated into managers.
 
 ---
 
 ## Serialization Processes
 
-### CoT & GeoChat XML
+Serialization/deserialization is central to three concerns:
 
-Files:
+1. **Network protocol (CoT XML).**
+2. **Local persistence (JSON).**
+3. **System integration (Keychain, iOS frameworks).**
 
-- `CoTMessageParser.swift`
-- `ChatCoTGenerator.swift`
-- `ChatXMLGenerator.swift`
-- `ChatXMLParser.swift`
+### 1. XML (CoT / GeoChat)
+
+**Outbound:**
+
+- Generators in `OmniTAKMobile/CoT/Generators`:
+  - `ChatCoTGenerator` for GeoChat.
+  - `GeofenceCoTGenerator`, `MarkerCoTGenerator`, `TeamCoTGenerator` for other message types.
+- XML is built manually as `String` with interpolation.
+- Time formatting uses `ISO8601DateFormatter` with `.withInternetDateTime` and `.withFractionalSeconds`.
+- Example from `ChatCoTGenerator` (see above).
 
 **Inbound:**
 
-- `TAKService` receives XML strings.
 - `CoTMessageParser`:
-  - Parses the XML DOM.
-  - Extracts attributes: `uid`, `type`, `time`, `start`, `stale`, `how`.
-  - Extracts location: `<point lat=".." lon=".." hae="..." ce="..." le="..."/>`.
-  - Extracts `<detail>` contents (callsign, team, etc.).
-  - Builds `CoTEvent` domain model.
-- `ChatXMLParser`:
-  - Interprets GeoChat CoT messages:
-    - XML → `ChatMessage` (including `coordinate` if present).
+  - Uses custom `extractAttribute`, regex matches, and simple parsing to avoid full DOM building for performance & simplicity.
+- `ChatXMLParser` (GeoChat):
+  - Uses `XMLParser` delegate pattern (`GeoChatXMLParser` inside `ChatCoTGenerator.swift` provides a second, simplified implementation).
+  - Reads attributes and inner text to construct `ChatMessage`.
 
-**Outbound:**
+**Key aspects:**
 
-- Generators (`ChatCoTGenerator`, `MarkerCoTGenerator`, `GeofenceCoTGenerator`, `TeamCoTGenerator`):
-  - Take domain models (`ChatMessage`, `Geofence`, team data) and produce:
-    - CoT XML strings adhering to TAK spec.
-- `ChatService`, `PositionBroadcastService`, `DigitalPointerService`, `RangeBearingService` call these generators before:
-  - `TAKService.send(cotMessage:priority:)`.
+- Transformation boundaries are explicit:
+  - XML enters/exits *only* inside CoT generators/parsers and `TAKService`.
+  - Rest of the app sees typed models.
 
-### JSON / Plist
+### 2. JSON (Persistence)
 
-- Used for:
-  
-  - Persisting domain models (Chat, Routes, Teams, Tracks, Preferences).
-  - REST API payloads (Elevation API, ArcGIS services).
+- **Serialization**:
+  - `JSONEncoder` with ISO‑8601 dates.
+  - Serializes directly from domain structs (no DTO layer).
+- **Deserialization**:
+  - `JSONDecoder` with matching date strategy.
+  - Defensive coding: `try?` or `do/catch` + fallback to empty arrays.
 
-- Mechanism:
-  
-  - All domain models conform to `Codable`.
-  
-  - Example from `ServerManager`:
-    
-    ```swift
-    if let encoded = try? JSONEncoder().encode(servers) {
-        UserDefaults.standard.set(encoded, forKey: "tak_servers")
-    }
-    ```
-  
-  - `JSONDecoder` used symmetrically on load.
+- These processes are used in:
+  - `ChatPersistence`
+  - `RouteStorageManager`
+  - `TeamStorageManager`
+  - Possibly other storage classes.
 
-- Some configuration may use plist encoders (e.g., ExportOptions plists for builds), but at runtime the bulk is JSON.
+### 3. UserDefaults
 
-### Protobuf (Meshtastic)
+- Uses `JSONEncoder`/`JSONDecoder` to store structured arrays in a single key (e.g., servers, queued messages).
+- **No custom date strategy** set explicitly in `ChatStorageManager`, but uses the default `JSONEncoder`/`JSONDecoder`; ensure date fields in `QueuedMessage` are safe.
 
-Files:
+### 4. Keychain / Certificates
 
-- `MeshtasticProtoMessages.swift`
-- `MeshtasticProtobufParser.swift`
-- `MeshtasticManager.swift`
-
-**Inbound:**
-
-- Raw protobuf bytes from Meshtastic radios.
-- `MeshtasticProtobufParser`:
-  - Decodes to message structs defined in `MeshtasticProtoMessages.swift`.
-  - Further transforms to OmniTAK domain:
-    - e.g., location packets → `CoTEvent` / markers.
-    - text packets → `ChatMessage`.
-
-**Outbound:**
-
-- `MeshtasticManager` can send messages by:
-  - Domain models → Meshtastic protobuf message objects → serialized bytes.
-
-### KML/KMZ
-
-Files:
-
-- `KMLParser.swift`
-- `KMZHandler.swift`
-- `KMLMapIntegration.swift`
-
-Process:
-
-- KMZ (.zip) is decompressed by `KMZHandler`.
-- `KMLParser`:
-  - XML → domain types: waypoints, routes, polygons.
-- `KMLMapIntegration`:
-  - Maps parsed structures to OmniTAK models (`Waypoint`, `Route`).
-
-### ArcGIS & Other REST/JSON
-
-Files:
-
-- `ArcGISFeatureService.swift`
-- `ArcGISPortalService.swift`
-- `ElevationAPIClient.swift`
-- `ElevationProfileService.swift`
-
-Pattern:
-
-- JSON requests/responses use Swift `Codable` DTOs (simple mirror models).
-- These DTOs are transformed into domain models for map overlays/measurements (e.g., `ElevationProfile`).
+- `CertificateManager` doesn’t use `Codable`; integrates directly with Security.framework to import/export `.p12` data.
 
 ---
 
 ## Data Lifecycle Diagrams
 
-Below are textual lifecycle diagrams for key subsystems, based only on existing documented behavior.
+Below are text diagrams describing the primary data lifecycles.
 
-### 1. CoT Event Lifecycle
+### 1. Incoming CoT Position Message → Map Marker
 
 ```text
-[TAK Server] --CoT XML--> [TAKService]
-   |
-   v
+TAK Server
+  |
+  v  (CoT XML: <event type="a-f-G-U-C" ...>)
+[TAKService]
+  - Receives raw XML from omnitak_mobile framework
+  - Forwards to CoTMessageParser.parse(xml:)
+  |
+  v
 [CoTMessageParser]
-   |  (parse XML)
-   v
-[CoTEvent domain model]
-   |
-   +--> [CoTEventHandler]
-   |       |
-   |       +--> [CoTFilterManager] (applies CoTFilterCriteria)
-   |       |
-   |       +--> Position events --> [EnhancedCoTMarker]
-   |       |                           |
-   |       |                           v
-   |       |                       [MapStateManager]
-   |       |                           |
-   |       |                           v
-   |       |                     [Map Views / Overlays]
-   |       |
-   |       +--> GeoChat messages --> [ChatService] -> [ChatManager]
-   |       |
-   |       +--> Tactical reports --> [MEDEVACModels, SPOTREPModels] etc.
-   |
-   v
-(optional) [Storage]
-    - Tracks (TrackRecordingService) to disk
-    - Chat via ChatPersistence
+  - Extracts "type" attribute -> "a-f-G-U-C"
+  - parsePositionUpdate(xml:) -> CoTEvent
+  |
+  v
+[CoTEventHandler / Map-related Managers]
+  - Update or create EnhancedCoTMarker for this UID
+  - Append coordinate/time to trail arrays
+  |
+  v
+[MapStateManager / EnhancedMapViewController]
+  - Maintains collection of markers
+  - Notifies SwiftUI views via ObservableObject / delegate
+  |
+  v
+SwiftUI Map Views (IntegratedMapView, MarkerAnnotationView)
+  - Render markers, trails, and overlays based on EnhancedCoTMarker state
 ```
 
-Outbound:
+**Data shapes across this flow:**
+
+- `String` (XML) → `CoTEvent` → `EnhancedCoTMarker` → view state.
+
+### 2. Outgoing Chat Message (Online)
 
 ```text
-[User action / Timer] --> [PositionBroadcastService / ChatService / others]
-    |
-    v
- (Domain models: CoTEvent/ChatMessage/etc.)
-    |
-    v
-[CoT Generators / XML Generators]
-    |
-    v
-      CoT XML string
-    |
-    v
-[TAKService.send(...)] -- network --> [TAK Server]
+User types message in ConversationView
+  |
+  v
+[ChatView / ConversationView]
+  - Calls ChatManager.sendMessage(text:to:)
+  |
+  v
+[ChatManager]
+  - Validates conversationId
+  - Constructs ChatMessage (status = .pending)
+  - Appends to local messages, updates Conversation
+  - Asks ChatCoTGenerator to generate XML
+  |
+  v
+[ChatCoTGenerator]
+  - Converts ChatMessage + Conversation to GeoChat CoT XML String
+  |
+  v
+[ChatManager]
+  - takService?.send(cotMessage: xml, priority: .high)
+  - updateMessageStatus(message.id, status: .sent)
+  |
+  v
+[TAKService]
+  - Passes XML to underlying networking layer
+  |
+  v
+TAK Server and remote TAK clients
 ```
 
-### 2. Chat Message Lifecycle
+**Persistence side-channel:**
 
-**Outbound:**
+- After message list changes, `ChatManager` may call `ChatPersistence.saveMessages(messages)` to persist new state.
+
+### 3. Outgoing Chat Message (Offline Queue)
 
 ```text
-[User types in ChatView]
-    |
-    v
-[ChatView] --send--> [ChatManager]
-    |
-    v
-[ChatService.createMessage()]
-    |
-    v
-[ChatMessage domain model (status: pending)]
-    |
-    +--> [ChatPersistence.save(message)]  (JSON on disk)
-    |
-    v
-[ChatService.send(message)]
-    |
-    v
-[ChatCoTGenerator / ChatXMLGenerator]
-    |
-    v
-[TAKService.send(cotMessage:...)]
-    |
-    v
-[Network]
+User sends message while TAKService.isConnected == false
+  |
+  v
+[ChatManager]
+  - Create ChatMessage (status = .pending)
+  - Generate GeoChat XML via ChatCoTGenerator
+  - Wrap into QueuedMessage { id, message, xmlPayload, retryCount=0, createdAt, status=.pending }
+  - Append QueuedMessage to queuedMessages
+  - ChatStorageManager.saveQueuedMessages(queuedMessages)
+  |
+  v
+Later: ChatService.processQueue()
+  - For each QueuedMessage with status .pending or .failed and retryCount < limit:
+      - Set status = .sending
+      - Attempt takService.send(cotMessage:)
+      - On success: status = .completed; update underlying ChatMessage.status = .sent
+      - On failure: increment retryCount; status = .failed or schedule retry
+  - ChatStorageManager.saveQueuedMessages(updatedArray)
 ```
 
-**Inbound:**
+**Data shapes:**
+
+- `ChatMessage` + XML `String` → `QueuedMessage` (`Codable`) → persisted to `UserDefaults` as JSON blob → rehydrated and retried.
+
+### 4. Chat History Load on App Start
 
 ```text
-[TAK Server] --GeoChat CoT XML--> [TAKService]
-    |
-    v
-[ChatXMLParser]
-    |
-    v
-[ChatMessage domain model (status: received)]
-    |
-    +--> [ChatPersistence.save(message)]
-    |
-    v
-[ChatService.messages, conversations] (Published)
-    |
-    v
-[ChatManager] (derived state: unreadCount, selected conversation)
-    |
-    v
-[ChatView / ConversationView] (UI updates via SwiftUI bindings)
+App Launch
+  |
+  v
+OmniTAKMobileApp.swift
+  - Instantiate ChatManager.shared, TAKService, etc.
+  - chatManager.configure(takService:..., locationManager:...)
+  |
+  v
+[ChatManager.configure]
+  - messages = ChatPersistence.loadMessages()
+  - conversations = ChatPersistence.loadConversations()
+  - participants = ChatPersistence.loadParticipants()
+  - queuedMessages = ChatStorageManager.loadQueuedMessages()
+  - subscribeToIncomingMessages() on TAKService / CoTEventHandler
+  |
+  v
+SwiftUI Chat Views
+  - Bind to ChatManager.@Published properties
+  - Immediately show persisted history
 ```
 
-### 3. Server Configuration Lifecycle
+### 5. Position Broadcast Lifecycle
 
 ```text
-[App Launch]
-    |
-    v
-[ServerManager.init]
-    |
-    v
-[UserDefaults] --JSON--> [servers: [TAKServer]]
-
-User edits:
-
-[TAKServersView] --add/update--> [ServerManager]
-    |
-    v
-  modify [servers]
-    |
-    v
-[ServerManager.saveServers()]
-    |
-    v
-[UserDefaults.set(JSON-encoded servers)]
-
-Connecting:
-
-[User selects server in TAKServersView]
-    |
-    v
-[ServerManager.selectServer(server)]
-    |
-    v
-[TAKService.connect(host, port, protocol, ...)]
-```
-
-### 4. Offline Map Region Lifecycle
-
-```text
-[User defines region in OfflineMapsView]
-    |
-    v
-[OfflineMapManager] creates OfflineMapRegion
-    |
-    v
-[TileDownloader.download(region)]
-    |
-    v
-[ArcGIS / tile source servers] --tile images--> [TileDownloader]
-    |
-    v
-[OfflineTileCache.store(tileX, tileY, zoom, imageData)]
-    |
-    v
-[OfflineMapManager] updates list of available regions (persisted via Codable)
-    |
-    v
-(Map Usage)
-[MapViewController] requests tiles
-    |
-    v
-[OfflineTileOverlay] -> [OfflineTileCache.fetch(...)] -> [UIImage for tile]
-    |
-    v
-[Map Rendering]
-```
-
-### 5. Track Recording Lifecycle
-
-```text
-[GPS Location Updates]
-    |
-    v
-[TrackRecordingService] (if isRecording)
-    |
-    v
-CLLocation -> TrackPoint
-    |
-    v
-Append to currentTrack.points
-    |
-    +--> Update live metrics (distance, speed, avg speed, elevationGain)
-    |
-    v
-[TrackOverlayRenderer / BreadcrumbTrailOverlay] reads currentTrack and draws
-
-Saving:
-
-[User taps "Save Track"]
-    |
-    v
-[currentTrack] appended to savedTracks
-    |
-    v
-[RouteStorageManager / TrackPersistence] encodes Track via Codable -> disk
-```
-
-### 6. Certificate Lifecycle
-
-```text
-[User selects .p12 in CertificateEnrollmentView]
-    |
-    v
-Read file as Data + password
-    |
-    v
-[CertificateManager.importCertificate(from:data, password)]
-    |
-    v
-Validate + parse certificate -> TAKCertificate model
-    |
-    +--> [Keychain] (saveCertificate)
-    |
-    v
-[certificates: [TAKCertificate]] updated (Published)
-
-Connection:
-
-[User chooses certificate for server]
-    |
-    v
-[CertificateManager.selectedCertificate]
-    |
-    v
-[TAKService.connect(..., certificateName, certificatePassword)]
-    |
-    v
-Handshake with TAK server using stored credentials
+User enables PLI broadcasting in PositionBroadcastView
+  |
+  v
+[PositionBroadcastService]
+  - isEnabled = true
+  - configure(takService, locationManager)
+  - startBroadcasting()
+  |
+  v
+Timer / background loop triggers broadcast
+  - Obtain current CLLocation from locationManager
+  - Build CoTEvent-like data (UID, type, time, coordinate, team, role)
+  - Generate CoT XML (via dedicated generator or inline)
+  |
+  v
+[TAKService.send(cotMessage:)]
+  - Send PLI message
+  - Update messagesSent, bytesSent, broadcastCount
+  |
+  v
+Remote clients see updated marker for user's UID
 ```
 
 ---
 
-This analysis is constrained to the code and documentation present in the repository under `/apps/omnitak`, especially `docs/Architecture.md` and `docs/API/*.md`, and the directory structure. All transformations and flows described are grounded in those existing definitions and patterns.
+This analysis is based strictly on the existing files and documentation under `apps/omnitak/OmniTAKMobile` and `apps/omnitak/docs`. It maps how data structures are defined, transformed between layers, and persisted on disk or transmitted over the network.

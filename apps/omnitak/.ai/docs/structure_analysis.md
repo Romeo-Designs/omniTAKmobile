@@ -2,797 +2,731 @@
 
 ## Architectural Overview
 
-The OmniTAK Mobile app under `OmniTAKMobile/` is organized as a modular SwiftUI iOS application implementing a **MVVM-style architecture**:
+OmniTAK Mobile is an iOS Swift/SwiftUI application organized around a clean layered architecture:
 
-- **Views (`Views/`, `UI/`)** – SwiftUI views for screens and reusable components.
-- **ViewModels / Managers (`Managers/`)** – `ObservableObject` classes holding feature state, exposing `@Published` properties for Combine-based reactive updates.
-- **Services (`Services/`)** – Business logic, TAK networking, geospatial and tactical functions, background operations, and external integrations.
-- **Models (`Models/`)** – Data structures (`struct`s, enums) representing domain concepts (CoT events, chats, routes, reports, etc.).
-- **Storage (`Storage/`)** – Persistence utilities for chat, drawings, routes, teams, etc.
-- **Map subsystem (`Map/`)** – Controllers, overlays, markers, and tile sources for the tactical map.
-- **Utilities (`Utilities/`)** – Shared calculators, converters, network helpers, and integration utilities (KML, multi-server).
-- **CoT subsystem (`CoT/`)** – CoT event handling, filtering, parsing, and generation for chat, markers, teams, and geofences.
-- **Meshtastic (`Meshtastic/`)** – Protobuf parsing and models for Meshtastic integration.
-- **Core app (`Core/`)** – App entry point, root composition, and bridging header for the Rust/xcframework integration.
+- **Presentation (Views/UI)**  
+  - `OmniTAKMobile/Core` – App entry point and root content (`OmniTAKMobileApp`, `ContentView`).  
+  - `OmniTAKMobile/Views` – Feature-specific SwiftUI screens (Chat, Map, Tracks, Settings, etc.).  
+  - `OmniTAKMobile/UI` – Reusable UI components (toolbars, widgets, radial menus, military symbology).
 
-Across the codebase:
+- **ViewModel / State (Managers)**  
+  - `OmniTAKMobile/Managers` – `ObservableObject` “manager” classes that play the ViewModel role in MVVM: they own feature state, coordinate user actions, and talk to services/storage.
 
-- **MVVM** is the primary pattern: `Views` bind to `Managers` (view models) which orchestrate `Services`.
-- **Reactive programming** via **Combine**: `@Published` on managers/services, `@ObservedObject` / `@EnvironmentObject` in views, and subscription chains between services.
-- **Protocol-oriented design**: Protocols define capabilities (e.g., CoT generators) to keep components loosely coupled.
-- **Subsystem layering**: Networking (TAKService, CoT parser/handler), Map (controllers + overlays), Storage (UserDefaults, Keychain, file system) are clearly separated and described in `docs/Architecture.md`.
+- **Domain / Business Logic (Services, CoT, Map, Utilities)**  
+  - `OmniTAKMobile/Services` – Core feature services: TAK networking, chat, PLI, tracks, navigation, measurement, video, etc.  
+  - `OmniTAKMobile/CoT` – Cursor-on-Target messaging: parsers, generators, event dispatcher.  
+  - `OmniTAKMobile/Map` – Map controllers, overlays, markers, tile sources; bridges UIKit/MapKit into SwiftUI.  
+  - `OmniTAKMobile/Utilities` – Common cross-cutting utilities (coordinate converters, measurement calculators, KML integration, network helpers).
 
-## Core Components
+- **Domain Model (Models)**  
+  - `OmniTAKMobile/Models` – Data structures for all domains (chat, CoT filters, tracks, routes, geofences, missions, Meshtastic, teams, video, etc.).
 
-### High-Level Modules / Directories
+- **Infrastructure (Storage, Networking, Integration)**  
+  - `OmniTAKMobile/Storage` – Persistence components (UserDefaults / filesystem / Keychain abstractions) for chat, routes, drawings, teams.  
+  - `OmniTAKMobile/Meshtastic` – Parsing and model helpers for Meshtastic radio integration.  
+  - `OmniTAKMobile/Utilities/Network` – Network monitor and multi-server federation logic.  
+  - `OmniTAKMobile/Utilities/Integration` + `/Parsers` – KML/KMZ integration.
 
-- `OmniTAKMobile/Core/`
-  
-  - `OmniTAKMobileApp.swift` – SwiftUI `@main` entry point, sets up root views and injects shared managers/services.
-  - `ContentView.swift` – Top-level container for main navigation and embedding the map / tools.
-  - `OmniTAKMobile-Bridging-Header.h` – Objective‑C bridging, likely for interacting with `OmniTAKMobile.xcframework` (Rust/C networking core).
+- **Bridging & Native Core**  
+  - `OmniTAKMobile/Core/OmniTAKMobile-Bridging-Header.h` – Exposes native/Objective‑C or C APIs to Swift.  
+  - `OmniTAKMobile.xcframework` – Prebuilt native library (Rust + C header `omnitak_mobile.h`) exposing low-level TAK/mobile core functionality used by `TAKService` and related networking code.
 
-- `OmniTAKMobile/Views/`
-  
-  - Screen-level SwiftUI views for most user-facing features:
-    - Connectivity & configuration: `TAKServersView`, `ServerPickerView`, `CertificateEnrollmentView`, `NetworkPreferencesView`, `SettingsView`, `QuickConnectView`.
-    - Map tools & overlays: `Map3DSettingsView`, `CompassOverlayView`, `MGRSGridToggleView`, `MeasurementToolView`, `DrawingToolsPanel`, `DrawingPropertiesView`, `RadialMenuView`, `RangeRingConfigView`, `RegionSelectionView`, `ScaleBarView`.
-    - Tactical features: `BloodhoundView`, `DigitalPointerView`, `PositionBroadcastView`, `TrackRecordingView`, `TrackListView`, `NavigationDrawer`, `TurnByTurnNavigationView`, `LineOfSightView`, `ElevationProfileView`.
-    - Reports & mission tools: `CASRequestView`, `MEDEVACRequestView`, `SPOTREPView`, `SALUTEReportView`, `MissionPackageSyncView`, `DataPackageView`, `KMLImportView`.
-    - Collaboration: `ChatView`, `ConversationView`, `ContactListView`, `ContactDetailView`, `TeamManagementView`, `CoTUnitListView`, `SignalHistoryView`.
-    - Misc & onboarding: `FirstTimeOnboarding`, `AboutView`, `PluginsListView`, `OfflineMapsView`, `WaypointListView`, `RoutePlanningView`, `VideoFeedListView`, `VideoPlayerView`, `PhotoPickerView`.
+The documented **architectural pattern is MVVM** (Model–View–ViewModel) with:
 
-- `OmniTAKMobile/UI/`
-  
-  - `Components/` – Shared UI pieces:
-    - Toolbars & quick actions: `ATAKBottomToolbar_Modified.swift`, `QuickActionToolbar.swift`, `DataPackageButton.swift`, `MeasurementButton.swift`, `TrackRecordingButton.swift`, `VideoStreamButton.swift`.
-    - Status & connection: `ConnectionStatusWidget.swift`, `SharedUIComponents.swift`.
-  - `RadialMenu/` – Radial context menu UX around map:
-    - `RadialMenuView` (view), `RadialMenuButton`, `RadialMenuItemView`.
-    - Behavior & coordination: `RadialMenuActionExecutor`, `RadialMenuGestureHandler`, `RadialMenuMapCoordinator`, `RadialMenuPresets`, `RadialMenuAnimations`.
-  - `MilStd2525/` – Symbology:
-    - `MilStd2525Symbols.swift`, `MilStd2525MarkerView`, `MilStd2525SymbolView` manage military standard 2525 symbol rendering and selection.
+- SwiftUI Views as the View layer.  
+- “Manager” classes (`Managers/`) as ViewModels (`ObservableObject` with `@Published` state).  
+- Services (`Services/`) as domain/business layer.  
+- Models (`Models/`) as pure data structures.
 
-- `OmniTAKMobile/Managers/` (ViewModels)
-  
-  - Central state/control for each feature (see next sections for details).
+Reactive flows are implemented via **Combine** (`@Published`, `@ObservedObject`, `@EnvironmentObject`), with supplementary use of **delegate pattern** and **NotificationCenter** for some asynchronous flows.
 
-- `OmniTAKMobile/Services/`
-  
-  - Domain-specific services for TAK networking, geospatial calculations, mission tools, etc. (detailed in Service Definitions).
+Feature boundaries are primarily **feature-oriented** (chat, map, tracks, PLI, offline maps, etc.), cutting through the standard MVVM layers.
 
-- `OmniTAKMobile/Models/`
-  
-  - Typed data representations for:
-    - CoT, Chat, Teams, Tracks, Routes, Waypoints.
-    - CAS/MEDEVAC/SPOTREP etc. tactical reports.
-    - Offline maps, missions, measurement, video streams, Meshtastic, etc.
-
-- `OmniTAKMobile/Map/`
-  
-  - `Controllers/`
-    - `EnhancedMapViewController`, `MapViewController`, `Map3DViewController`, `IntegratedMapView` – UIKit/MapKit (and possibly 3D) controllers.
-    - `EnhancedMapViewRepresentable` – SwiftUI bridge (`UIViewControllerRepresentable`).
-    - `MapOverlayCoordinator`, `MapStateManager`, `MapContextMenus`, `MapCursorMode` – map state, overlays, and interaction mode management.
-  - `Markers/`
-    - `CustomMarkerAnnotation`, `MarkerAnnotationView`, `EnhancedCoTMarker` – marker types, annotation views, and enriched CoT marker data.
-  - `Overlays/`
-    - `BreadcrumbTrailOverlay`, `UnitTrailOverlay`, `TrackOverlayRenderer`, `MeasurementOverlay`, `RangeBearingOverlay`, `MGRSGridOverlay`, `CompassOverlay`, `VideoMapOverlay`, `RadialMenuMapOverlay`, `OfflineTileOverlay`.
-  - `TileSources/`
-    - `ArcGISTileSource`, `OfflineTileCache`, `TileDownloader` – map tile sourcing and caching.
-
-- `OmniTAKMobile/CoT/`
-  
-  - `CoTEventHandler.swift` – routes parsed CoT events to managers/services.
-  - `CoTFilterCriteria.swift` – filter model for event types / affiliations.
-  - `CoTMessageParser.swift` – low-level CoT XML parsing.
-  - `Generators/` – CoT event generation for higher-level concepts:
-    - `ChatCoTGenerator`, `GeofenceCoTGenerator`, `MarkerCoTGenerator`, `TeamCoTGenerator`.
-  - `Parsers/`
-    - `ChatXMLParser`, `ChatXMLGenerator` – GeoChat-specific CoT/Chat transformations.
-
-- `OmniTAKMobile/Storage/`
-  
-  - `ChatPersistence`, `ChatStorageManager` – chat history and attachment persistence.
-  - `DrawingPersistence` – saving/restoring drawing overlays.
-  - `RouteStorageManager`, `TeamStorageManager` – route and team persistence.
-
-- `OmniTAKMobile/Utilities/`
-  
-  - `Calculators/MeasurementCalculator` – geometric distance/area calculations.
-  - `Converters/MGRSConverter`, `BNGConverter` – grid coordinate transformations.
-  - `Integration/KMLMapIntegration`, `KMLOverlayManager` – KML/KMZ loading into the map.
-  - `Parsers/KMLParser`, `KMZHandler` – raw KML/KMZ parsing.
-  - `Network/MultiServerFederation`, `NetworkMonitor` – handling multiple TAK servers and network reachability/health.
-
-- `OmniTAKMobile/Meshtastic/`
-  
-  - `MeshtasticProtoMessages`, `MeshtasticProtobufParser` – Meshtastic mesh radio protocol support.
-
-- `OmniTAKMobile/Resources/Documentation/`
-  
-  - Feature-specific documentation and shared Swift interfaces for examples and integration references.
+---
 
 ## Core Components
 
-### Managers (ViewModel Layer)
+### 1. App Core / Entry
 
-Managers are the primary state holders for features, bridging Views and Services (see `docs/API/Managers.md`):
+**Files:**
+- `OmniTAKMobile/Core/OmniTAKMobileApp.swift`  
+  - SwiftUI `@main` app entry; wires root environment objects and bootstrap services/managers.  
+- `OmniTAKMobile/Core/ContentView.swift`  
+  - Root view hosting navigation shell, map integration, and primary tools UI.  
+- `OmniTAKMobile/Resources/Info.plist` & entitlements  
+  - Declares capabilities (networking, background modes, certificates, etc.).
 
-- **ServerManager**
-  
-  - Responsibility: Manage TAK server configurations and the active server.
-  - Key state: `servers: [TAKServer]`, `selectedServer`, `activeServerIndex`.
-  - Behaviors: Add/remove/update servers; select server; persist configuration to `UserDefaults`.
+**Responsibility:**
+- Owns global dependency graph (injects `TAKService`, `ServerManager`, `ChatManager`, etc. into environment).  
+- Sets up initial routing (main map, onboarding, server selection).
 
-- **CertificateManager**
-  
-  - Responsibility: Manage client TLS certificates for TAK connections.
-  - Key state: `certificates: [TAKCertificate]`, `selectedCertificate`.
-  - Behaviors: Import/save/delete certificates, retrieve Keychain data, produce `SecIdentity` for TLS, validate expiry.
+---
 
-- **ChatManager**
-  
-  - Responsibility: Manage conversations, messages, and participants for chat UI.
-  - Key state: `conversations`, `activeConversation`, `unreadCount`, `participants`.
-  - Behaviors: Send/receive messages, handle photo messages, create conversations, mark read/delete, update participant location and presence from CoT.
+### 2. Views (SwiftUI Presentation Layer)
 
-- **CoTFilterManager**
-  
-  - Responsibility: Manage filter criteria for incoming CoT events.
-  - Key state: `activeFilters: [CoTFilterCriteria]`, `filterEnabled`.
-  - Behaviors: Add/remove/enable/disable filters, used by CoT event handling and map display.
+**Directory:** `OmniTAKMobile/Views`
 
-- **DrawingToolsManager**
-  
-  - Responsibility: Manage active drawing tools, shapes, and styles on the map.
-  - Coordinates with: `DrawingPersistence`, map overlays.
+Each SwiftUI view represents a feature screen or panel, e.g.:
 
-- **GeofenceManager**
-  
-  - Responsibility: Geofencing areas and events.
-  - Likely interacts with: `GeofenceService`, `GeofenceModels`, CoT generators.
+- Map & Tools:
+  - `ATAKToolsView.swift`, `NavigationDrawer.swift`, `MarkerInfoPanel.swift`, `CompassOverlayView.swift`, `ScaleBarView.swift`.
+- Networking & Servers:
+  - `TAKServersView.swift`, `ServerPickerView.swift`, `QuickConnectView.swift`, `NetworkPreferencesView.swift`.
+- Chat & Messaging:
+  - `ChatView.swift`, `ConversationView.swift`, `ContactListView.swift`, `ContactDetailView.swift`, `PhotoPickerView.swift`.
+- Tactical Features:
+  - `BloodhoundView.swift`, `DigitalPointerView.swift`, `EmergencyBeaconView.swift`, `SPOTREPView.swift`, `SALUTEReportView.swift`, `MEDEVACRequestView.swift`.
+- Spatial Tools:
+  - `MeasurementToolView.swift`, `RoutePlanningView.swift`, `LineOfSightView.swift`, `ElevationProfileView.swift`, `GeofenceManagementView.swift`.
+- Data & Offline:
+  - `DataPackageView.swift`, `DataPackageImportView.swift`, `OfflineMapsView.swift`, `MissionPackageSyncView.swift`, `KMLImportView.swift`.
+- Tracks & Waypoints:
+  - `TrackListView.swift`, `TrackRecordingView.swift`, `WaypointListView.swift`, `RegionSelectionView.swift`.
+- Meshtastic / Radios:
+  - `MeshtasticConnectionView.swift`, `MeshtasticDevicePickerView.swift`, `MeshTopologyView.swift`.
+- Video:
+  - `VideoFeedListView.swift`, `VideoPlayerView.swift`.
+- Settings & Onboarding:
+  - `SettingsView.swift`, `FirstTimeOnboarding.swift`, `AboutView.swift`, `PluginsListView.swift`, `TeamManagementView.swift`, `CertificateEnrollmentView.swift`, `CertificateManagementView.swift`.
 
-- **MeasurementManager**
-  
-  - Responsibility: Measurement tool state (distance/area, currently measured points).
-  - Used by `MeasurementService` and map overlays.
+**Responsibility:**
+- Pure UI composition and user interaction handling.  
+- Bind to one or more `ObservableObject` managers/services using `@ObservedObject` or `@EnvironmentObject`.  
+- No direct business logic; delegate work to managers/services.
 
-- **MeshtasticManager**
-  
-  - Responsibility: Manage Meshtastic connections, devices, and topology.
-  - Uses Meshtastic models and parsers.
+---
 
-- **OfflineMapManager**
-  
-  - Responsibility: Manage offline regions, tile downloads, and caching.
-  - Interfaces: `OfflineMapModels`, `OfflineTileCache`, `TileDownloader`, `OfflineMapManager` views.
+### 3. ViewModels / Managers
 
-- **WaypointManager**
-  
-  - Responsibility: Manage user-defined waypoints, lists, and selection.
-  - Integrates with `WaypointModels` and map overlays.
+**Directory:** `OmniTAKMobile/Managers`
 
-- **DataPackageManager**
-  
-  - Responsibility: Manage TAK data packages (import/export, listing, selection).
-  - Backed by `DataPackageModels` and relevant storage.
+Representative managers (not exhaustive):
 
-Other feature-specific managers (in `Managers/`) mirror this pattern: one `ObservableObject` per feature with clear boundaries.
+- `ChatManager.swift` – Manages chat conversations, unread counts, and UI-facing chat state.  
+- `ServerManager.swift` – Manages list of TAK servers, connection preferences, and certificate association.  
+- `CertificateManager.swift` – Handles certificate lifecycle and UI state (install, select, validate).  
+- `CoTFilterManager.swift` – Manages CoT filter rules (by type, team, distance) for map and lists.  
+- `DrawingToolsManager.swift` – State for drawing mode, selected tool, and overlays.  
+- `GeofenceManager.swift` – Geofence definitions, activation, and monitoring state.  
+- `MeasurementManager.swift` – Core measurement state (active measurement, units).  
+- `OfflineMapManager.swift` – Manages offline tile packages, region downloads, and selection.  
+- `WaypointManager.swift` – Waypoint lists, selection, import/export.  
+- `MeshtasticManager.swift` – Manages Meshtastic connection state and routing into domain models.  
+- `DataPackageManager.swift` – Import, list, and sync status for mission/data packages.
 
-### Services (Business Logic Layer)
+**Responsibility:**
+- Serve as **ViewModels**:  
+  - Own `@Published` UI state.  
+  - Interpret user actions coming from Views, call services/storage.  
+  - Encapsulate coordination logic between multiple services (e.g., Chat + TAK + Storage).  
+- Often depend on:
+  - One or more `Services` for business logic.  
+  - `Storage` components for persistence.  
+  - CoT/Map subsystems for event routing and visualization.
 
-Key service groups (documented in `docs/API/Services.md` and in `OmniTAKMobile/Services/`):
+---
 
-- **Core Networking / TAK**
-  
-  - `TAKService` – central TAK networking coordinator (connect/disconnect, send CoT, track bytes and messages, expose connection status).
-  - Integrates lower-level TCP/TLS, CoT parsing, and event routing.
+### 4. Services (Business Logic Layer)
 
-- **Communication & Collaboration**
-  
-  - `ChatService` – message creation, queueing, retries, and interaction with TAKService and storage.
-  - `PhotoAttachmentService` – image compression, file handling, and sending attachments.
-  - `TeamService` – team lifecycle: create team, invite users, leave teams, broadcast team messages.
+**Directory:** `OmniTAKMobile/Services`  
+Documented in depth by `/docs/API/Services.md`.
 
-- **Location & Tracking**
-  
-  - `PositionBroadcastService` – PLI broadcasting with configurable intervals and user/team metadata.
-  - `TrackRecordingService` – manages live track recording, pause/resume, saving, export to GPX/KML.
-  - `EmergencyBeaconService` – high-frequency emergency beacon CoT messages with stateful activation.
+Key services:
 
-- **Map & Geospatial**
-  
-  - `MeasurementService` – orchestrates measurement operations, overlays, and annotations; uses `MeasurementManager` and `MeasurementCalculator`.
-  - `RangeBearingService` – creates range/bearing lines and calculates distances/bearings.
-  - `LineOfSightService`, `TerrainVisualizationService`, `ElevationProfileService` – terrain analysis, elevation queries, profile generation (via `ElevationAPIClient`).
-  - `ArcGISFeatureService`, `ArcGISPortalService` – ArcGIS feature querying and portal access.
-  - `NavigationService`, `RoutePlanningService`, `TurnByTurnNavigationService` – route creation, pathfinding, and live navigation.
-  - `OfflineMapService` responsibilities are partly handled by `OfflineMapManager` + tile services.
+- **Core Networking:**
+  - `TAKService.swift` – Central networking and CoT message pipe to TAK server.  
+    - Publishes connection status, message/byte counters.  
+    - Methods: `connect(host:port:protocolType:)`, `disconnect()`, `send(cotMessage:priority:)`, `reconnect()`.
 
-- **Tactical & Mission Services**
-  
-  - `BloodhoundService` – likely search-and-track or “bloodhound” guidance to targets.
-  - `BreadcrumbTrailService` – manage breadcrumbs, separate from generic track recording.
-  - `EchelonService` – handle echelon hierarchies and unit structures.
-  - `GeofenceService` – evaluate locations against geofences, generate events and CoT.
-  - `MissionPackageSyncService` – sync mission packages with TAK backend.
-  - `SPOTREP` / CAS / MEDEVAC business logic mostly embedded in related services and managers.
+- **Communication & Coordination:**
+  - `ChatService.swift` – Chat business logic: message creation, send/queue/retry, conversation organization.  
+  - `PositionBroadcastService.swift` – PLI broadcasting; maintains UID, callsign, intervals, and sends self-position CoT.  
+  - `TrackRecordingService.swift` – GPS track recording, pause/resume/export to GPX/KML.  
+  - `EmergencyBeaconService.swift` – SOS beacon with rapid PLI updates.  
+  - `TeamService.swift` – Team membership and messaging; invites, team broadcasts.  
+  - `PhotoAttachmentService.swift` – Compression, packaging, and sending of image attachments.
 
-- **Other Services**
-  
-  - `CertificateEnrollmentService` – certificate enrollment workflows.
-  - `NavigationService` / `TurnByTurnNavigationService` – integration with routing/turn-by-turn APIs.
-  - `PhotoAttachmentService`, `VideoStreamService` – media handling for imagery and live video.
-  - `DigitalPointerService` – “laser pointer” style map coordination.
+- **Map / Spatial Services:**
+  - `MeasurementService.swift` – Manages measurement operations and underlying overlays.  
+  - `RangeBearingService.swift` – Range & bearing computation and line management.  
+  - `LineOfSightService.swift` – Line-of-sight analysis (likely uses elevation data).  
+  - `ElevationProfileService.swift` – Computes elevation profiles for paths.  
+  - `RoutePlanningService.swift` – Builds and modifies routes.  
+  - `NavigationService.swift` & `TurnByTurnNavigationService.swift` – Navigation path following and guidance.  
+  - `BreadcrumbTrailService.swift` & `TrackRecordingService.swift` – Track rendering and metrics.
 
-### Models (Data Layer)
+- **Tactical / Specialized:**
+  - `BloodhoundService.swift` – Target “bloodhound” tracking / directional guidance.  
+  - `DigitalPointerService.swift` – Laser-pointer-like map coordination.  
+  - `EchelonService.swift` – Unit/echelon classifications and hierarchies.  
+  - `EmergencyBeaconService.swift` – As above.  
+  - `VideoStreamService.swift` – Video feed discovery and stream management.
 
-Models are defined as Swift `struct`s, typically `Identifiable`, `Codable`, and `Equatable` (see `docs/API/Models.md`):
+- **Data & External Integration:**
+  - `MissionPackageSyncService.swift` – Sync mission/data packages with server.  
+  - `ArcGISFeatureService.swift`, `ArcGISPortalService.swift` – ArcGIS feature and portal integration.  
+  - `ElevationAPIClient.swift` – External elevation API.  
+  - `CertificateEnrollmentService.swift` – Certificate enrollment workflows.  
+  - `OfflineMap` related services integrate with tile sources and storage.
 
-- **CoT Models**
-  
-  - `CoTEvent` – canonical CoT event with full time, location, error, and detail attributes.
-  - `EnhancedCoTMarker` – map-oriented enrichment of CoT data with trail, status, and metrics.
+**Responsibility:**
+- Encapsulate domain rules and workflows independent of UI.  
+- Abstract external systems (TAK server, ArcGIS, Meshtastic, etc.).  
+- Expose `ObservableObject` state where UI must reflect ongoing operations (loading, errors, active entities).  
+- Primarily invoked from managers; occasionally directly from views for simple utilities.
 
-- **Chat Models**
-  
-  - `ChatMessage`, `MessageStatus`, `Conversation`, `ChatParticipant`, `ImageAttachment`.
+---
 
-- **Map & Navigation**
-  
-  - `Waypoint`, `Route`, `PointMarker`, `Track`, `RangeBearingLine`, measurement-related entities.
+### 5. CoT Subsystem
 
-- **Tactical Reports / Mission**
-  
-  - `CASRequest`, `MEDEVACRequest`, `SPOTREPReport`, SALUTE and other report types.
-  - `MissionPackage` and related mission models in `MissionPackageModels.swift`.
+**Directory:** `OmniTAKMobile/CoT`
 
-- **Team & Identity**
-  
-  - `Team`, `TeamMember`, and related role/color definitions.
-  - `TAKServer`, `TAKCertificate` models for connectivity and certificates.
+- `CoTMessageParser.swift` – Parses inbound raw XML into structured CoT events.  
+- `CoTEventHandler.swift` – Central event router: receives parsed events and distributes to managers/services (chat, tracks, emergency, team, etc.) via Combine publishers and `NotificationCenter`.  
+- `CoTFilterCriteria.swift` – Data model for CoT filter rules.
 
-- **Offline Maps, Elevation, Video, Meshtastic**
-  
-  - `OfflineRegion`, `ElevationProfile`, `VideoStream`, various Meshtastic message models, etc.
+Generators:
+- `ChatCoTGenerator.swift` – Converts chat messages to GeoChat CoT XML.  
+- `GeofenceCoTGenerator.swift` – CoT for geofence events.  
+- `MarkerCoTGenerator.swift` – Map markers to CoT.  
+- `TeamCoTGenerator.swift` – Team messages/status to CoT.
+
+Parsers:
+- `ChatXMLParser.swift`, `ChatXMLGenerator.swift` – Specialized chat XML parsing/generation.
+
+**Responsibility:**
+- Provide a clear boundary between wire format (XML) and internal domain models.  
+- Centralize CoT handling so that feature-level code uses structured models instead of raw XML.
+
+---
+
+### 6. Map Subsystem
+
+**Directory:** `OmniTAKMobile/Map`
+
+Controllers (`Controllers/`):
+- `EnhancedMapViewController.swift`, `MapViewController.swift`, `Map3DViewController.swift`, `Experimental`/`Modified` variants.  
+- `IntegratedMapView.swift` & `EnhancedMapViewRepresentable.swift` – SwiftUI/UIViewController bridges.  
+- `MapOverlayCoordinator.swift` – Coordinates overlays: MGRS grid, drawing shapes, tracks, ranges, video overlays.  
+- `MapContextMenus.swift`, `MapCursorMode.swift`, `MapStateManager.swift` – Context menus, cursor modes (e.g., select vs pan vs measurement), and current map-state.
+
+Markers (`Markers/`):
+- `CustomMarkerAnnotation.swift`, `EnhancedCoTMarker.swift`, `MarkerAnnotationView.swift` – Custom MapKit annotations representing CoT entities.
+
+Overlays (`Overlays/`):
+- `BreadcrumbTrailOverlay.swift`, `UnitTrailOverlay.swift`, `TrackOverlayRenderer.swift` – Track/breadcrumb visualizations.  
+- `MGRSGridOverlay.swift` – Military grid overlay.  
+- `MeasurementOverlay.swift`, `RangeBearingOverlay.swift` – Measurement and range/bearing visualizations.  
+- `OfflineTileOverlay.swift`, `VideoMapOverlay.swift`, `RadialMenuMapOverlay.swift`, `CompassOverlay.swift`.
+
+Tile Sources (`TileSources/`):
+- `ArcGISTileSource.swift` – ArcGIS basemap integration.  
+- `OfflineTileCache.swift`, `TileDownloader.swift` – Offline tile management and download.
+
+**Responsibility:**
+- Wrap MapKit / 3D mapping into a modular subsystem.  
+- Concentrate map interaction policies (what overlays to show, how context menus behave).  
+- Decouple pure geometric rendering from domain models by using overlay/annotation classes.
+
+---
+
+### 7. Models (Domain Data)
+
+**Directory:** `OmniTAKMobile/Models`
+
+Key model groups:
+
+- Tactical / Map:
+  - `TrackModels.swift`, `RouteModels.swift`, `WaypointModels.swift`, `PointMarkerModels.swift`, `LineOfSightModels.swift`, `ElevationProfileModels.swift`, `OfflineMapModels.swift`, `GeofenceModels.swift`, `MeasurementModels.swift`, `TerrainVisualizationService` models.
+
+- Communication:
+  - `ChatModels.swift`, `TeamModels.swift`, `VideoStreamModels.swift`, `SPOTREPModels.swift`, `MEDEVACModels.swift`, `MissionPackageModels.swift`.
+
+- Protocol & Filters:
+  - `CoTFilterModel.swift`, `CASRequestModels.swift`, `EchelonModels.swift`, `RadialMenuModels.swift`.
+
+- Integration:
+  - `ArcGISModels.swift`, `MeshtasticModels.swift`, `MissionPackageModels.swift`.
+
+**Responsibility:**
+- Act as pure data containers (`Codable`, `Identifiable` as noted in docs).  
+- Represent domain entities consistently across services, managers, storage, and views.  
+- No business logic beyond trivial computed properties.
+
+---
+
+### 8. Storage / Persistence
+
+**Directory:** `OmniTAKMobile/Storage`
+
+- `ChatPersistence.swift`, `ChatStorageManager.swift` – Local chat history, indexing, migration of message data.  
+- `DrawingPersistence.swift` – Persist drawing shapes / overlays.  
+- `RouteStorageManager.swift` – Persist routes and navigation plans.  
+- `TeamStorageManager.swift` – Persist team membership/metadata.
+
+**Responsibility:**
+- Abstract actual storage mechanisms (UserDefaults, Keychain, file system).  
+- Provide save/load/search APIs to managers and services.  
+- Hide serialization specifics from higher layers.
+
+---
+
+### 9. Utilities & Integration
+
+**Directory:** `OmniTAKMobile/Utilities`
+
+- Calculators:
+  - `MeasurementCalculator.swift` – Geodesic distance/area/bearing calculations; used by `MeasurementService`, `RangeBearingService`.
+
+- Converters:
+  - `MGRSConverter.swift`, `BNGConverter.swift` – Coordinate system conversions.
+
+- Network:
+  - `NetworkMonitor.swift` – Observes network reachability, updates managers/services.  
+  - `MultiServerFederation.swift` – Handles cross-server routing/federation behavior.
+
+- KML Integration:
+  - `KMLParser.swift`, `KMZHandler.swift` – Parse KML/KMZ files into internal models/overlays.  
+  - `KMLMapIntegration.swift`, `KMLOverlayManager.swift` – Integrate parsed KML into map overlays and UI.
+
+**Responsibility:**
+- Provide shared, framework-agnostic utilities supporting multiple subsystems.  
+- Keep domain services & managers focused by pushing generic logic here.
+
+---
+
+### 10. UI Components & Radial Menu
+
+**Directory:** `OmniTAKMobile/UI`
+
+Components (`Components/`):
+- `ATAKBottomToolbar_Modified.swift`, `QuickActionToolbar.swift`, `ConnectionStatusWidget.swift`, `DataPackageButton.swift`, `MeasurementButton.swift`, `TrackRecordingButton.swift`, `VideoStreamButton.swift`, `SharedUIComponents.swift`.
+
+Radial Menu (`RadialMenu/`):
+- `RadialMenuButton.swift`, `RadialMenuItemView.swift`, `RadialMenuAnimations.swift`, `RadialMenuGestureHandler.swift`, `RadialMenuMapCoordinator.swift`, `RadialMenuPresets.swift`, `RadialMenuActionExecutor.swift`.
+
+Mil Std 2525 (`MilStd2525/`):
+- `MilStd2525Symbols.swift` – Military standard symbology catalog/lookup.
+
+**Responsibility:**
+- Encapsulate reusable UI building blocks and complex interaction patterns (radial menu on the map).  
+- Keep Views thin by extracting complex visuals and interaction logic into dedicated components.
+
+---
 
 ## Service Definitions
 
-Below is a structural summary of the **most central and cross-cutting services** (based on `docs/API/Services.md` and project layout). This focuses on responsibilities and interaction boundaries rather than full API detail.
+This section consolidates key service responsibilities and domains (based on `/docs/API/Services.md` and `Services/` directory).
 
-### TAKService (`Services/TAKService.swift`)
+### Core Services
 
-- **Role**: Authoritative TAK networking service.
-- **Responsibilities**:
-  - Maintain TCP/UDP/TLS connection to TAK servers.
-  - Manage message send/receive counts and byte statistics.
-  - Expose reactive connection state (`isConnected`, `connectionStatus`) for UI and managers.
-  - Provide API to:
-    - Connect/disconnect/reconnect to a configured TAK server.
-    - Send CoT XML messages with priority.
-- **Collaborators**:
-  - `ServerManager` (which server to connect to).
-  - `CertificateManager` / `CertificateEnrollmentService` (TLS credentials).
-  - `CoTMessageParser` & `CoTEventHandler` (incoming CoT pipeline).
-  - Feature services that send messages: `ChatService`, `PositionBroadcastService`, `DigitalPointerService`, `EmergencyBeaconService`, etc.
+- **TAKService**
+  - **Role:** Core network manager to TAK server; single connection pipeline for all CoT messages.  
+  - **Key state:** `isConnected`, `connectionStatus`, message/byte counters.  
+  - **Capabilities:** Connect/disconnect/reconnect, send CoT with priority, manage TLS and certificate usage.
 
-### CoTEvent Pipeline (`CoT/` + Services)
+- **ChatService**
+  - **Role:** Chat messaging engine.  
+  - **Capabilities:**
+    - Configure with `TAKService` and `LocationManager`.  
+    - Build GeoChat CoT XML; send text and location messages.  
+    - Manage queued messages, retry on reconnect, maintain list of conversations and participants.
 
-- **CoTMessageParser**
-  
-  - Input: Raw bytes / strings from TAKService.
-  - Output: Structured CoT events.
-  - Responsibility: Convert CoT XML into `CoTEvent` and related models, identify event types.
+### Location & Tracking
 
-- **CoTEventHandler**
-  
-  - Input: Parsed CoT events.
-  - Output: Delegated actions and notifications.
-  - Responsibilities:
-    - Route CoT events to correct managers: e.g., Chat, TrackRecording, EmergencyBeacon, Team, etc.
-    - Apply filters from `CoTFilterManager`.
-    - Publish updates via Combine and `NotificationCenter`.
+- **PositionBroadcastService**
+  - **Role:** Periodic PLI broadcasting.  
+  - **Capabilities:** Start/stop broadcasting, adjust intervals, force manual broadcast, configure identity/team metadata.
 
-- **CoT Generators (Chat/Geofence/Marker/Team)**
-  
-  - Responsibility: Encapsulate CoT XML creation logic for different features, shielding services from XML structure details.
+- **TrackRecordingService**
+  - **Role:** Record GPS breadcrumb trails and metrics.  
+  - **Capabilities:** Start/pause/resume/stop tracks, compute live stats, export tracks to GPX/KML.
 
-### ChatService (`Services/ChatService.swift`)
+- **EmergencyBeaconService**
+  - **Role:** Emergency beaconing with high-frequency PLIs.  
+  - **Capabilities:** Activate/cancel beacon, send beacon updates with special CoT types.
 
-- **Role**: Chat business logic and message lifecycle.
-- **Responsibilities**:
-  - Create CoT/GeoChat messages from user input and location.
-  - Queue messages until connectivity is available (retry logic).
-  - Maintain local message arrays and conversation collections (or feed them into `ChatManager`).
-  - Drive `ChatManager` updates (e.g., `unreadCount`).
-- **Collaborators**:
-  - `TAKService` (sending messages).
-  - `LocationManager` / PLI services for location-attached messages.
-  - `ChatPersistence` for saving history.
-  - `PhotoAttachmentService` for media attachments.
+### Communication & Tactical Services
 
-### PositionBroadcastService (`Services/PositionBroadcastService.swift`)
+- **PhotoAttachmentService**
+  - Sends chat image attachments, handles compression and local storage of attachment files.
 
-- **Role**: PLI broadcaster.
-- **Responsibilities**:
-  - Manage user’s call sign, UID, unit type, role and team color.
-  - Periodically send position CoT events at a configured interval.
-  - Expose reactive state for UI toggles and config screens.
-- **Collaborators**:
-  - `TAKService` to send CoT.
-  - `LocationManager` (CoreLocation).
-  - `CoT` generators for PLI format.
+- **DigitalPointerService**
+  - Real-time pointer over map for coordination; manages active pointer and received pointers.
 
-### TrackRecordingService (`Services/TrackRecordingService.swift`)
+- **TeamService**
+  - Creation/join/leave teams and team-based messaging; maintain team lists and user memberships.
 
-- **Role**: Tracking service for movement.
-- **Responsibilities**:
-  - Record GPS tracks over time, including speed, distance, elevation.
-  - Provide access to current and saved tracks.
-  - Export tracks to GPX/KML for external use.
-- **Collaborators**:
-  - `LocationManager` / CoreLocation.
-  - `TrackModels`, `BreadcrumbTrailOverlay` and `TrackOverlayRenderer`.
-  - `RouteStorageManager` (persistence).
+- **VideoStreamService**
+  - Discover and manage video feeds, integration with map overlays and player views.
 
-### MeasurementService & RangeBearingService (`Services/MeasurementService.swift`, `RangeBearingService.swift`)
+### Map & Spatial Services
 
 - **MeasurementService**
-  - Responsibilities:
-    - Start/stop measurement sessions (distance, area).
-    - Manage overlays and annotations representing measurement lines/polygons.
-    - Integrate with `MeasurementManager` and map overlays.
+  - High-level distance/area measurement; manages overlays and annotations. Uses `MeasurementManager` and `MeasurementCalculator`.
+
 - **RangeBearingService**
-  - Responsibilities:
-    - Provide pure calculations and domain objects for range/bearing lines.
-    - Maintain active range/bearing overlays and measurements.
+  - Range/bearing line calculations; creates and tracks `RangeBearingLine` entities.
 
-### Map-Related Services
+- **ElevationProfileService**
+  - Generates elevation profiles and single-point elevation lookups from path coordinates via `ElevationAPIClient` or similar.
 
-- **ElevationProfileService/ElevationAPIClient**
-  - Responsibilities:
-    - Request and aggregate elevation samples along a path.
-    - Provide single-point elevation.
-- **LineOfSightService/TerrainVisualizationService**
-  - Responsibilities:
-    - Compute line-of-sight and terrain features from elevation data and map geometry.
-- **ArcGISFeatureService/ArcGISPortalService**
-  - Responsibilities:
-    - Communicate with ArcGIS services for features and portal content.
-- **OfflineMap & Tile Services**
-  - `OfflineTileCache`, `TileDownloader`, `OfflineMapManager`
-  - Responsibilities:
-    - Download and manage offline map tiles and regions.
+- **LineOfSightService**
+  - Uses elevation data and geometry to derive visibility between points.
 
-### Tactical/Mission Services
+- **BreadcrumbTrailService**
+  - Converts track recordings and PLI history into rendered breadcrumb overlays.
 
-- **GeofenceService**
-  - Evaluate positions against defined geofences and raise CoT/notifications.
+- **NavigationService** / **TurnByTurnNavigationService**
+  - Guidance over planned routes; may drive map camera and overlay instructions.
+
+### Data & Sync Services
+
 - **MissionPackageSyncService**
-  - Synchronize mission packages (data packages) with backend TAK infrastructure.
-- **BloodhoundService, EchelonService, TeamService**
-  - Provide specialized tactical functionality:
-    - Target/route guidance,
-    - Unit hierarchy management,
-    - Team lifecycle and messaging.
+  - Sync mission packages with TAK/mission servers (upload/download, status).
+
+- **ArcGISFeatureService** / **ArcGISPortalService**
+  - Integrate ArcGIS portal and feature services: authentication, search, feature querying, and layer management.
+
+- **CertificateEnrollmentService**
+  - Enrollment flow for X.509 certificates (CSR creation, enrollment endpoints, store result, update `CertificateManager`).
+
+- **TerrainVisualizationService**
+  - Possibly builds terrain overlays from elevation or other terrain data.
+
+---
 
 ## Interface Contracts
 
-Key abstractions and “interfaces” (often Swift protocols) that define architectural boundaries:
+While Swift protocols are sparsely shown in the snippets, the architecture uses **protocol-oriented design** for interfaces and testability.
 
-- **Protocol-based generators and handlers**
-  
-  - Example from `Architecture.md`:
-    - `protocol CoTMessageGenerator { func generateCoTMessage() -> String }`
-  - Likely implemented by:
-    - `ChatCoTGenerator`, `GeofenceCoTGenerator`, `MarkerCoTGenerator`, `TeamCoTGenerator`.
+### Documented Interfaces
 
-- **View–ViewModel contract**
-  
-  - Views rely on:
-    - `ObservableObject` conformance with `@Published` properties.
-    - Standard operations (e.g., `sendMessage`, `startBroadcasting`, `startRecording`).
-  - This creates an implicit contract: each view expects a manager with defined fields and action methods, e.g., `ChatView` expects `ChatManager` with `conversations`, `sendMessage`.
+- `protocol CoTMessageGenerator` (example from `Architecture.md`)
+  - `func generateCoTMessage() -> String`
+  - Implemented by generator classes such as `ChatCoTGenerator`, `MarkerCoTGenerator`, `GeofenceCoTGenerator`, `TeamCoTGenerator`.
 
-- **Networking & CoT handling**
-  
-  - `CoTMessageDelegate`:
-    - DirectTCP-like networking components call back with received CoT messages.
-  - `CoTEventHandler`’s public methods form a contract for pushing new events into the system and subscribing to notifications.
+- CoT parsing/delegate:
+  - `protocol CoTMessageDelegate: AnyObject` (doc snippet)
+    - `func didReceiveMessage(_ message: String)`
+  - Implemented by `CoTEventHandler` or higher-level components to receive parsed CoT from `DirectTCPSender`/`TAKService`.
 
-- **Storage contracts**
-  
-  - Persistence classes (e.g., `ChatPersistence`, `DrawingPersistence`) define serialization & deserialization interfaces used by managers and services.
-  - Models are `Codable`, forming a contract for persistence and sync layers.
+- Shared interfaces in:
+  - `OmniTAKMobile/Resources/Documentation/SHARED_INTERFACES.swift`  
+    - Likely defines cross-feature protocols (e.g., common selection, map interaction, or plugin APIs).
 
-- **Map overlay & marker protocols**
-  
-  - UIKit/MapKit types (e.g., `MKOverlay`, `MKAnnotation`) form external contracts for map controllers, overlays, markers.
-  - Custom overlays/annotations conform to these to plug into MapKit.
+### ObservableObject / Combine Contracts
 
-- **Grid & conversion utilities**
-  
-  - `MGRSConverter` & `BNGConverter` expose coordinate transformation methods as stateless APIs; they act as infrastructural “services” with functional contracts.
+Many services and managers are defined as:
+
+```swift
+class XyzService: ObservableObject {
+    @Published var someState: ...
+}
+```
+
+That creates a **contract** with Views:
+
+- Views can rely on `@Published` properties emitting changes.
+- `configure(...)` methods must be called before usage to ensure dependencies are wired.
+
+### Bridging Interfaces
+
+- `OmniTAKMobile-Bridging-Header.h` and `OmniTAKMobile.xcframework/Headers/omnitak_mobile.h` expose C/Rust APIs:
+  - An implicit contract: Swift `TAKService` and networking components must call into these functions to handle low-level socket connections, encryption, fragment handling, etc.
+  - Rust `src/connection.rs`, `callbacks.rs`, `error.rs`, `lib.rs` define the internal core; the header defines the C ABI contract used by Swift.
+
+---
 
 ## Design Patterns Identified
 
-- **MVVM (Model–View–ViewModel)** – Explicitly documented and consistently followed:
-  
-  - Views in `Views/` bind via `@ObservedObject`/`@EnvironmentObject` to managers.
-  - Managers/Services transform user intents into domain operations and update `@Published` state.
-  - Models remain pure data.
+### 1. MVVM (Core Application Pattern)
 
-- **Reactive programming with Combine**
-  
-  - Managers/services use `@Published` and `AnyCancellable` to propagate state.
-  - Example from docs: `takService.$isConnected` is observed by `ChatManager` or other controllers.
+Explicitly documented in `docs/Architecture.md`:
 
-- **Singleton pattern**
-  
-  - Many services/managers expose `static let shared`:
-    - `ChatService.shared`, `PositionBroadcastService.shared`, `TrackRecordingService.shared`, `CertificateManager.shared`, `ServerManager.shared`, etc.
-  - Used to centralize side-effectful services and avoid passing dependencies everywhere.
+- **Model:** Types in `Models/` and some CoT & Meshtastic models.  
+- **ViewModel:** Classes in `Managers/` (and some services acting as view models where UI state is tightly coupled).  
+- **View:** SwiftUI views in `Views/` and UI components in `UI/`.
 
-- **Dependency Injection**
-  
-  - For more testable components, dependencies are configured via initializer or `configure(...)` methods:
-    - `ChatService.configure(takService:locationManager:)`
-    - `PositionBroadcastService.configure(takService:locationManager:)`
-    - `CoTEventHandler.configure(takService:chatManager:)`
-  - This supports both singleton use and test-oriented injection.
+Bindings via:
 
-- **Protocol-Oriented Design**
-  
-  - Abstractions like `CoTMessageGenerator`, delegate protocols (`CoTMessageDelegate`), and service protocols (implied by documentation) allow multiple implementations for testing or different backends.
+- `@ObservedObject var manager: SomeManager` in Views.  
+- `@Published var property` in Managers/Services.
 
-- **Observer/Publisher–Subscriber**
-  
-  - Combine publishers and `NotificationCenter` are used where many components need to react to the same events (e.g., new CoT message, connection state).
+### 2. Reactive Programming with Combine
 
-- **Coordinator pattern (for Map and Menus)**
-  
-  - `MapOverlayCoordinator`, `RadialMenuMapCoordinator`, `MapStateManager` take responsibility for managing complex UI behaviors and delegation instead of burying logic inside views/controllers.
+- Extensive `@Published` usage in `TAKService`, `ChatService`, `PositionBroadcastService`, `TrackRecordingService`, etc.  
+- Combine subscriptions used for:
+  - Observing `TAKService` connection changes in managers.  
+  - Reacting to CoT events via `CoTEventHandler`.  
+  - Coordinating map state and overlays.
 
-- **Facade / Subsystem segmentation**
-  
-  - Subsystems like Network, Map, Storage are documented as aggregated into a simpler interface for the rest of the app:
-    - `TAKService` for networking.
-    - `EnhancedMapViewController` plus overlay coordinators for map.
-    - `ChatManager`/`ChatService` for chat instead of exposing CoT or raw sockets.
+### 3. Dependency Injection
+
+- Dependencies passed via `configure(...)` or initializers, e.g.:
+
+  ```swift
+  func configure(takService: TAKService, chatManager: ChatManager)
+  ```
+
+- Encourages:
+  - Testability (mock `TAKService`, `LocationManager`).  
+  - Clear dependency graph (docs list many configure methods in services).
+
+### 4. Protocol-Oriented & Delegate Patterns
+
+- Protocols (`CoTMessageGenerator`, `CoTMessageDelegate`) separate behavior from implementation.  
+- `DirectTCPSender` uses delegate for message callbacks.  
+- `NotificationCenter` is used where 1:N broadcast is needed beyond Combine.
+
+### 5. Feature Modularity / “Vertical Slices”
+
+- Each tactical feature has a set of:
+  - Models (`*Models.swift`)  
+  - Views (`*View.swift`)  
+  - Managers (`*Manager.swift`)  
+  - Services (`*Service.swift`).
+
+This forms vertical slices (e.g., Chat, Track Recording, Geofencing), making it easier to reason about or extend individual capabilities.
+
+### 6. Bridged Native Core Pattern
+
+- Networking and protocol details are moved into a native xcframework (Rust + C), with a **Facade Service** (`TAKService`) on the Swift side:
+  - Swift code maintains high-level state and Combine bindings.
+  - Native core handles performance-critical and protocol-specific operations.
+
+---
 
 ## Component Relationships
 
-Structural relationships (summarizing `docs/Architecture.md` and directories):
+### High-Level Dependency Graph (based on `Architecture.md`)
 
-- **Entry & Composition**
-  
-  - `OmniTAKMobileApp`:
-    - Creates root `ContentView`/map view.
-    - Instantiates and injects core managers/services into environment or directly into views.
-  - `ContentView`:
-    - Embeds primary screens (map, navigation drawer, tools panels).
-    - Provides tab or side navigation to feature views.
+- `OmniTAKMobileApp` → `ContentView`/`ATAKMapView` (main coordinator view).
+- `ATAKMapView` owns:
+  - `TAKService`
+  - `ChatManager`, `ServerManager`, `CertificateManager`
+  - `DrawingToolsManager`, `OfflineMapManager`, `GeofenceManager`
+  - Location subsystem (`CoreLocation`)
+  - Map controllers (`EnhancedMapViewController`, `MapOverlayCoordinator`, `RadialMenuMapCoordinator`)
 
-- **Map as Central Coordinator**
-  
-  - Main map view (`ATAKMapView`/`EnhancedMapViewController`/`IntegratedMapView`) integrates:
-    - Network state (`TAKService`).
-    - Feature managers (`ChatManager`, `OfflineMapManager`, `DrawingToolsManager`, `GeofenceManager`, `WaypointManager`, etc).
-    - Overlays (measurement, trails, compass, video, radial menu).
-  - Map controllers handle:
-    - User gestures, context menus (RadialMenu).
-    - Propagation of selection and tool actions to managers.
+- `TAKService` →  
+  - `DirectTCPSender` (low-level TCP/UDP/TLS)  
+  - `CoTMessageParser`  
+  - `CoTEventHandler`
 
-- **Network subsystem**
-  
-  - `TAKService` ↔ Direct TCP/TLS (via xcframework / bridging).
-  - Inbound messages:
-    - `TAKService` → `CoTMessageParser` → `CoTEventHandler`.
-    - `CoTEventHandler` → Managers and Services, e.g.:
-      - `ChatManager.receiveMessage`
-      - `TrackRecordingService` or breadcrumb services
-      - `EmergencyBeaconService`, `TeamService`, etc.
-  - Outbound messages:
-    - Managers/Views → Service (e.g., `ChatService.sendTextMessage`) → CoT Generator → `TAKService.send(cotMessage:)`.
+- `CoTEventHandler` →  
+  - `ChatManager`, `TrackRecordingService`, `EmergencyBeaconService`, `TeamService`, etc.
 
-- **Managers & Services**
-  
-  - Views only talk to Managers/Services:
-    - Example: `ChatView` interacts with `ChatManager`; `ChatManager` orchestrates `ChatService` and `ChatPersistence`.
-  - Managers coordinate with multiple services where necessary:
-    - E.g., `ServerManager` works with `CertificateManager` and `TAKService`.
+- `ChatManager` →  
+  - `ChatService` (message logic)  
+  - `ChatPersistence` / `ChatStorageManager`  
+  - `PhotoAttachmentService`
 
-- **Storage subsystem**
-  
-  - Feature managers delegate persistence to specialized storage classes:
-    - `ChatManager` → `ChatPersistence`/`ChatStorageManager`.
-    - `DrawingToolsManager` → `DrawingPersistence`.
-    - `TeamManager` → `TeamStorageManager`.
-    - `Route`/`Track` → `RouteStorageManager`.
-  - Underlying mechanisms: `UserDefaults`, Keychain, and file system (per `Architecture.md` storage section).
+- `DrawingToolsManager` →  
+  - `DrawingPersistence`  
+  - `MapOverlayCoordinator`
 
-- **Utilities / External Systems**
-  
-  - Map views and services:
-    - Use `ArcGISTileSource` / `ArcGIS*Service` for external map data.
-  - KML integration:
-    - `KMLImportView` → `KMLMapIntegration` / `KMLOverlayManager` → Map overlays.
-  - Meshtastic:
-    - `MeshtasticManager` + `MeshtasticProtobufParser` integrate mesh radio messages into CoT/marker flows.
+- `OfflineMapManager` →  
+  - `OfflineTileCache`, `TileDownloader`  
+  - `OfflineMapModels`
 
-The documented dependency graph (in `Architecture.md`) shows `ATAKMapView` at the center, referencing `TAKService`, `ChatManager`, `ServerManager`, `CertificateManager`, `DrawingToolsManager`, `OfflineMapManager`, `GeofenceManager`, `EnhancedMapViewController`, and overlay coordinators.
+- `MeasurementService` / `RangeBearingService` / `LineOfSightService` →  
+  - `MeasurementCalculator`, `ElevationProfileService`, `ElevationAPIClient`  
+  - Map overlays for visualization.
+
+### Communication Paths
+
+- **TAKService → CoTEventHandler → Managers/Services**  
+  - Inbound CoT data flows from network to parser to event handler and then to feature managers.
+
+- **Managers → Services → CoT Generators → TAKService**  
+  - Outbound actions (chat send, PLI, beacon, team messages, markers) flow from Views to Managers to domain Services, which generate CoT XML and send via `TAKService`.
+
+- **Managers ↔ Map Controllers / Overlays**  
+  - Managers decide what overlays/markers should be active; the Map subsystem renders them.
+
+- **Storage** is used by Managers and Services; Views rarely reach storage directly.
+
+---
 
 ## Key Methods & Functions
 
-Focusing on methods that define core capabilities and boundaries (from docs and structure):
+Summarizing the most structurally important methods (per docs):
 
-### Networking / TAK
+### TAKService
 
-- `TAKService.connect(host:port:protocolType:...)`
-  - Establishes TAK server connection with specific protocol (TCP/UDP/TLS) and credentials.
-- `TAKService.disconnect()`, `reconnect()`
-  - Lifecycle control for networking.
-- `TAKService.send(cotMessage:priority:)`
-  - Primary interface to send CoT XML messages to the server.
+- `connect(host:port:protocolType:...)`  
+  - Opens or reconfigures the TAK connection (possibly via native xcframework functions).  
+- `disconnect()`  
+  - Hard close of network session.  
+- `send(cotMessage:priority:)`  
+  - Core outbound pipeline for any CoT XML.  
+- `reconnect()`  
+  - Reestablish connection after network change or failure.
 
-### Chat & Collaboration
+### ChatService
 
-- `ChatService.configure(takService:locationManager:)`
-  
-  - Wires ChatService to networking and location.
+- `configure(takService:locationManager:)`  
+  - Wires networking and location into chat.  
+- `sendTextMessage(_:to:)`  
+  - Standard text chat sending via CoT.  
+- `sendLocationMessage(location:to:)`  
+  - Location-sharing messages.  
+- `processQueue()`  
+  - Resend queued messages after reconnect or failures.  
+- `markAsRead(_:)`  
+  - Updates unread counts & conversation state.
 
-- `ChatService.sendTextMessage(_:to:)`
-  
-  - High-level send path from user-entered text.
+### PositionBroadcastService
 
-- `ChatService.sendLocationMessage(location:to:)`
-  
-  - Location-centric chat messages.
+- `configure(takService:locationManager:)`  
+- `startBroadcasting()`, `stopBroadcasting()`  
+- `broadcastPositionNow()`  
+  - All central to continuous PLI functionality.  
+- `setUpdateInterval(_:)`  
+  - Controls frequency and battery-use vs timeliness.
 
-- `ChatService.processQueue()`
-  
-  - Drains queued messages when connectivity is restored.
+### TrackRecordingService
 
-- `ChatManager.sendMessage(_:to:)`
-  
-  - View-friendly method called by `ChatView` to initiate a message.
+- `startRecording(name:)`, `pauseRecording()`, `resumeRecording()`, `stopRecording()`  
+  - Governs track lifecycle.  
+- `exportTrack(_:format:)`  
+  - Integrates with sharing/export UI and KML/GPX formats.
 
-- `ChatManager.receiveMessage(_:)`
-  
-  - Called by `CoTEventHandler` for inbound messages.
+### EmergencyBeaconService
 
-- `ChatManager.sendPhotoMessage(_:image:to:)`
-  
-  - Combines Chat and Photo services for image messages.
+- `activateBeacon(type:)`, `cancelBeacon()`, `sendBeaconUpdate()`  
+  - Define emergency escalation & persistence of beacon.
 
-- `TeamService.createTeam(name:color:)`
-  
-  - Defines team creation boundary.
+### MeasurementService
 
-- `TeamService.inviteToTeam(_:uid:)`, `leaveTeam(_:)`, `broadcastTeamMessage(_:)`
-  
-  - Team membership and communication operations.
+- `startMeasurement(type:)`  
+- `addPoint(_:)`  
+- `completeMeasurement()`  
+  - Map-centric measurement workflows.  
+- `addRangeRing(center:radius:)`  
+  - Quick configuration of range overlays.
 
-### Position & Tracking
+### RangeBearingService
 
-- `PositionBroadcastService.configure(takService:locationManager:)`
+- `createLine(from:to:)`  
+- `calculateBearing(from:to:)`, `calculateDistance(from:to:)`  
+  - Core geometry primitives reused in tactical tools.
 
-- `PositionBroadcastService.startBroadcasting()`, `.stopBroadcasting()`
+### ElevationProfileService
 
-- `PositionBroadcastService.broadcastPositionNow()`
+- `generateProfile(for:)`  
+  - Asynchronous path profile generation.  
+- `fetchElevation(at:)`  
+  - Single-point queries used by LOS, measurement, and map inspection.
 
-- `PositionBroadcastService.setUpdateInterval(_:)`
-  
-  - Core API for controlling automatic PLI.
+### CoTEventHandler (from Architecture doc)
 
-- `TrackRecordingService.startRecording(name:)`
+- Routes events to specific subsystems (ChatManager, TrackRecordingService, EmergencyBeaconService, etc.)  
+- Publishes domain events via Combine and NotificationCenter.
 
-- `TrackRecordingService.pauseRecording()`, `resumeRecording()`, `stopRecording()`
+These methods define the main capabilities and boundaries: networking, messaging, PLI, tracks, spatial analysis, and integration.
 
-- `TrackRecordingService.exportTrack(_:format:)`
-  
-  - Recording lifecycle and export.
-
-- `EmergencyBeaconService.activateBeacon(type:)`
-
-- `EmergencyBeaconService.cancelBeacon()`
-
-- `EmergencyBeaconService.sendBeaconUpdate()`
-  
-  - Emergency beacon API.
-
-### Map & Measurement
-
-- `MeasurementService.startMeasurement(type:)`
-
-- `MeasurementService.addPoint(_:)`
-
-- `MeasurementService.completeMeasurement()`
-
-- `MeasurementService.addRangeRing(center:radius:)`
-  
-  - Core operations for distance/area tools and range rings.
-
-- `RangeBearingService.createLine(from:to:)`
-
-- `RangeBearingService.calculateBearing(from:to:)`
-
-- `RangeBearingService.calculateDistance(from:to:)`
-  
-  - Geodesic computations accessible across the app.
-
-- `ElevationProfileService.generateProfile(for:)`
-
-- `ElevationProfileService.fetchElevation(at:)`
-  
-  - Interfaces for terrain awareness and planning.
-
-### Configuration & Certificates
-
-- `ServerManager.addServer(_:)`, `removeServer(at:)`, `updateServer(at:with:)`
-
-- `ServerManager.selectServer(_:)`
-  
-  - Allow UI to manage and switch between TAK endpoints.
-
-- `CertificateManager.importCertificate(from:password:)`
-
-- `CertificateManager.saveCertificate(_:data:password:)`
-
-- `CertificateManager.getCertificateData(for:)`
-
-- `CertificateManager.getIdentity(for:password:)`
-
-- `CertificateManager.deleteCertificate(_:)`
-
-- `CertificateManager.validateCertificate(_:)`
-  
-  - Encapsulate everything around TLS certificates & Keychain.
-
-### CoT / Event Handling
-
-- `CoTEventHandler.configure(takService:chatManager:...)`
-  
-  - Links event handler to global services.
-
-- `CoTEventHandler` public process methods (e.g., `handleIncomingEvent(_:)` – implied).
-  
-  - Single place where incoming CoT is interpreted and routed.
-
-- `CoTFilterManager.addFilter(_:)`, `removeFilter(at:)`
-  
-  - Filtering contract used by event routing and UI.
-
-### KML & Offline
-
-- `KMLParser.parse(...)`, `KMZHandler` methods
-  
-  - Parse imported KML/KMZ.
-
-- `KMLMapIntegration.addKMLToMap(...)`
-  
-  - Integrate parsed KML into current map overlays.
-
-- `OfflineTileCache` and `TileDownloader` methods
-  
-  - Manage caching and downloading offline tiles.
+---
 
 ## Available Documentation
 
-### Documentation Files and Paths
+### Documents in `/docs`
 
-- Root-level:
-  
-  - `/OmniTAKMobile/RESTRUCTURING_GUIDE.md`
-  - `/CONNECTING_TO_TAK_SERVER.md`
-  - `/CONTRIBUTING.md`
-  - `/DEPLOYMENT.md`
-  - `/SETTINGS_PERSISTENCE_IMPROVEMENTS.md`
-  - `/TLS_LEGACY_SUPPORT.md`
-  - `/UNIT_TYPE_SELECTOR_GUIDE.md`
-  - `/README.md`
+- `docs/Architecture.md`
+  - **Content:**  
+    - Detailed architecture overview (MVVM, subsystems, diagrams for Network, Map, Storage).  
+    - Component relationships, data flow, threading, memory considerations (beyond excerpt).  
+  - **Quality:**  
+    - High: opinionated, diagrams, describes actual classes and flows; directly reflects the current structure.
 
-- Main documentation tree:
-  
-  - `/docs/Architecture.md`
-  - `/docs/README.md`
-  - `/docs/DOCUMENTATION_COMPLETE.md`
-  - `/docs/DOCUMENTATION_SUMMARY.md`
-  - `/docs/errors.md`
-  - `/docs/guidebook.md`
-  - `/docs/suggestions.md`
-  - `/docs/todo.md`
-  - `/docs/userguide.md`
+- `docs/README.md`, `DOCUMENTATION_SUMMARY.md`, `DOCUMENTATION_COMPLETE.md`
+  - **Content:**  
+    - Meta overview of documentation status and structure; pointers to other docs.  
+  - **Quality:**  
+    - Good for navigation; not deeply technical.
 
-- API References:
-  
-  - `/docs/API/Managers.md`
-  - `/docs/API/Models.md`
-  - `/docs/API/Services.md`
+- `docs/errors.md`
+  - Likely enumerates error types, codes, or handling patterns (e.g., TAK connection, certificate, map errors).
 
-- Developer Guides:
-  
-  - `/docs/DeveloperGuide/GettingStarted.md`
-  - `/docs/DeveloperGuide/CodebaseNavigation.md`
-  - `/docs/DeveloperGuide/CodingPatterns.md`
+- `docs/guidebook.md`, `docs/userguide.md`, `docs/todo.md`, `docs/suggestions.md`
+  - **guidebook/userguide:** Conceptual and end-user-level features overview.  
+  - **todo/suggestions:** Planned improvements, architectural debt, and feature requests.
 
-- Feature Guides:
-  
-  - `/docs/Features/ChatSystem.md`
-  - `/docs/Features/CoTMessaging.md`
-  - `/docs/Features/MapSystem.md`
-  - `/docs/Features/Networking.md`
+- `docs/DOCUMENTATION_*` series
+  - Provide coverage status and may highlight gaps.
 
-- User Guides:
-  
-  - `/docs/UserGuide/Features.md`
-  - `/docs/UserGuide/GettingStarted.md`
-  - `/docs/UserGuide/Settings.md`
-  - `/docs/UserGuide/Troubleshooting.md`
+### API Documentation
 
-- In-app / Feature-local docs:
-  
-  - `/OmniTAKMobile/Resources/Documentation/CHAT_FEATURE_README.md`
-  - `/OmniTAKMobile/Resources/Documentation/FILTER_INTEGRATION_GUIDE.md`
-  - `/OmniTAKMobile/Resources/Documentation/KML_INTEGRATION_GUIDE.md`
-  - `/OmniTAKMobile/Resources/Documentation/MESHTASTIC_PROTOBUF_README.md`
-  - `/OmniTAKMobile/Resources/Documentation/OFFLINE_MAPS_INTEGRATION.md`
-  - `/OmniTAKMobile/Resources/Documentation/RADIAL_MENU_INTEGRATION_GUIDE.md`
-  - `/OmniTAKMobile/Resources/Documentation/SHARED_INTERFACES.swift`
-  - `/OmniTAKMobile/Resources/Documentation/UI_LAYOUT_REFERENCE.md`
-  - `/OmniTAKMobile/Resources/Documentation/USAGE_EXAMPLES.swift`
-  - `/OmniTAKMobile/Resources/Documentation/WAYPOINT_INTEGRATION_GUIDE.md`
+- `docs/API/Managers.md`
+  - **Content:**  
+    - Describes each manager (`ChatManager`, `ServerManager`, etc.), public properties, and methods.  
+  - **Quality:**  
+    - Good for understanding ViewModel responsibilities and how to use them from Views.
 
-- GitHub prompt:
-  
-  - `/.github/prompts/davia-documentation.md` – likely meta documentation instructions.
+- `docs/API/Models.md`
+  - **Content:**  
+    - Data model schemas: properties, relationships, and how they are used by services and managers.  
+  - **Quality:**  
+    - Solid reference for serialization and feature data shapes.
 
-### Documentation Quality Assessment
+- `docs/API/Services.md`
+  - **Content (sample examined):**  
+    - Detailed service descriptions, key methods, and usage examples for `TAKService`, `ChatService`, `PositionBroadcastService`, `TrackRecordingService`, `EmergencyBeaconService`, `MeasurementService`, `RangeBearingService`, `ElevationProfileService`, `TeamService`, `PhotoAttachmentService`, `DigitalPointerService`.  
+  - **Quality:**  
+    - High: method signatures, semantics, and code snippets are provided. Up-to-date with file paths and approximate line counts, suggesting active maintenance.
 
-- **Architecture.md**
-  
-  - High quality, detailed:
-    - Explains overarching principles (SRP, DI, reactive state).
-    - Shows MVVM and subsystem diagrams.
-    - Clearly states component roles (views, managers, services, models).
-    - Describes network, map, and storage subsystems with ASCII diagrams.
-  - Very useful as a top-level orientation and for architectural reasoning.
+### Feature Guides
 
-- **API docs (Managers.md, Services.md, Models.md)**
-  
-  - High quality, close to reference-level:
-    - Per-class sections with declarations, properties, method signatures, parameter descriptions, and usage examples.
-    - Explicit line counts and file paths, making it easy to locate code.
-    - These docs form a stable contract document between feature teams and the core architecture.
+- `docs/Features/ChatSystem.md`, `CoTMessaging.md`, `MapSystem.md`, `Networking.md`
+  - **Content:**  
+    - Explain how high-level features are composed from managers, services, models, and CoT.  
+  - **Quality:**  
+    - Very helpful for onboarding; explain the “why” behind architectural choices for each domain.
 
-- **Developer Guides**
-  
-  - Provide onboarding and navigation guidance:
-    - How to traverse the codebase and where to find feature code.
-    - Coding patterns (how to write new managers/services/views).
-  - Adequate to ramp up new contributors on structure and styles.
+### Developer-Oriented Docs
 
-- **Feature Guides**
-  
-  - Focused on specific subsystems (Chat, CoT messaging, Map, Networking).
-  - Likely include flow diagrams and common usage patterns; good for feature-level understanding.
+- `docs/DeveloperGuide/GettingStarted.md`
+  - Project setup, build targets, environment.  
+- `docs/DeveloperGuide/CodebaseNavigation.md`
+  - Maps directories to responsibilities (matches analysis above).  
+- `docs/DeveloperGuide/CodingPatterns.md`
+  - Codifies MVVM, naming, Combine usage, and DI patterns.
 
-- **User Guides**
-  
-  - Oriented toward end-users / testers:
-    - Explains features, settings, and troubleshooting.
-    - Less relevant for code structure, but helpful to connect code modules to user-visible behaviors.
+### Embedded Feature Documentation
 
-- **Embedded Feature Docs**
-  
-  - Each major feature (chat, filters, KML, Meshtastic, offline maps, radial menu, waypoints) has its own integration guide and sometimes example Swift.
-  - This material is particularly useful for:
-    - Adding new features in those domains.
-    - Understanding expected extension points and existing interfaces (`SHARED_INTERFACES.swift`, `USAGE_EXAMPLES.swift`).
+Under `OmniTAKMobile/Resources/Documentation`:
 
-Overall, the documentation suite is **comprehensive and structurally aligned** with the code:
+- `CHAT_FEATURE_README.md`  
+- `FILTER_INTEGRATION_GUIDE.md`  
+- `KML_INTEGRATION_GUIDE.md`  
+- `MESHTASTIC_PROTOBUF_README.md`  
+- `OFFLINE_MAPS_INTEGRATION.md`  
+- `RADIAL_MENU_INTEGRATION_GUIDE.md`  
+- `WAYPOINT_INTEGRATION_GUIDE.md`  
+- `UI_LAYOUT_REFERENCE.md`  
+- `USAGE_EXAMPLES.swift`  
+- `SHARED_INTERFACES.swift`
 
-- Architecture and API references correspond closely to the actual directory layout and pattern usage.
-- Documentation emphasizes the same separation of concerns described above (Views–Managers–Services–Models).
-- For structural analysis and AI-based agents, the available docs offer enough information to navigate and reason about the system with minimal code inspection.
+**Quality & Usefulness:**
+
+- Very practical, feature-specific guides that:
+  - Specify which managers/services to use.  
+  - Show example code paths (`USAGE_EXAMPLES.swift`).  
+  - Document internal interfaces and extension points (`SHARED_INTERFACES.swift`).  
+- They bridge the gap between the high-level architecture docs and concrete code usage.
+
+### GitHub / Repo-Level Docs
+
+- Root `README.md`
+  - Project introduction, feature overview, and quickstart.  
+- `CONNECTING_TO_TAK_SERVER.md`, `TLS_LEGACY_SUPPORT.md`
+  - Document network and TLS configuration details.  
+- `RESTRUCTURING_GUIDE.md`
+  - Historical/ongoing refactoring and directory changes; explains why some “Modified”/“backup” files exist.
+
+**Overall Documentation Quality:**
+
+- Broad and deep coverage from architecture to per-service APIs and feature guides.  
+- Documentation is strongly aligned with the directory and class structure, making it an accurate map of the codebase.  
+- For structural understanding, `docs/Architecture.md`, `docs/API/*.md`, and `Resources/Documentation/*` are the primary references and appear well-maintained.

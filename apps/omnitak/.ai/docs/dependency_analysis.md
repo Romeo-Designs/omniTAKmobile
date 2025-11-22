@@ -2,741 +2,607 @@
 
 ## Internal Dependencies Map
 
-### High-level module structure
+### High-level layering
 
-The Xcode project is organized primarily by feature and role:
+From the `docs/Architecture.md` and the directory layout, the codebase follows a layered MVVM-style structure:
 
-- `Core/`
-  - App entry and root composition (`ContentView.swift`, `OmniTAKMobileApp.swift` referenced in docs)
-- `Views/`
-  - SwiftUI screens and panels for each feature (map, chat, TAK servers, offline maps, Meshtastic, etc.)
-- `Managers/`
-  - Feature-level “view models” / controllers (e.g., `ChatManager`, `ServerManager`, `OfflineMapManager`, `WaypointManager`, etc.)
-- `Services/`
-  - Business logic and integration classes (e.g., `TAKService`, `ChatService`, `ArcGIS*Service`, `CertificateEnrollmentService`, etc.)
-- `Models/`
-  - Data structures grouped by feature (e.g., `ChatModels`, `RouteModels`, `TeamModels`, etc.)
-- `CoT/`
-  - CoT event handling, filtering, parsing, and XML generation
-- `Map/`
-  - Controllers, overlays, markers, tile sources, integration with map engines
-- `Utilities/`
-  - Cross-cutting helpers (calculators, converters, KML integration, networking, parsers)
-- `Storage/`
-  - Persistence and storage managers (chat, drawing, routes, team state)
-- `Meshtastic/`
-  - Protobuf models and parsing
-- `UI/Components`, `UI/RadialMenu`, `UI/MilStd2525`
-  - Reusable UI elements and MIL-STD-2525 symbol logic
-- `Resources/Documentation`
-  - In-code documentation and shared interface examples
+- **Views (`OmniTAKMobile/Views`, `UI/*`)**
+  - Pure SwiftUI views.
+  - Depend on `Managers` (view models) via `@ObservedObject`, `@StateObject`, or `@EnvironmentObject`.
+- **Managers (`OmniTAKMobile/Managers`)**
+  - `ObservableObject` view models for each feature.
+  - Depend on:
+    - `Services` for business logic and I/O.
+    - `Storage` for persistence.
+    - `Models` for data structures.
+- **Services (`OmniTAKMobile/Services`)**
+  - Business logic, network calls, protocol handling, integration with external systems (TAK, ArcGIS, etc.).
+  - Often singletons (`static let shared`).
+  - Depend on:
+    - Foundation / URLSession / Network frameworks.
+    - CoreLocation (location-based features).
+    - `Models` for request/response data.
+    - Sometimes `Managers` via configuration methods (`configure(takService:..., locationManager:...)`).
+- **Models (`OmniTAKMobile/Models`)**
+  - Plain data structs/classes; mostly `Codable` and `Identifiable`.
+  - Have no dependencies on managers or services; used broadly across all layers.
+- **Utilities (`OmniTAKMobile/Utilities/*`)**
+  - Cross-cutting helpers (coordinate converters, KML, networking, calculators).
+  - Used by Managers, Services, and sometimes Views.
+- **Map subsystem (`OmniTAKMobile/Map/*`)**
+  - Controllers, overlays, markers, tile sources.
+  - Depend on:
+    - `Managers` for feature state (e.g., measurement, offline maps).
+    - `Models` (routes, tracks, overlays).
+    - `Services` for tile/elevation or similar features.
+- **Storage (`OmniTAKMobile/Storage`)**
+  - Persistence abstractions (chat history, team, routes).
+  - Used primarily by `Managers` and `Services`.
 
-This aligns with the architecture doc’s layers:
+### Example internal dependency chains
 
-- Views (`Views/`)
-- ViewModels/Managers (`Managers/`)
-- Services (`Services/`)
-- Models (`Models/`)
-- Utilities & Integration (KML, network, converters)
-- CoT infrastructure (`CoT/`)
+#### 1. TAK connectivity and CoT
 
-### Core internal dependencies
+- `ContentView` (Core/ContentView.swift)
+  - Holds `@StateObject private var takService = TAKService()`.
+  - Uses `takService.connectionStatus`, `isConnected`, `lastError`, counters.
+  - Invokes:
+    - `takService.connect(host:port:protocolType:useTLS:)`
+    - `takService.disconnect()`
+    - `takService.sendCoT(xml:)`.
 
-#### `ContentView` → `TAKService`
+- `TAKService` (Services/TAKService.swift)
+  - Imports: `Foundation`, `Combine`, `CoreLocation`, `Network`, `Security`.
+  - Internally:
+    - Uses `DirectTCPSender` for actual socket/TLS/UDP connections.
+    - Bridges CoT XML to/from the network.
+    - Not in the snippet but described in `docs/API/Services.md` as a core service with connect/disconnect/send and stats.
+  - Depends on:
+    - `ServerManager` (indirectly) to get server configuration.
+    - `Models` representing CoT / PLI / Tracks.
+    - Possibly `CertificateManager` for client TLS certificates.
 
-File: `OmniTAKMobile/Core/ContentView.swift`
+- `DirectTCPSender` (inner class of `TAKService.swift`)
+  - Pure transport layer abstraction.
+  - Depends only on `Network` and `Security` frameworks.
+  - Exposes:
+    - `onMessageReceived: (String)->Void`
+    - `onConnectionStateChanged: (Bool)->Void`
+  - `TAKService` subscribes to those and translates into app-level events.
 
-- Declares:
-  - `@StateObject private var takService = TAKService()`
-- Uses `takService`’s state:
-  - `connectionStatus: String`
-  - `isConnected: Bool`
-  - `lastError: String`
-  - `messagesReceived: Int`
-  - `messagesSent: Int`
-  - `lastMessage: String`
-- Invokes methods:
-  - `takService.connect(host:port:protocolType:useTLS:)`
-  - `takService.disconnect()`
-  - `takService.sendCoT(xml:) -> Bool`
+Resulting chain:
 
-This view is a thin UI shell around `TAKService`, and represents a direct view → service dependency, bypassing a separate manager.
+`ContentView` → `TAKService` → `DirectTCPSender` → TAK server
 
-#### `TAKService` → Networking, CoT, Managers
+Plus (from documentation):
 
-File: `OmniTAKMobile/Services/TAKService.swift` (partial view: DirectTCPSender inside)
+`Services` (e.g., `ChatService`, `PositionBroadcastService`, `TrackRecordingService`, etc.) → `TAKService` for sending/receiving CoT.
 
-Key internals:
+#### 2. Server configuration
 
-- Imports:
-  - `Foundation`
-  - `Combine`
-  - `CoreLocation`
-  - `Network`
-  - `Security`
-- Defines `ConnectionProtocol` and `DirectTCPSender`.
-- `DirectTCPSender` uses:
-  - `NWConnection`, `NWParameters`, `NWEndpoint`, `NWProtocolTCP`, `NWProtocolTLS`
-  - `sec_protocol_options_*` C APIs from `Security`
+- `ServerPickerView` (Views/ServerPickerView.swift, referenced in root dir & Views)
+  - Likely binds to `ServerManager.shared` to show and modify servers.
 
-Within the larger `TAKService` (implied from architecture docs and naming), dependencies typically include:
-
-- CoT handling:
-  - `CoTEventHandler`
-  - `CoTMessageParser`
-  - CoT generators (`ChatCoTGenerator`, `MarkerCoTGenerator`, `TeamCoTGenerator`, etc.)
-- Managers:
-  - `ChatManager` (to emit new chat messages from incoming CoT)
-  - `ServerManager` (for active server configuration)
-  - `TeamManager`, `WaypointManager`, `TrackRecordingManager`, etc. for different CoT event types
-- Services:
-  - `PositionBroadcastService` (for periodic self-position CoT)
-  - Possibly `BreadcrumbTrailService`, `TrackRecordingService` (for track updates transmitted over TAK)
-
-So the dependency direction is:
-
-- `ContentView` → `TAKService`
-- `TAKService` → networking primitives, CoT components, multiple feature managers and services
-
-#### `ServerManager` & `TAKServer` model
-
-File: `OmniTAKMobile/Managers/ServerManager.swift`
-
-- `TAKServer` (model):
-  - `Identifiable`, `Codable`, `Equatable`
-  - Properties:
-    - `name`, `host`, `port`, `protocolType`, `useTLS`, `isDefault`
-    - `certificateName`, `certificatePassword`, `allowLegacyTLS`
-- `ServerManager` (manager/view-model):
-  - `ObservableObject`
-  - Singleton: `static let shared = ServerManager()`
-  - `@Published var servers: [TAKServer]`
-  - `@Published var activeServer: TAKServer?`
-  - Uses `UserDefaults` for persistence.
+- `ServerManager` (Managers/ServerManager.swift)
+  - Imports: `Foundation`, `Combine`.
+  - Defines `struct TAKServer` and manages list of servers.
+  - Persists via `UserDefaults` using `Codable`.
+  - On init:
+    - Loads servers and the active server.
+    - If none exist, creates default `TAKServer(name:"Taky Server", host:"127.0.0.1", port:8087, ...)`.
+  - Provides:
+    - `addServer`, `updateServer`, `deleteServer`, `setActiveServer`, `getDefaultServer`.
 
 Dependencies:
 
-- `ServerManager` → `TAKServer` (model)
-- `ServerManager` persists to `UserDefaults` and exposes `activeServer` for other components such as:
-  - `TAKService` (to get host, port, TLS details)
-  - `TAKServersView`, `ServerPickerView` (UI for selecting servers)
-  - `QuickConnectView`, `NetworkPreferencesView`
+Views (Server selection, connection screens) → `ServerManager` → `TAKService` uses `ServerManager.activeServer` to establish connections.
 
-The server configuration is thus a single shared dependency for all networked TAK-related features.
+#### 3. Chat subsystem
 
-#### Managers → Services → Models
+From `ChatService.swift` and docs:
 
-This pattern is consistent across features (from `docs/Architecture.md` and module layout):
+- `ChatView` (Views/ChatView.swift)
+  - Binds to `ChatManager` or `ChatService` (depending on wiring described in docs).
+  - Shows conversations and messages.
 
-- Example from Architecture doc:
-  
-  ```swift
-  class ChatManager: ObservableObject {
-      @Published var conversations: [Conversation] = []
-      @Published var unreadCount: Int = 0
-  
-      private let chatService: ChatService
-      private let persistence: ChatPersistence
-  
-      func sendMessage(_ text: String, to recipient: String) {
-          let message = chatService.createMessage(text, recipient)
-          chatService.send(message)
-          persistence.save(message)
-      }
-  }
-  ```
+- `ChatService` (Services/ChatService.swift)
+  - Imports: `Foundation`, `Combine`, `CoreLocation`, `UIKit`.
+  - Singleton: `static let shared = ChatService()`.
+  - Holds:
+    - Reactive state: `messages`, `conversations`, `participants`, `unreadCount`, `queuedMessages`, `isConnected`.
+  - Depends directly on:
+    - `ChatManager.shared` (manager/view-model).
+    - `ChatStorageManager.shared` (persistence).
+    - `LocationManager` (via `configure(takService:locationManager:)`).
+    - `ChatCoTGenerator` and `ChatXMLParser` from `CoT/Generators` and `CoT/Parsers`.
+    - `TAKService` (indirectly via `ChatManager.configure`).
+  - Behavior:
+    - Subscribes to `ChatManager`’s `@Published` properties.
+    - Generates CoT packets for location messages.
+    - Queues messages for sending via TAK (through `queueMessage`—implementation in `ChatStorageManager`/`ChatManager`).
 
-In the project:
+- `ChatManager` (Managers/ChatManager.swift, referenced in docs/API/Managers.md)
+  - `ObservableObject` with `@Published` conversations etc.
+  - Uses:
+    - `ChatService` (for send/receive, or they mutually coordinate).
+    - `ChatPersistence` in `Storage`.
 
-- Each `Managers/*.swift` file likely follows this:
-  
-  - `ChatManager` → `ChatService`, `ChatPersistence`, `TAKService`
-  - `WaypointManager` → `WaypointModels`, `OfflineMapManager` (for coordinate context), `BreadcrumbTrailService`
-  - `OfflineMapManager` → `OfflineMapModels`, `OfflineTileCache`, `TileDownloader`
-  - `MeasurementManager` → `MeasurementService`, `MeasurementModels`, `MeasurementCalculator`
-  - `GeofenceManager` → `GeofenceService`, `GeofenceModels`
-  - `MeshtasticManager` → `MeshtasticProtobufParser`, `MeshtasticModels`
-
-- Each `Services/*.swift` file depends on:
-  
-  - Domain models (`Models/*`)
-  - Lower-level utilities (e.g., KML, networking, storage)
-  - `TAKService` is a special cross-cutting service used by many others (for CoT transport).
-
-#### Views → Managers
-
-Looking at `Views/` directory, each view’s name matches a feature manager or service:
-
-- `ChatView` → `ChatManager`
-- `CoTFilterPanel` → `CoTFilterManager`
-- `OfflineMapsView` → `OfflineMapManager`
-- `MeshtasticConnectionView`, `MeshTopologyView` → `MeshtasticManager`
-- `TrackListView`, `TrackRecordingView` → `TrackRecordingService` / track manager
-- `WaypointsListView` → `WaypointManager`
-- `TeamManagementView` → `TeamService` / team manager
-- `PluginsListView` → plugin registry / configuration (internal plugin system)
-
-Relationship:
-
-- Views depend on managers/services through property wrappers (`@ObservedObject`, `@StateObject`, `@EnvironmentObject`).
-- Managers orchestrate between views and services; they are the primary internal dependency point for views.
-
-#### CoT subsystem
-
-Files:
-
-- `CoT/CoTEventHandler.swift`
-- `CoT/CoTFilterCriteria.swift`
-- `CoT/CoTMessageParser.swift`
-- `CoT/Generators/*.swift` (Chat, Geofence, Marker, Team)
-- `CoT/Parsers/*.swift` (ChatXML*)
+- `ChatStorageManager` + `ChatPersistence` (Storage/)
+  - Manage local-DB or file-based chat history, queued messages, and statuses.
 
 Dependencies:
 
-- CoT generators depend on:
-  - Feature models (`ChatModels`, `GeofenceModels`, `PointMarkerModels`, `TeamModels`, etc.)
-  - Possibly `TAKService` for UID/timestamps
-- `CoTEventHandler` depends on:
-  - `TAKService` (to register callbacks/listeners)
-  - Feature managers (`ChatManager`, `TeamService`, `GeofenceManager`, `WaypointManager`) to dispatch parsed CoT events.
-- CoT filters (`CoTFilterCriteria`, `CoTFilterManager`) depend on:
-  - Models representing filter state (`CoTFilterModel.swift`)
-  - Map overlays / list views to determine what to show.
+Views (ChatView, ConversationView)  
+→ `ChatManager` (state)  
+↔ `ChatService` (business + integration)  
+→ `ChatStorageManager`/`ChatPersistence` (storage)  
+→ `ChatXMLParser` / `ChatCoTGenerator` (CoT XML)  
+→ `TAKService` (CoT transport).
 
-This subsystem is a major internal integration hub, linking network messages (via `TAKService`) to feature-level managers.
+#### 4. Position broadcast and tracking
 
-#### Map subsystem
+From `docs/API/Services.md`:
 
-Files:
+- `PositionBroadcastService`
+  - Singleton `shared`.
+  - Depends on:
+    - `TAKService` for CoT publishing.
+    - `LocationManager` (CoreLocation wrapper).
+    - `PositionBroadcast` models (`Models/TrackModels.swift` or related).
+  - Configured via `configure(takService:locationManager:)`.
+  - Exposes `@Published` user callsign/UID/team fields that views can bind to.
 
-- Controllers: `MapViewController.swift`, `EnhancedMapViewController.swift`, `IntegratedMapView.swift`, `MapStateManager.swift`, etc.
-- Overlays: `BreadcrumbTrailOverlay.swift`, `RangeBearingOverlay.swift`, `UnitTrailOverlay.swift`, `VideoMapOverlay.swift`, etc.
-- Markers: `CustomMarkerAnnotation.swift`, `EnhancedCoTMarker.swift`, `MarkerAnnotationView.swift`
-- Tile sources: `ArcGISTileSource.swift`, `OfflineTileCache.swift`, `TileDownloader.swift`
+- `TrackRecordingService`
+  - Singleton `shared`.
+  - Depends on `LocationManager` for GPS, and `Storage` for persisted tracks.
+  - Uses `Track` models (in `Models/TrackModels.swift`).
+
+Views (`TrackRecordingView`, `TrackListView`) → `TrackRecordingService` → Location/Storage.
+
+#### 5. ArcGIS integration
+
+- `ArcGISPortalView` (Views/ArcGISPortalView.swift)
+  - Presents login/search UI.
+  - Binds to `ArcGISPortalService.shared` or a local instance.
+
+- `ArcGISPortalService` (Services/ArcGISPortalService.swift)
+  - Singleton `shared`.
+  - Imports: `Foundation`, `Combine`.
+  - Stores:
+    - `ArcGISCredentials` (Models/ArcGISModels.swift).
+    - `ArcGISPortalItem`, `ArcGISItemType` (same models file).
+  - Uses:
+    - `URLSession` with custom configuration (timeouts).
+    - Async/await (`session.data(for:request)`).
+  - Responsibilities:
+    - `authenticate(username:password:)` → calls `generateToken` endpoint.
+    - `authenticateWithToken(...)`.
+    - `signOut()` → clears credentials from `UserDefaults`.
+    - `searchContent(...)` → calls `/sharing/rest/search` with token.
 
 Dependencies:
 
-- Map controllers depend on:
-  
-  - Managers: `MeasurementManager`, `WaypointManager`, `DrawingToolsManager`, `OfflineMapManager`, `TrackRecordingService`, `TeamService`
-  - Overlays & marker models: `TrackModels`, `BreadcrumbTrailService`, `ArcGISModels`, `VideoStreamModels`
-  - Utilities:
-    - `MGRSConverter`, `BNGConverter` (for coordinate labeling)
-    - `MeasurementCalculator`
-  - Possibly `TAKService` (for live position / track overlays)
+`ArcGISPortalView` → `ArcGISPortalService` → ArcGIS REST endpoints.  
 
-- Overlays depend on:
-  
-  - Models (e.g., `TrackModels`, `BreadcrumbTrailModels` if present in `Models/`)
-  - Services (e.g., `BreadcrumbTrailService`) that maintain overlay state
+Other services such as `ArcGISFeatureService` and `OfflineMapManager` likely consume `ArcGISPortalService.credentials` to access secure feature layers or tile services.
 
-#### Utilities & Storage
+#### 6. Plugin UI (non-dynamic)
 
-- `Utilities/Calculators/MeasurementCalculator.swift`
-  
-  - Used by `MeasurementService` and map overlays for computing distance, bearing, etc.
+- `PluginsListView` (Views/PluginsListView.swift)
+  - Uses static `@State` list of `PluginInfo` structs; no dynamic discovery.
+  - No integration with deeper plugin APIs; purely a configuration UI stub.
 
-- `Utilities/Converters/MGRSConverter.swift`, `BNGConverter.swift`
-  
-  - Used by `CoordinateDisplayView`, map overlays, and measurement views.
+Dependencies:
 
-- `Utilities/Integration/KML*` (`KMLMapIntegration.swift`, `KMLOverlayManager.swift`, `KMLParser.swift`, `KMZHandler.swift`)
-  
-  - Used by `KMLImportView`, `OfflineMapManager`, and map controllers to overlay KML/KMZ content.
+`PluginsListView` → local `PluginInfo` model only.
 
-- `Utilities/Network/NetworkMonitor.swift`, `MultiServerFederation.swift`
-  
-  - `NetworkMonitor` used by `TAKService`, `OfflineMapManager`, `MissionPackageSyncService` to adapt to connectivity.
-  - `MultiServerFederation` used by `TAKService` / `MissionPackageSyncService` to manage multiple TAK / TAK-like endpoints.
+### Cross-cutting managers and services
 
-- `Storage/*`
-  
-  - `ChatPersistence`, `ChatStorageManager` used by `ChatManager`, `ChatService`.
-  - `RouteStorageManager` used by route planning manager/service.
-  - `TeamStorageManager` used by `TeamService` / `TeamManagementView` to persist team setup.
-  - `DrawingPersistence` used by `DrawingToolsManager`.
+Some managers/services are central and referenced across multiple subsystems:
+
+- `ServerManager.shared` – central location for TAK server endpoints.
+- `CertificateManager.shared` – TLS client certificate management; used by:
+  - `CertificateEnrollmentService.swift`
+  - `TAKService` when establishing TLS with mutual auth.
+- `OfflineMapManager` + `OfflineTileCache` – used by map controllers and overlays.
+- `GeofenceManager` + `GeofenceService` – used by map overlays and views like `GeofenceManagementView`.
+- `WaypointManager` + `WaypointModels` – for marker placement on the map.
 
 ## External Libraries Analysis
 
-The repo does not show Cocoapods/Swift Package manifest files in the root listing, implying:
+The project appears to avoid 3rd-party package managers in the checked-in code; it largely uses:
 
-- Heavy use of **Apple frameworks**:
-  
-  - `SwiftUI` (views, `@StateObject`, `NavigationView`, etc.)
-  - `Combine` (`ObservableObject`, `@Published`, reactive bindings)
-  - `Network` (`NWConnection`, `NWParameters`, TLS/UDP/TCP)
-  - `Security` (TLS configuration, client certificate loading)
-  - `CoreLocation` (for coordinates in CoT, measurement, map features)
-  - `MapKit` or 3rd-party map frameworks (Map controllers and overlays suggest MapKit; docs mention ArcGIS, so ArcGIS Runtime iOS is likely used via `ArcGISTileSource`, `ArcGISFeatureService`, `ArcGISPortalService`.)
+### System & Apple frameworks
 
-- **ArcGIS Runtime SDK for iOS** (inferred):
-  
-  - `ArcGISFeatureService.swift`, `ArcGISPortalService.swift`, `ArcGISTileSource.swift`, `ArcGISModels.swift` strongly suggest this.
-  - These services act as wrappers around the ArcGIS SDK: handling portal login, feature queries, map tile sources, elevation/terrain.
+- **SwiftUI** (across all `Views/` and many `UI/*` files)
+- **Combine** (`Managers`, `Services`, `ArcGISPortalService`, `TAKService`)
+- **Foundation** (ubiquitous)
+- **CoreLocation** (TAKService, ChatService, measurement/track services)
+- **Network** (`NWConnection`, `NWParameters` in `TAKService.swift`)
+- **Security** (client TLS certificates in `DirectTCPSender`)
+- **UIKit** (feedback generators in `ChatService`; may appear elsewhere)
 
-- **Meshtastic Protobuf** (internal / generated code):
-  
-  - `MeshtasticProtoMessages.swift`, `MeshtasticProtobufParser.swift` indicate embedded protobuf message definitions for Meshtastic devices, likely generated from `.proto` files, but committed as Swift.
+These are standard system frameworks; versions depend on the Xcode/iOS SDK rather than project-level configuration.
 
-- **Rust-based native library** (optional/incomplete):
-  
-  - `OmniTAKMobile.xcframework/ios-arm64/Headers/src/*.rs`, `Cargo.toml`, `omnitak_mobile.h`
-  - Indicates a Rust core library exposed as an XCFramework to iOS.
-  - However, `TAKService` comment: “Direct Network Sender (bypasses incomplete Rust FFI)” shows that for now, direct Swift networking is used instead of the Rust FFI bindings.
-  - The Rust FFI is thus an *optional or future* dependency, partially wired via bridging header (`OmniTAKMobile-Bridging-Header.h`).
+### Bundled native component
 
-No explicit 3rd-party Swift packages (e.g., Alamofire, GRDB) appear in the listed files; networking and persistence are built on system APIs (`Network`, `UserDefaults`, possible `FileManager`).
+- **OmniTAKMobile.xcframework**
+  - Contains headers and Rust source (`Cargo.toml`, `callbacks.rs`, `connection.rs`, etc.).
+  - Represents a compiled framework (probably a Rust-FFI core for TAK).
+  - Current networking path uses `DirectTCPSender` to “bypass incomplete Rust FFI”; so the xcframework is present but not currently the main data path for CoT in `TAKService.swift`.
+
+### REST / HTTP integrations
+
+Implemented using `URLSession`, not third-party libs:
+
+- ArcGIS REST API:
+  - `ArcGISPortalService`:
+    - `POST /sharing/rest/generateToken`
+    - `GET /sharing/rest/search`
+  - `ArcGISFeatureService`, `ArcGISTileSource`, `OfflineTileOverlay` likely use:
+    - Feature service / map service endpoints with token query param or header.
+- Elevation API:
+  - `ElevationAPIClient.swift` and `ElevationProfileService.swift` appear to call a remote elevation service (possibly ArcGIS elevation or another REST API).
+
+No evidence of Alamofire, Moya, or similar external networking libraries.
+
+### Meshtastic integration
+
+- `MeshtasticProtoMessages.swift`, `MeshtasticProtobufParser.swift`, `MESHTASTIC_PROTOBUF_README.md`.
+  - Likely contain generated structs or manual parsing for Meshtastic’s protobuf protocol.
+  - No explicit 3rd-party protobuf library is visible; parsing is likely hand-written or uses Swift Protobuf if vendored (not in listed files).
 
 ## Service Integrations
 
-### TAK Server (primary service)
+### TAK Server
 
-- Implemented via `TAKService.swift` (plus `DirectTCPSender`).
-- Protocols supported:
-  - TCP, UDP, TLS (configurable via `protocolType` and `useTLS`).
-- TLS configuration:
-  - Uses `NWProtocolTLS` with:
-    - Min TLS version configurable (TLS 1.0+ if `allowLegacyTLS = true`, else TLS 1.2).
-    - Max TLS 1.3.
-    - Legacy cipher suites appended for compatibility with older TAK servers.
-    - Optionally disables certificate verification to accept self-signed certs (via `sec_protocol_options_set_verify_block`).
-    - Optional client certificate from app bundle (`certificateName`/`certificatePassword` from `TAKServer`).
-- Server configuration:
-  - `ServerManager` manages multiple `TAKServer` entries, persisted to `UserDefaults`.
-  - `TAKService.connect` likely takes arguments deriving from `ServerManager.activeServer`.
+- **Protocol:** Cursor on Target (CoT) over TCP/UDP/TLS.
+- **Entry point:** `TAKService` using `DirectTCPSender`.
+- **Security:**
+  - TLS options configured via Security framework:
+    - Custom TLS versions (min TLS 1.2; optional legacy TLS 1.0/1.1).
+    - Custom cipher suites (to interop with older TAK servers).
+    - Verification callback that accepts self-signed server certs.
+    - Optional client certificate (`certificateName`, `certificatePassword`) loaded via Keychain.
+  - `CertificateManager` and `CertificateEnrollmentService` handle Keychain/PKCS#12.
 
-Integration points:
+- **Clients of TAKService:**
+  - `ChatService`, `PositionBroadcastService`, `DigitalPointerService`, `TeamService`, `TrackRecordingService`, `VideoStreamService`, etc.
+  - CoT generator/parsers:
+    - `CoTEventHandler`, `CoTMessageParser`, `ChatCoTGenerator`, `GeofenceCoTGenerator`, `MarkerCoTGenerator`, `TeamCoTGenerator`, `ChatXMLParser`.
 
-- Sending: `sendCoT(xml:)` in `TAKService` (used by `ContentView`, `ChatService`, CoT generators).
-- Receiving:
-  - `DirectTCPSender.startReceiveLoop()` reads data, updates `onMessageReceived` callback to deliver raw XML.
-  - `TAKService` parses XML into CoT objects via `CoTMessageParser`, then dispatches to:
-    - `ChatManager` (geo-chat)
-    - `TeamService` (unit updates)
-    - `GeofenceManager` (geofences shared via CoT)
-    - `TrackRecordingService` / `BreadcrumbTrailService` (track updates)
+### ArcGIS Portal & Map Services
 
-### ArcGIS / Mapping Services
+- **Service:** `ArcGISPortalService`
+  - Uses ArcGIS Online or on-prem Portal:
+    - `https://www.arcgis.com/sharing/rest` by default.
+  - Handles authentication and token management; persists credentials in `UserDefaults`.
 
-Files:
+- **Related services:**
+  - `ArcGISFeatureService` – querying feature layers, performing identify/select.
+  - `ArcGISTileSource` and `OfflineTileOverlay` – map tiles.
+  - `OfflineMapManager` – offline package download from portal items.
 
-- `ArcGISFeatureService.swift`
-- `ArcGISPortalService.swift`
-- `ArcGISTileSource.swift`
-- `ArcGISModels.swift`
+Views like `ArcGISPortalView`, `OfflineMapsView`, and map controllers rely on these services.
 
-Responsibilities:
+### Elevation / Terrain
 
-- `ArcGISPortalService`:
-  - Integration with ArcGIS Portal/Online: user sign-in, content browsing, token management.
-- `ArcGISFeatureService`:
-  - Querying feature layers, editing features, fetching attributes for overlays.
-- `ArcGISTileSource`:
-  - Custom tile source integration for base maps, perhaps hooking ArcGIS imagery into `MapViewController`.
-
-Used by:
-
-- `ArcGISPortalView` (UI)
-- `Map3DViewController`, `Map3DSettingsView`
-- Offline maps (if ArcGIS offline bundles are used) and `OfflineMapManager`.
-
-### Elevation & Terrain
-
-Files:
-
-- `ElevationAPIClient.swift` (both under `OmniTAKMobile/` and `Services/`—possible duplication/overlap)
+- `ElevationAPIClient.swift`
+  - Lower-level client for retrieving elevation data from a server.
 - `ElevationProfileService.swift`
-- `ElevationProfileModels.swift`
-- `LineOfSightService.swift`
-- `TerrainVisualizationService.swift`
+  - Wraps API client; used by `ElevationProfileView` and `LineOfSightService`.
 
-Responsibilities:
-
-- `ElevationAPIClient`:
-  - External HTTP service for elevation data (exact endpoint not visible, but strongly implied).
-- `ElevationProfileService`:
-  - Uses `ElevationAPIClient` to generate elevation profiles for routes/paths.
-- `LineOfSightService`:
-  - Uses elevation + coordinates to compute visibility.
-- `TerrainVisualizationService`:
-  - Generates terrain-based overlays for map.
+External endpoint specifics are in those files but we see standard `URLSession` usage.
 
 ### Meshtastic
 
-Files:
+- `MeshtasticManager` (Manager) + `MeshtasticProtobufParser` (Utility/Parser) + `MeshtasticProtoMessages` (Models).
+  - Integrates with Meshtastic radios via either BLE/Serial/WiFi (implementation not shown but referenced in docs).
+  - Acts as an additional, non-TAK network to bring in/out contacts and PLI.
 
-- `MeshtasticManager.swift`
-- `MeshtasticProtoMessages.swift`
-- `MeshtasticProtobufParser.swift`
-- Views: `MeshtasticConnectionView`, `MeshtasticDevicePickerView`, `MeshTopologyView`
-- Models: `MeshtasticModels.swift`
+### Other services
 
-Integration:
+All in `OmniTAKMobile/Services`:
 
-- Connects to Meshtastic radio devices (likely via Bluetooth or serial; specific APIs contained in these files).
-- Uses protobuf-encoded messages to exchange position and chat; these are then converted into CoT or internal models.
-- May inject positions into `TAKService`/CoT as a gateway.
+- `BloodhoundService` – Blue Force Tracking / contact tracking logic (UI representation present in `BloodhoundView`).
+- `NavigationService`, `TurnByTurnNavigationService` – route navigation.
+- `MissionPackageSyncService` – data package upload/download and synchronization with TAK.
+- `VideoStreamService` – handles RTSP/other streaming protocols; uses underlying AVFoundation.
 
-### Mission Packages & Data Packages
-
-Files:
-
-- `DataPackageManager.swift`, `DataPackageModels.swift`
-- `MissionPackageSyncService.swift`, `MissionPackageModels.swift`
-- Views: `DataPackageImportView`, `DataPackageView`, `MissionPackageSyncView`
-
-Integration:
-
-- Handles TAK “Mission Packages” and “Data Packages” (compression, metadata, attachments).
-- Sync may use TAK server file services or external HTTP endpoints.
-- `DataPackageManager` interacts with local filesystem and `TAKService` to send/receive packages.
-
-### Video Streams
-
-Files:
-
-- `VideoStreamService.swift`
-- Models: `VideoStreamModels.swift`
-- Views: `VideoFeedListView`, `VideoPlayerView`
-- Overlay: `VideoMapOverlay.swift`
-
-Integration:
-
-- Connects to external video streams (RTSP, HLS, or TAK video endpoints).
-- Exposes streams to map overlays and dedicated views.
-- Likely interacts with iOS AVFoundation but details are in `VideoStreamService.swift`.
-
-### Certificate Enrollment & Management
-
-Files:
-
-- `CertificateManager.swift` (manager)
-- `CertificateEnrollmentService.swift`, `CertificateEnrollmentView.swift`
-- `CertificateManagementView.swift`, `CertificateSelectionView.swift`
-- `Resources/omnitak-mobile.p12` (embedded client certificate)
-
-Integration:
-
-- Interacts with:
-  - TLS client certificate identity in `TAKService` (via `DirectTCPSender.loadClientCertificate`).
-  - Possibly enrollment endpoints (SCEP, EST, or TAK server’s enrollment API), handled by `CertificateEnrollmentService`.
-
-### Other Services
-
-- `BloodhoundService` / `BloodhoundView`:
-  - Search and rescue / route analysis features, possibly using external geospatial services or internal algorithms.
-- `TurnByTurnNavigationService`:
-  - Provides navigation instructions; may use iOS navigation/mapping APIs or custom routing.
-- `DigitalPointerService`, `EmergencyBeaconService`, `PositionBroadcastService`:
-  - CoT-based features integrated via `TAKService`.
-- `ChatService`, `PhotoAttachmentService`, `TeamService`, `NavigationService`, `RoutePlanningService`:
-  - Higher-level services layering business behavior on top of TAK CoT and map.
+All of these integrate either with TAK (via CoT) or with third-party backends (e.g., video streaming servers), but they all share the same pattern: standalone service with Combine state, `static shared` singleton.
 
 ## Dependency Injection Patterns
 
-### Patterns in use
+### Patterns actually present
 
-From `docs/Architecture.md` and code:
+1. **Singleton services and managers**
 
-1. **Init injection** for services and persistence:
-   
-   - Managers take services/persistence objects in initializers.
-   
-   - Example from docs (`ChatManager`):
-     
+   - Almost all services are exposed as:
      ```swift
-     private let chatService: ChatService
-     private let persistence: ChatPersistence
-     ```
-
-2. **Configuration injection via methods**:
-   
-   - Example in docs:
-     
-     ```swift
-     func configure(takService: TAKService, chatManager: ChatManager) {
-         self.takService = takService
-         self.chatManager = chatManager
+     class ChatService: ObservableObject {
+         static let shared = ChatService()
      }
      ```
-   
-   - Used for components that can’t use full init injection (e.g., created from storyboards/SwiftUI environment, or bridging from Objective‑C).
-
-3. **Property wrapper-based injection**:
-   
-   - `@StateObject` / `@ObservedObject`:
-     - `ContentView` uses `@StateObject private var takService = TAKService()`
-   - `@EnvironmentObject`:
-     - Many `Views/*` will accept plain `@EnvironmentObject var chatManager: ChatManager` etc., with the environment composed at the app root.
-
-4. **Singletons for core services**:
-   
-   - `ServerManager`:
-     
+   - Managers likewise often have:
      ```swift
      class ServerManager: ObservableObject {
          static let shared = ServerManager()
      }
      ```
-   
-   - Likely similar patterns for global cross-cutting services (e.g., plugin registry, some managers).
+   - Views typically either:
+     - Own their own instance with `@StateObject`, or
+     - Access `.shared` directly, or
+     - Receive an instance via initializer parameters, which are then derived from `.shared` at composition time.
 
-5. **Bridging header for FFI**:
-   
-   - `OmniTAKMobile-Bridging-Header.h` connects Swift code to C/Rust FFI (via `omnitak_mobile.h` from the XCFramework).
-   - This is a separate form of DI at the boundary between Swift and Rust: functions/handles are imported and used where needed (likely inside `TAKService` or a low-level connection wrapper), but currently bypassed by `DirectTCPSender`.
+2. **Manual configuration methods**
 
-### DI composition points
+   - Several services expose `configure(...)` methods that are called during app startup or when dependencies become available:
 
-- Root composition occurs in:
-  
-  - `OmniTAKMobileApp.swift` (not shown, but referenced), where:
-    - `TAKService`, managers, and services are instantiated.
-    - Environment objects for key managers are attached to the SwiftUI hierarchy.
+   ```swift
+   func configure(takService: TAKService, locationManager: LocationManager)
+   ```
 
-- Views like `PluginsListView`, `SettingsView`, `TAKServersView` get dependencies from environment or from singletons (`ServerManager.shared`).
+   These are used in:
+   - `ChatService` → calls through to `ChatManager.configure`.
+   - `PositionBroadcastService`, `TrackRecordingService` (per docs) → `configure(takService:locationManager:)`.
 
-### Observed coupling in DI
+   This is a form of setter/late injection, but not through a DI container.
 
-- `ContentView` directly instantiates `TAKService` as `@StateObject`, which tightly couples that view to the specific implementation.
-- `ServerManager` uses a `static shared` singleton, spreading implicit global state.
+3. **Environment and ObservedObjects**
 
-These patterns are used pragmatically but reduce testability versus full protocol-based DI + central container.
+   - Views use typical SwiftUI patterns:
+
+     ```swift
+     @StateObject private var takService = TAKService()
+     @ObservedObject var chatManager: ChatManager
+     @EnvironmentObject var serverManager: ServerManager
+     ```
+
+   - These interact with `ObservableObject` managers and services.
+
+4. **Protocol-based interfaces (limited but present)**
+
+   - `Architecture.md` describes protocols like:
+
+     ```swift
+     protocol CoTMessageGenerator {
+         func generateCoTMessage() -> String
+     }
+     ```
+
+   - Generators like `ChatCoTGenerator`, `GeofenceCoTGenerator` likely conform to these protocols and can be substituted in tests.
+   - However, services mostly depend on concrete singletons rather than protocols.
+
+### Things that are *not* present
+
+- No use of a third-party DI framework (e.g., Needle, Resolver, Swinject).
+- No centralized composition root that wires the whole object graph; initialization is mostly implicit via singletons and `@StateObject` instantiation.
+
+### Implications
+
+- **Testability**:
+  - Direct use of `static let shared` and concrete types makes unit testing harder; dependencies like `TAKService` or `ArcGISPortalService` are difficult to mock.
+  - Some injection exists via `configure(...)`, so for those services you *can* pass in mocked instances.
+
+- **Lifecycle management**:
+  - Singleton lifetime equals app lifetime; background tasks, timers (like `ChatService.retryTimer`) are pinned to app lifecycle and can become subtle sources of leaks or unwanted background activity.
 
 ## Module Coupling Assessment
 
-### Strongly coupled cores
-
-1. **TAKService as a central hub**
-   
-   - Used by:
-     - `ContentView`
-     - `ChatService` (for message sending)
-     - Position-related services (`PositionBroadcastService`, `TurnByTurnNavigationService`)
-     - CoT generators and parsers
-     - Map overlays representing live units/tracks
-   - Internally relies on:
-     - `DirectTCPSender` (internal nested class)
-     - CoT subsystem (`CoTMessageParser`, `CoTEventHandler`)
-     - `ServerManager` for configuration
-   
-   Impact: many features depend on this one class; changes in connection handling, TLS, or CoT dispatch can have wide blast radius.
-
-2. **CoT subsystem coupling**
-   
-   - CoT parsing/generation touches nearly every tactical feature:
-     - Chat, markers, tracks, geofences, teams, emergency beacons, digital pointers, mission packages.
-   - `CoTEventHandler` interacts with many managers (`ChatManager`, `TeamService`, `WaypointManager`, etc.).
-   
-   Impact: domain logic for multiple features is centralized in CoT handling; this is necessary from a protocol standpoint but makes CoT a key coupling point.
-
-3. **Map subsystem**
-   
-   - `MapStateManager`, map controllers, overlays, and tile sources depend on:
-     - Many models (`TrackModels`, `PointMarkerModels`, `OfflineMapModels`, `VideoStreamModels`, etc.).
-     - Services (`BreadcrumbTrailService`, `VideoStreamService`, `OfflineMapManager`, `ArcGIS*Service`).
-   
-   Impact: Map code is highly integrated; features that show anything on the map will depend on map types and overlays.
-
-4. **ServerManager singleton**
-   
-   - Any code that needs server info can reach `ServerManager.shared`.
-   - Couples configuration persistence to many consumers.
-
 ### Cohesion
 
-Despite coupling, cohesion is good:
+Overall, each directory has high cohesion:
 
-- Feature-specific directories:
-  - `Managers` and `Models` are grouped by feature.
-  - `Views` are grouped by function (Chat, Meshtastic, OfflineMaps, etc.)
-- Each class has a clear single responsibility (per Architecture doc).
-  - Managers are view models.
-  - Services focus on external IO or business logic.
-  - Models are data-only.
+- `Managers/` – feature-specific app state containers.
+- `Services/` – business logic by domain (Chat, CoT, ArcGIS, Elevation, etc.).
+- `Models/` – data-only.
+- `Map/` – map rendering, overlays, controllers.
+- `CoT/` – CoT-specific parsing/generation utilities.
 
-This promotes local reasoning: if you work on chat, you mostly touch `Chat*` files and associated CoT pieces.
+Feature-specific clusters (e.g., Chat, Offline Maps, Measurement, Meshtastic) are well-bounded.
+
+### Coupling patterns
+
+1. **Vertical coupling (View → Manager → Service → Utility/Network)**
+   - The main, desired path. Views rarely reach into Services directly; they usually talk via Managers.
+
+2. **Singleton cross-links**
+
+   - Many components reference each other through `.shared`, creating hidden coupling:
+     - `ChatService` → `ChatManager.shared`, `ChatStorageManager.shared`.
+     - Likely `TAKService.shared` is used inside other services rather than passed in.
+
+3. **Service ↔ Manager bidirectional coupling**
+
+   Example from `ChatService.swift`:
+
+   - `ChatService` holds `private let chatManager = ChatManager.shared`.
+   - Docs for `ChatManager` show it calls methods on `ChatService` (or expects to be configured by `ChatService`/TAK).
+   - This creates a risk of circular conceptual dependency:
+     - Manager updates state that Service also publishes and reads.
+     - Service subscribes to Manager’s state (via Combine sinks).
+   - Practically, the direction is Manager as UI-facing state, Service as backend; but because both are singletons they are tightly intertwined.
+
+4. **TAKService as a central hub**
+
+   - Many services depend on `TAKService` (for sending/receiving CoT).
+   - `TAKService` requests configuration from `ServerManager` and `CertificateManager`.
+   - Changes in `TAKService` (connection semantics, queueing, CoT parsing) can affect chat, PLI, tracks, team, video, etc.
+
+5. **Rust xcframework bypass**
+
+   - Networking is currently done via `DirectTCPSender` in Swift despite the xcframework existing.
+   - When or if the Rust FFI is re-enabled, the dependency surface changes significantly:
+     - `TAKService` would depend on the xcframework C-API (`omnitak_mobile.h`).
+     - Current Swift networking code is decoupled from that only by the `TAKService` boundary.
+
+### Degree of coupling by area
+
+- **Chat subsystem**: Moderately high coupling between `ChatService`, `ChatManager`, and `ChatStorageManager`; good cohesion within the feature.
+- **ArcGIS subsystem**: Fairly clean; `ArcGISPortalService` + `ArcGISFeatureService` + `ArcGISModels` with views binding to them. Decent separation.
+- **Map subsystem**: Map controllers appear to be the integration point between many features (markers, overlays, trails, measurement, KML integration):
+  - `EnhancedMapViewController`, `MapOverlayCoordinator`, `RadialMenuMapOverlay`, etc.
+  - They are inherently high-coupling “shells” but their responsibility is to orchestrate overlays and tool managers; this is expected but worth monitoring.
 
 ## Dependency Graph
 
-High-level conceptual graph (simplified):
+Below is a simplified textual graph of major components and their dependencies. Arrow direction: `A → B` means "A depends on B or calls into B".
 
-```text
-SwiftUI Views
-    |
-    v
-Managers (ObservableObject)
-    |
-    v
-Services  <--> Utilities/Storage
-    |
-    v
-TAKService  <--> DirectTCPSender (NWConnection, TLS)
-    |
-    v
-CoT Parsers / Generators
-    |
-    v
-Models
+### Core connectivity and configuration
 
-ArcGIS Views --> ArcGIS*Manager/Services --> ArcGIS Runtime SDK
-Meshtastic Views --> MeshtasticManager --> MeshtasticProtobufParser --> MeshtasticProtoMessages
+- `ContentView`  
+  → `TAKService`  
+  → `ServerManager`  
+  → `DirectTCPSender`  
+  → `CertificateManager` (for client TLS)  
+  → `CoTMessageParser` / `CoTEventHandler` (on received XML)
 
-ServerPickerView/TAKServersView
-    |
-    v
-ServerManager (singleton)
-    |
-    v
-TAKService.connect(...)
-```
+- `ServerPickerView` → `ServerManager`
 
-More concrete per-component relationships (non-exhaustive, but grounded in existing files and docs):
+### Chat subsystem
 
-- `ContentView`
-  
-  - → `TAKService`
+- `ChatView`, `ConversationView`, `ContactListView`  
+  → `ChatManager`  
+  → `ChatService`  
+  → `ChatStorageManager` / `ChatPersistence`  
+  → `TAKService` (via ChatManager config)  
+  → `ChatCoTGenerator`, `ChatXMLParser`  
+  → `LocationManager` (for location messages)
 
-- `TAKService`
-  
-  - → `DirectTCPSender`
-  - → `ServerManager` (config)
-  - → `CoTMessageParser` / `CoTEventHandler`
-  - → `PositionBroadcastService`
-  - → `ChatService`, `TeamService`, `TrackRecordingService`, `WaypointManager`, etc. for dispatch.
+- `ChatManager` ↔ `ChatService` (subscribes to state, sends actions).
 
-- `ServerManager`
-  
-  - → `UserDefaults`
-  - Exposed to:
-    - `TAKService`
-    - `TAKServersView`, `QuickConnectView`, `NetworkPreferencesView`
+### PLI, tracks, tactical services
 
-- `ChatManager`
-  
-  - → `ChatService`
-  - → `ChatPersistence` / `ChatStorageManager`
-  - → Observed by `ChatView`, `ConversationView`, `ContactListView`
+- `PositionBroadcastView` → `PositionBroadcastService`  
+  → `TAKService`  
+  → `LocationManager`
 
-- `ChatService`
-  
-  - → `TAKService` (sending messages via CoT)
-  - → `ChatXMLGenerator` / `ChatXMLParser` (GeoChat XML)
+- `TrackRecordingView` / `TrackListView`  
+  → `TrackRecordingService`  
+  → `LocationManager`, `OfflineMapManager`, `Storage`.
 
-- `OfflineMapManager`
-  
-  - → `OfflineTileCache`
-  - → `TileDownloader`
-  - → `OfflineMapModels`
-  - → Observed by `OfflineMapsView`, `Map controllers`
+- `GeofenceManagementView` → `GeofenceManager` → `GeofenceService` → `TAKService`.
 
-- `MeasurementManager`
-  
-  - → `MeasurementService`
-  - → `MeasurementCalculator`
-  - → `MeasurementModels`
-  - → Used by `MeasurementToolView`, `MeasurementOverlay`
+- `VideoFeedListView` / `VideoPlayerView` → `VideoStreamService` → TAK or external streaming server.
 
-- `MeshtasticManager`
-  
-  - → `MeshtasticProtobufParser`, `MeshtasticProtoMessages`
-  - → `MeshtasticModels`
-  - → Used by `MeshtasticConnectionView`, `MeshTopologyView`
+### ArcGIS and offline maps
 
-- `MapViewController` & `MapStateManager`
-  
-  - → Managers: `MeasurementManager`, `DrawingToolsManager`, `WaypointManager`, `GeofenceManager`, `TrackRecordingService`
-  - → Overlays: `BreadcrumbTrailOverlay`, `MGRSGridOverlay`, `VideoMapOverlay`, `RangeBearingOverlay`, etc.
-  - → Tile sources: `ArcGISTileSource`, `OfflineTileOverlay`
-  - → Utilities: `MGRSConverter`, `MeasurementCalculator`
+- `ArcGISPortalView` → `ArcGISPortalService`  
+  → ArcGIS REST endpoints.
 
-- `CertificateManager`
-  
-  - → `CertificateEnrollmentService`
-  - → `TAKService` (via certificateName/password, or direct TLS identity injection)
-  - → `Resources/omnitak-mobile.p12`
+- `OfflineMapsView`  
+  → `OfflineMapManager`  
+  → `ArcGISPortalService` / `ArcGISFeatureService` / `TileDownloader` / `OfflineTileOverlay`.
+
+- `EnhancedMapViewController` / `IntegratedMapView`  
+  → `OfflineTileOverlay`, `ArcGISTileSource`, `BreadcrumbTrailOverlay`, `MGRSGridOverlay`, `RadialMenuMapOverlay`, etc.  
+  → Various managers: `MeasurementManager`, `TrackRecordingService`, `GeofenceManager`, `WaypointManager`.
+
+### Meshtastic
+
+- `MeshtasticConnectionView` → `MeshtasticManager`  
+  → `MeshtasticProtobufParser`, `MeshtasticProtoMessages`  
+  → Possibly `TAKService` to bridge radio contacts into TAK network.
+
+### Plugin UI
+
+- `PluginsListView` → `PluginInfo` (local struct only).
 
 ## Potential Dependency Issues
 
-### 1. Over-centralization of `TAKService`
+1. **Singleton-heavy architecture**
 
-- **Issue**: `TAKService` plays multiple roles:
-  - Network transport (TCP/UDP/TLS)
-  - CoT dispatch coordination
-  - Global event source for multiple features
-- **Risk**:
-  - Changes in connection behavior or error handling can break many features simultaneously.
-  - Harder to unit test in isolation.
-- **Improvement**:
-  - Introduce protocols (e.g., `CoTTransport`, `CoTEventBus`) and have `TAKService` implement them.
-  - Have features depend on these protocols instead of the concrete `TAKService`.
-  - Extract `DirectTCPSender` into a separate service object and inject it, instead of instantiating internally.
+   - Impact:
+     - Harder to unit test isolated components (e.g., Chat or TAKService logic) because dependencies are globally shared and concrete.
+     - Increases implicit coupling; changes in a singleton ripple across users unexpectedly.
+   - Mitigation:
+     - Introduce protocols for critical services (e.g., `TAKServiceProtocol`, `ChatServiceProtocol`, `ArcGISPortalServiceProtocol`).
+     - Views and managers should depend on protocol types; actual instances provided via environment or initializers.
 
-### 2. Mixed DI styles and singletons
+2. **Service ↔ Manager bidirectional coupling**
 
-- **Issue**:
-  - Some components use init injection, some use `@StateObject` direct instantiation, others rely on singletons (e.g., `ServerManager.shared`).
-- **Risk**:
-  - Harder to swap implementations (e.g., fake servers for tests).
-  - Lifecycle management of global singletons is implicit.
-- **Improvement**:
-  - Standardize DI:
-    - Use `@EnvironmentObject` for global services and managers in SwiftUI.
-    - Use protocols for core services and inject via initializers.
-  - Wrap singletons in protocol types to allow mocking.
+   - Chat is the clearest example:
+     - `ChatService` owns `ChatManager.shared` and subscribes to it.
+     - `ChatManager` also coordinates with `ChatService`.
+   - This increases the risk of:
+     - Tight cycles of responsibility.
+     - Difficult reasoning about who “owns” the state.
+   - Mitigation:
+     - Choose a direction:
+       - Managers own state, Services are pure side-effect helpers; or
+       - Services own state, Managers just adapt state for UI.
+     - Decouple with protocols and events rather than shared singletons.
 
-### 3. Tight coupling between CoT parsing and feature managers
+3. **Centralization on `TAKService`**
 
-- **Issue**:
-  - `CoTEventHandler` likely contains logic like “if CoT type is X, update ChatManager; if Y, update TrackRecordingService…”.
-- **Risk**:
-  - Adding new CoT message types requires editing central handler.
-  - Harder to modularize features; cross-feature dependencies accumulate in CoT handler.
-- **Improvement**:
-  - Implement a pluggable CoT handler registry:
-    - Each feature registers a handler for specific CoT types (plugin-like system).
-    - `CoTEventHandler` simply routes events to registered handlers.
+   - Many features depend on `TAKService`. It is effectively a “god object” for network/CoT:
+     - Complex, 1100+ lines.
+     - Hard to reason about behavior across all CoT types.
+   - Mitigation:
+     - Factor out:
+       - Protocol-specific modules (chat, PLI, video, geofence) into smaller helpers.
+       - Transport concerns (socket/connect/reconnect/TLS) into a separate `TransportClient` protocol already partially represented by `DirectTCPSender`.
 
-### 4. Optional Rust FFI complexity
+4. **TLS security posture embedded in `DirectTCPSender`**
 
-- **Issue**:
-  - There is an XCFramework containing Rust code, but networking currently bypasses it in favor of `DirectTCPSender`.
-- **Risk**:
-  - Two competing code paths for TAK connectivity may emerge.
-  - Future integration of Rust FFI could introduce subtle behavior differences.
-- **Improvement**:
-  - Define a clear `ConnectionProvider` protocol and ensure both “Swift NWConnection” and “Rust FFI” implementations conform.
-  - Encapsulate selection logic (which provider to use) behind a single factory.
+   - `DirectTCPSender`:
+     - Accepts all server certificates in the verification callback, to accommodate self-signed TAK servers.
+     - Adds legacy ciphers and TLS 1.0/1.1 when `allowLegacyTLS` is enabled.
+   - While this is necessary for legacy TAK, the security behavior is currently global and not easily constrained per server or environment.
+   - Mitigation:
+     - Encapsulate security policy in a separate configuration object or service; e.g.:
+       ```swift
+       struct TLSPolicy {
+           let allowLegacy: Bool
+           let acceptSelfSigned: Bool
+       }
+       ```
+     - Associate policy with `TAKServer` model.
 
-### 5. ArcGIS and external service wrappers
+5. **Rust xcframework integration bypassed**
 
-- **Issue**:
-  - ArcGIS services and `ElevationAPIClient` are likely directly referenced by managers and views.
-- **Risk**:
-  - Vendor SDK types leak into app-wide code, making it harder to replace or abstract.
-- **Improvement**:
-  - Keep vendor-specific types inside service implementations; expose feature-oriented protocols/data models to the rest of the app.
+   - `DirectTCPSender` is explicitly described as “bypassing incomplete Rust FFI”.
+   - There are two parallel paths:
+     - Current live Swift network path.
+     - Planned or legacy Rust xcframework path.
+   - Risk:
+     - When re-enabling the Rust path, behavior drift and duplication can cause bugs.
+   - Mitigation:
+     - Keep all higher-level CoT semantics in Swift (`TAKService`) and treat Rust as a pure transport or parsing backend.
+     - Define a single abstract interface for the transport; both Rust-based and `DirectTCPSender`-based clients should conform.
 
-### 6. Storage & UserDefaults
+6. **Plugin system is currently UI-only**
 
-- **Issue**:
-  - `ServerManager` directly uses `UserDefaults`.
-  - Other storage managers likely use `FileManager` / `UserDefaults` directly.
-- **Risk**:
-  - Harder to unit test without side effects.
-- **Improvement**:
-  - Abstract persistence behind protocols (`KeyValueStore`, `FileStore`), and inject concrete implementations.
+   - `PluginsListView` shows plugin toggles but they don’t hook into any extensible API.
+   - Future real plugin support will need:
+     - A plugin registry service.
+     - A protocol that features implement to register UI/tools with the map and services.
+   - Mitigation:
+     - When implementing, ensure plugin API is independent of concrete services (use protocols and dependency boundaries).
+     - Avoid letting plugins access `TAKService.shared` directly; pass them scoped interfaces.
 
-### 7. View ↔ Service direct coupling
+7. **Testing and mocking external integrations**
 
-- **Issue**:
-  - `ContentView` directly owns `TAKService`, not through a manager.
-- **Risk**:
-  - Violates MVVM separation (view directly manipulating service).
-- **Improvement**:
-  - Introduce a simple `ConnectionManager` view model that wraps `TAKService`.
-  - The view binds to `ConnectionManager`, which in turn coordinates with `TAKService`.
+   - External APIs (TAK, ArcGIS, Elevation) are called directly via `URLSession`/`NWConnection` in concrete services.
+   - No obvious abstraction for:
+     - Mocking ArcGIS responses.
+     - Simulating TAK connectivity.
+   - Mitigation:
+     - Introduce small wrappers:
+       - `HTTPClient` protocol for ArcGIS/Elevation.
+       - `TransportClient` protocol for TAK connections.
+     - Provide default implementations using `URLSession`/`NWConnection` and allow tests to inject mocks.
+
+8. **Potential for circular runtime dependencies**
+
+   - While the typegraph doesn’t show compile-time cycles, patterns like:
+     - Service A holds `static let shared` of B, and B holds `static let shared` of A or uses A in its initializer.
+   - This is not visible fully from the partial snippets, but should be checked carefully, especially around:
+     - `ChatService`, `ChatManager`, `TAKService`, `CoTEventHandler`.
+   - Mitigation:
+     - Avoid doing heavy work in `init` of singletons.
+     - Use explicit `configure(...)` steps after all singletons are constructed.
 
 ---
 
-This analysis is based strictly on the existing files and documentation in the repo, focusing on observed imports, file naming, and documented patterns, without introducing new hypothetical structures.
+This analysis reflects the actual files and documentation present under `.` as of the snapshot. For deeper, per-type graphs (e.g., which service calls which specific method on `TAKService`), a follow-up pass over each `Services/*.swift` and `Managers/*.swift` file can be generated if needed.
