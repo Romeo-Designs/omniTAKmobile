@@ -134,10 +134,10 @@ This pattern is consistent across features (from `docs/Architecture.md` and modu
   class ChatManager: ObservableObject {
       @Published var conversations: [Conversation] = []
       @Published var unreadCount: Int = 0
-      
+
       private let chatService: ChatService
       private let persistence: ChatPersistence
-      
+
       func sendMessage(_ text: String, to recipient: String) {
           let message = chatService.createMessage(text, recipient)
           chatService.send(message)
@@ -149,7 +149,6 @@ This pattern is consistent across features (from `docs/Architecture.md` and modu
 In the project:
 
 - Each `Managers/*.swift` file likely follows this:
-
   - `ChatManager` → `ChatService`, `ChatPersistence`, `TAKService`
   - `WaypointManager` → `WaypointModels`, `OfflineMapManager` (for coordinate context), `BreadcrumbTrailService`
   - `OfflineMapManager` → `OfflineMapModels`, `OfflineTileCache`, `TileDownloader`
@@ -188,7 +187,7 @@ Files:
 - `CoT/CoTFilterCriteria.swift`
 - `CoT/CoTMessageParser.swift`
 - `CoT/Generators/*.swift` (Chat, Geofence, Marker, Team)
-- `CoT/Parsers/*.swift` (ChatXML*)
+- `CoT/Parsers/*.swift` (ChatXML\*)
 
 Dependencies:
 
@@ -268,7 +267,7 @@ The repo does not show Cocoapods/Swift Package manifest files in the root listin
   - `OmniTAKMobile.xcframework/ios-arm64/Headers/src/*.rs`, `Cargo.toml`, `omnitak_mobile.h`
   - Indicates a Rust core library exposed as an XCFramework to iOS.
   - However, `TAKService` comment: “Direct Network Sender (bypasses incomplete Rust FFI)” shows that for now, direct Swift networking is used instead of the Rust FFI bindings.
-  - The Rust FFI is thus an *optional or future* dependency, partially wired via bridging header (`OmniTAKMobile-Bridging-Header.h`).
+  - The Rust FFI is thus an _optional or future_ dependency, partially wired via bridging header (`OmniTAKMobile-Bridging-Header.h`).
 
 No explicit 3rd-party Swift packages (e.g., Alamofire, GRDB) appear in the listed files; networking and persistence are built on system APIs (`Network`, `UserDefaults`, possible `FileManager`).
 
@@ -424,7 +423,6 @@ Integration:
 From `docs/Architecture.md` and code:
 
 1. **Init injection** for services and persistence:
-
    - Managers take services/persistence objects in initializers.
    - Example from docs (`ChatManager`):
 
@@ -434,7 +432,6 @@ From `docs/Architecture.md` and code:
      ```
 
 2. **Configuration injection via methods**:
-
    - Example in docs:
 
      ```swift
@@ -447,14 +444,12 @@ From `docs/Architecture.md` and code:
    - Used for components that can’t use full init injection (e.g., created from storyboards/SwiftUI environment, or bridging from Objective‑C).
 
 3. **Property wrapper-based injection**:
-
    - `@StateObject` / `@ObservedObject`:
      - `ContentView` uses `@StateObject private var takService = TAKService()`
    - `@EnvironmentObject`:
      - Many `Views/*` will accept plain `@EnvironmentObject var chatManager: ChatManager` etc., with the environment composed at the app root.
 
 4. **Singletons for core services**:
-
    - `ServerManager`:
 
      ```swift
@@ -466,14 +461,12 @@ From `docs/Architecture.md` and code:
    - Likely similar patterns for global cross-cutting services (e.g., plugin registry, some managers).
 
 5. **Bridging header for FFI**:
-
    - `OmniTAKMobile-Bridging-Header.h` connects Swift code to C/Rust FFI (via `omnitak_mobile.h` from the XCFramework).
    - This is a separate form of DI at the boundary between Swift and Rust: functions/handles are imported and used where needed (likely inside `TAKService` or a low-level connection wrapper), but currently bypassed by `DirectTCPSender`.
 
 ### DI composition points
 
 - Root composition occurs in:
-
   - `OmniTAKMobileApp.swift` (not shown, but referenced), where:
     - `TAKService`, managers, and services are instantiated.
     - Environment objects for key managers are attached to the SwiftUI hierarchy.
@@ -492,7 +485,6 @@ These patterns are used pragmatically but reduce testability versus full protoco
 ### Strongly coupled cores
 
 1. **TAKService as a central hub**
-
    - Used by:
      - `ContentView`
      - `ChatService` (for message sending)
@@ -507,7 +499,6 @@ These patterns are used pragmatically but reduce testability versus full protoco
    Impact: many features depend on this one class; changes in connection handling, TLS, or CoT dispatch can have wide blast radius.
 
 2. **CoT subsystem coupling**
-
    - CoT parsing/generation touches nearly every tactical feature:
      - Chat, markers, tracks, geofences, teams, emergency beacons, digital pointers, mission packages.
    - `CoTEventHandler` interacts with many managers (`ChatManager`, `TeamService`, `WaypointManager`, etc.).
@@ -515,7 +506,6 @@ These patterns are used pragmatically but reduce testability versus full protoco
    Impact: domain logic for multiple features is centralized in CoT handling; this is necessary from a protocol standpoint but makes CoT a key coupling point.
 
 3. **Map subsystem**
-
    - `MapStateManager`, map controllers, overlays, and tile sources depend on:
      - Many models (`TrackModels`, `PointMarkerModels`, `OfflineMapModels`, `VideoStreamModels`, etc.).
      - Services (`BreadcrumbTrailService`, `VideoStreamService`, `OfflineMapManager`, `ArcGIS*Service`).
@@ -523,7 +513,6 @@ These patterns are used pragmatically but reduce testability versus full protoco
    Impact: Map code is highly integrated; features that show anything on the map will depend on map types and overlays.
 
 4. **ServerManager singleton**
-
    - Any code that needs server info can reach `ServerManager.shared`.
    - Couples configuration persistence to many consumers.
 

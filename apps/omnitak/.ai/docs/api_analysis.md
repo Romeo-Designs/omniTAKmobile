@@ -2,13 +2,13 @@
 
 This project is an iOS app (SwiftUI, Combine, URLSession, Network framework) that **consumes external APIs** rather than serving HTTP APIs itself. The “API surface” is comprised of:
 
-* Local Swift service classes (used by UI & managers)
-* Network protocols to TAK servers (TCP/UDP/TLS, XML CoT)
-* HTTP-based external APIs (ArcGIS Portal/Online, elevation, etc.)
+- Local Swift service classes (used by UI & managers)
+- Network protocols to TAK servers (TCP/UDP/TLS, XML CoT)
+- HTTP-based external APIs (ArcGIS Portal/Online, elevation, etc.)
 
 There is **no HTTP server** or REST API exposed by the app; instead, you integrate by configuring it to talk to your TAK server and external map services.
 
-Below, “APIs Served” documents the *internal service APIs* that other code in this app uses, because there are no public HTTP endpoints.
+Below, “APIs Served” documents the _internal service APIs_ that other code in this app uses, because there are no public HTTP endpoints.
 
 ---
 
@@ -27,7 +27,7 @@ Below, “APIs Served” documents the *internal service APIs* that other code i
 
 ### Core Service Endpoints (Internal Swift APIs)
 
-These are *Swift service classes* accessed by UI, managers, and other services.
+These are _Swift service classes_ accessed by UI, managers, and other services.
 
 #### `TAKService`
 
@@ -280,7 +280,6 @@ class ArcGISPortalService: ObservableObject {
 **Public Methods:**
 
 1. **`authenticate(portalURL: String = arcGISOnlineURL, username: String, password: String) async throws`**
-
    - Builds token URL: `"{portalURL}/sharing/rest/generateToken"`.
    - Request:
      - Method: `POST`
@@ -307,17 +306,14 @@ class ArcGISPortalService: ObservableObject {
      - Sets `isAuthenticated = true`.
 
 2. **`authenticateWithToken(portalURL: String = arcGISOnlineURL, token: String, username: String = "token_user", expiration: Date = Date().addingTimeInterval(3600))`**
-
    - Creates `ArcGISCredentials` directly with a pre-obtained token.
    - Marks service as authenticated and saves credentials.
 
 3. **`signOut()`**
-
    - Clears `credentials`, `isAuthenticated`, and all portal-related state.
    - Removes credentials from `UserDefaults`.
 
 4. **`searchContent(query: String = "", itemType: ArcGISItemType? = nil, sortField: String = "modified", sortOrder: String = "desc", page: Int = 1) async throws`**
-
    - Requires `isAuthenticated == true` and valid `credentials`.
    - Validates token via `creds.isValid`, else throws `ArcGISError.tokenExpired`.
    - Builds URL:

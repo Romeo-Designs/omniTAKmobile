@@ -4,18 +4,18 @@
 
 OmniTAK Mobile is an iOS client; “requests” are primarily:
 
-1. **Outbound TAK network requests (CoT/XML over TCP/UDP/TLS)**  
+1. **Outbound TAK network requests (CoT/XML over TCP/UDP/TLS)**
    - Entry point: service/manager methods that call `TAKService` which uses `DirectTCPSender`.
    - Examples:
      - `ChatService.sendTextMessage(_:to:)`
      - `PositionBroadcastService.broadcastPositionNow()`
      - Other feature services (routes, markers, packages) that ultimately call `TAKService.send(...)`.
 
-2. **Inbound TAK network messages (CoT/XML from TAK server)**  
+2. **Inbound TAK network messages (CoT/XML from TAK server)**
    - Entry point: `DirectTCPSender`’s receive loop (`startReceiveLoop` → `processReceivedData`).
    - CoT XML is parsed by `CoTMessageParser` and dispatched to feature managers/handlers such as `CoTEventHandler`, `ChatManager`, map/track services, etc.
 
-3. **Local user-initiated flows (UI as entry)**  
+3. **Local user-initiated flows (UI as entry)**
    - Views in `OmniTAKMobile/Views` are the top‑level entry for user actions.
    - They depend on `Managers/` (view models) that in turn call `Services/`.
    - Examples:
@@ -33,11 +33,11 @@ There is no HTTP/REST API exposed by this app; the “API endpoints” are TAK s
 
 **General pattern (documented in `Architecture.md` / `Services.md` and visible in code):**
 
-1. **UI View**  
+1. **UI View**
    - SwiftUI view under `OmniTAKMobile/Views/` reacts to user action.
    - Examples: `ChatView`, `PositionBroadcastView`, `RoutePlanningView`.
 
-2. **Manager (ViewModel) layer** (`OmniTAKMobile/Managers/`)  
+2. **Manager (ViewModel) layer** (`OmniTAKMobile/Managers/`)
    - `ObservableObject` holds state and orchestrates operations.
    - Example (`Architecture.md`):
 
@@ -45,10 +45,10 @@ There is no HTTP/REST API exposed by this app; the “API endpoints” are TAK s
      class ChatManager: ObservableObject {
          @Published var conversations: [Conversation] = []
          @Published var unreadCount: Int = 0
-         
+
          private let chatService: ChatService
          private let persistence: ChatPersistence
-         
+
          func sendMessage(_ text: String, to recipient: String) {
              let message = chatService.createMessage(text, recipient)
              chatService.send(message)
@@ -59,7 +59,7 @@ There is no HTTP/REST API exposed by this app; the “API endpoints” are TAK s
 
    - Request routing: Manager takes UI input, calls the appropriate `Service` method.
 
-3. **Service layer** (`OmniTAKMobile/Services/`)  
+3. **Service layer** (`OmniTAKMobile/Services/`)
    - Business logic and protocol translation.
    - Example from `docs/API/Services.md`:
 
@@ -76,7 +76,7 @@ There is no HTTP/REST API exposed by this app; the “API endpoints” are TAK s
      - Domain service builds CoT XML (`ChatCoTGenerator`, `MarkerCoTGenerator`, etc. in `CoT/Generators`).
      - Calls `TAKService.send(cotMessage:priority:)`.
 
-4. **TAKService** (`OmniTAKMobile/Services/TAKService.swift`)  
+4. **TAKService** (`OmniTAKMobile/Services/TAKService.swift`)
    - Central network orchestrator for TAK.
    - Holds statistics and connection state (per `Services.md` / `Networking.md`).
 
@@ -84,7 +84,7 @@ There is no HTTP/REST API exposed by this app; the “API endpoints” are TAK s
      - Validates connectivity and/or queues if offline (`messageQueue` as per `Networking.md`).
      - Delegates to `DirectTCPSender.send(xml:)` for immediate send if connected.
 
-5. **DirectTCPSender** (`TAKService.swift`, top of file)  
+5. **DirectTCPSender** (`TAKService.swift`, top of file)
    - Lowest-level network sender:
 
      ```swift
@@ -107,7 +107,7 @@ There is no HTTP/REST API exposed by this app; the “API endpoints” are TAK s
 
    - Routing: all outbound CoT XML leaves the app through this class’ `NWConnection`.
 
-6. **Network layer**  
+6. **Network layer**
    - `NWConnection` (Network framework) sends to TAK server host/port using chosen protocol (TCP/UDP/TLS).
 
 **Summary path (outbound):**
@@ -163,7 +163,7 @@ There is no HTTP/REST API exposed by this app; the “API endpoints” are TAK s
    }
    ```
 
-3. **Routing into app domain**  
+3. **Routing into app domain**
    - `TAKService` sets `DirectTCPSender.onMessageReceived` to its internal handler.
    - That handler:
      - Updates `messagesReceived`/`bytesReceived` stats.
@@ -182,7 +182,7 @@ There is no HTTP/REST API exposed by this app; the “API endpoints” are TAK s
 
 ## Middleware Pipeline
 
-The app doesn’t use middleware in the HTTP-server sense, but the request flow *does* pass through layered processing steps that act like middleware:
+The app doesn’t use middleware in the HTTP-server sense, but the request flow _does_ pass through layered processing steps that act like middleware:
 
 ### Outbound “Middleware” Phases
 
@@ -253,7 +253,7 @@ Again, there’s no declarative middleware chain; the logic is in specialized ha
 ```swift
 struct ChatView: View {
     @ObservedObject var chatManager: ChatManager
-    
+
     var body: some View {
         List(chatManager.conversations) { conversation in
             ConversationRow(conversation: conversation)
@@ -286,7 +286,7 @@ class ChatManager: ObservableObject {
 }
 ```
 
-These managers effectively *route* UI‑initiated “requests” to service‑level handlers.
+These managers effectively _route_ UI‑initiated “requests” to service‑level handlers.
 
 ### Services (Core Handlers)
 
@@ -362,11 +362,11 @@ if useTLS || protocolType.lowercased() == "tls" {
 
 **Authentication steps:**
 
-1. **Server Authentication**  
+1. **Server Authentication**
    - Default behavior: accept any server certificate (including self‑signed).
    - This is documented explicitly in `docs/Features/Networking.md` as a TAK‑compatibility choice.
 
-2. **Client Authentication (mTLS)**  
+2. **Client Authentication (mTLS)**
    - If a `certificateName` is provided:
      - `loadClientCertificate(name:password:)` attempts:
        1. `CertificateManager.shared` (Keychain‑stored certs, `CertificateManager.swift`).

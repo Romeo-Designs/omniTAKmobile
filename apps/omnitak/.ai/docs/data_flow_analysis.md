@@ -104,7 +104,7 @@ No business logic is embedded in models; they are purely data structures, someti
 
 ## Data Transformation Map
 
-This section focuses on *how* data moves and is transformed between layers, using the main subsystems as exemplars.
+This section focuses on _how_ data moves and is transformed between layers, using the main subsystems as exemplars.
 
 ### Global Architectural Data Path
 
@@ -138,6 +138,7 @@ User Input -> Views -> Managers -> Services/Storage
 ### CoT Events & Map Markers
 
 Primary files:
+
 - `CoTMessageParser.swift`
 - `CoTEventHandler.swift`
 - `CoTFilterCriteria.swift`
@@ -171,7 +172,7 @@ Primary files:
 4. **Map Rendering**
    - `MapOverlayCoordinator`, `EnhancedMapViewController`, overlays in `Map/Overlays/` transform:
      - `EnhancedCoTMarker`, `Track` → `MKAnnotation`, `MKOverlay` or Esri overlay objects.
-   - These derived view models are *not persisted*; they mirror domain models in memory.
+   - These derived view models are _not persisted_; they mirror domain models in memory.
 
 **Outbound (Map/Position → Network):**
 
@@ -188,6 +189,7 @@ Primary files:
 ### Chat Flow
 
 Primary files:
+
 - `ChatService.swift`
 - `ChatManager.swift`
 - Storage: `ChatPersistence.swift`, `ChatStorageManager.swift`
@@ -253,6 +255,7 @@ Primary files:
 ### Server & Certificate Configuration
 
 Primary files:
+
 - `ServerManager.swift`
 - `CertificateManager.swift`
 - `NetworkPreferencesView.swift`, `TAKServersView.swift`
@@ -310,6 +313,7 @@ Primary files:
 ### Offline Maps & Tile Caching
 
 Primary files:
+
 - `OfflineMapModels.swift`
 - `OfflineTileOverlay.swift`
 - `OfflineTileCache.swift`
@@ -341,6 +345,7 @@ Primary files:
 ### Tracks & Breadcrumbs
 
 Primary files:
+
 - `TrackModels.swift`
 - `TrackRecordingService.swift`
 - `BreadcrumbTrailOverlay.swift`
@@ -369,6 +374,7 @@ Primary files:
 ### KML/KMZ and Data Packages
 
 Primary files:
+
 - `KMLParser.swift`, `KMZHandler.swift`, `KMLMapIntegration.swift`, `KMLOverlayManager.swift`
 - `DataPackageManager.swift`, `DataPackageModels.swift`
 - Views: `KMLImportView.swift`, `DataPackageImportView.swift`
@@ -462,7 +468,6 @@ Validation appears in three main tiers:
    - Methods guard against invalid inputs before processing or persisting.
 
    Examples (as documented):
-
    - `CertificateManager.importCertificate(from:password:)`:
      - Throws `CertificateError` on bad data/password.
    - `TAKService.connect(...)`:
@@ -476,6 +481,7 @@ Validation appears in three main tiers:
    - Models themselves don’t enforce invariants, but computed properties communicate status.
 
    Example:
+
    ```swift
    var isStale: Bool {
        Date().timeIntervalSince(lastUpdate) > 300
@@ -490,7 +496,6 @@ Validation appears in three main tiers:
      - `MeshtasticProtobufParser` verifies message types and structure.
 
 5. **Error Handling Patterns**
-
    - Many services are `ObservableObject` and surface errors as:
      - `@Published var lastError: Error?` or `@Published var errorMessage: String?`.
    - For critical operations (e.g., certificates, server connection):
@@ -579,6 +584,7 @@ These overlays are derived state only; they are recomputed from the underlying m
 ### CoT & GeoChat XML
 
 Files:
+
 - `CoTMessageParser.swift`
 - `ChatCoTGenerator.swift`
 - `ChatXMLGenerator.swift`
@@ -625,6 +631,7 @@ Files:
 ### Protobuf (Meshtastic)
 
 Files:
+
 - `MeshtasticProtoMessages.swift`
 - `MeshtasticProtobufParser.swift`
 - `MeshtasticManager.swift`
@@ -646,6 +653,7 @@ Files:
 ### KML/KMZ
 
 Files:
+
 - `KMLParser.swift`
 - `KMZHandler.swift`
 - `KMLMapIntegration.swift`
@@ -661,6 +669,7 @@ Process:
 ### ArcGIS & Other REST/JSON
 
 Files:
+
 - `ArcGISFeatureService.swift`
 - `ArcGISPortalService.swift`
 - `ElevationAPIClient.swift`

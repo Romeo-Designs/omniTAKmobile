@@ -96,7 +96,7 @@ Data generally flows in one direction:
 
 #### Core interaction flow
 
-```mermaid
+````mermaid
 flowchart LR
     subgraph UI[UI Layer]
         VChat[ChatView]
@@ -199,7 +199,7 @@ Rel(omniTAK, arcgis, "Requests tiles & features", "HTTPS/REST")
 Rel(omniTAK, elevation, "Requests elevation, LOS", "HTTPS/REST")
 Rel(omniTAK, meshtastic, "Exchanges telemetry/messages", "Serial/BLE/WiFi (protobuf)")
 Rel(omniTAK, files, "Imports/exports", "Filesystem / share sheet")
-```
+````
 
 </details>
 
