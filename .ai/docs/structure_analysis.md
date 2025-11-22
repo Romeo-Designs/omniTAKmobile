@@ -766,7 +766,6 @@ These FFI functions provide a **stable boundary** around Rust logic; Swift/TS/Ja
 ### Plugin Interfaces
 
 - `PluginAPIs.swift`, `PluginManifest.swift`, `PluginPermissions.swift` define:
-
   - Data structures and APIs available to plugins.
   - Required manifest fields and supported permission types.
 

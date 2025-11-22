@@ -56,7 +56,6 @@ From `apps/omnitak/OmniTAKMobile` and docs:
 #### Views → Managers
 
 - Each SwiftUI **View** observes one or more managers:
-
   - `ChatView` → `ChatManager`
   - `RoutePlanningView` → `RouteStorageManager`, `RoutePlanningService` via manager
   - `OfflineMapsView` → `OfflineMapManager`
@@ -337,14 +336,14 @@ Key external libraries (from `DEPENDENCIES.md`, xcframeworks, and code layout):
   - `modules/omnitak_mobile/ios/maplibre/SCMapLibreMapView.*`
   - `modules/omnitak_mobile/src/valdi/omnitak/services/MapLibreIntegration.ts` (JS wrapper).
   - For **Valdi‑based UI** (Map screen with MapLibre).  
-  Not heavily used in the pure Swift app – map overlays there appear MapKit/ArcGIS-based.
+    Not heavily used in the pure Swift app – map overlays there appear MapKit/ArcGIS-based.
 
 - **ArcGIS**  
   Not an explicit pod, but:
   - `ArcGISFeatureService.swift`, `ArcGISPortalService.swift`, `ArcGISModels.swift` show REST integration.
   - The app acts as an HTTP client to ArcGIS Online / Enterprise endpoints.
 
-- **Rust FFI (omnitak-mobile)**  
+- **Rust FFI (omnitak-mobile)**
   - `apps/omnitak/OmniTAKMobile.xcframework` includes headers:
     - `callbacks.rs`, `connection.rs`, `error.rs`, `lib.rs` in `ios-arm64/Headers/src`.
   - Underlying crate: `crates/omnitak-mobile` (and `omnitak-cert`, `omnitak-core`, `omnitak-cot`, `omnitak-client`, `omnitak-meshtastic`).
@@ -354,7 +353,7 @@ Key external libraries (from `DEPENDENCIES.md`, xcframeworks, and code layout):
     - Meshtastic integration,
     - Core TAK representations.
 
-- **Valdi runtime (iOS)**  
+- **Valdi runtime (iOS)**
   - `valdi`, `valdi_core` Objective‑C and C++ libs; bridging via `OmniTAKMobile-Bridging-Header.h` when used.
   - Supplies JS runtimes (QuickJS, Hermes, V8) and UI runtime; used more by the `modules/omnitak_mobile` Valdi app than by the Swift app directly.
 
@@ -412,21 +411,21 @@ Root `package.json` dependencies:
 
 Usage:
 
-- **maplibre-gl (4.7.1)**  
+- **maplibre-gl (4.7.1)**
   - Used in web demo / tooling and likely for map rendering in `modules/omnitak_mobile` when running in web or dev mode.
 
-- **milsymbol (2.2.0)**  
+- **milsymbol (2.2.0)**
   - Used to generate MIL‑STD‑2525 symbols:
     - On JS side: `modules/omnitak_mobile/src/valdi/omnitak/services/SymbolRenderer.ts`.
     - On Swift side, MIL‑STD‑2525 symbol handling is encapsulated in `UI/MilStd2525/MilStd2525Symbols.swift` (not using milsymbol directly).
 
-- **@turf/turf**, `geojson`, `@mapbox/vector-tile`, `pbf`  
+- **@turf/turf**, `geojson`, `@mapbox/vector-tile`, `pbf`
   - Used for vector tile manipulation, geospatial ops, and decoding MBTiles/protobuf‑encoded vector layers.
   - These support offline or custom vector overlays in MapLibre (Valdi map stack).
 
 Dev dependencies:
 
-- **@typescript-eslint/*, eslint**  
+- **@typescript-eslint/\*, eslint**
   - Linting and code quality for TS/JS modules.
 
 ### Third‑party C++ / native libs (common)
@@ -581,7 +580,6 @@ OmniTAKMobile integrates this via:
 Patterns described in `Architecture.md` and seen implicitly:
 
 1. **Initializer/Configurator injection**
-
    - Services and managers are created centrally in app startup and passed into dependents.
 
    ```swift
@@ -594,7 +592,6 @@ Patterns described in `Architecture.md` and seen implicitly:
    - This pattern appears in service/handler classes (e.g., `CoTEventHandler`).
 
 2. **SwiftUI environment-based injection**
-
    - `OmniTAKMobileApp` creates core managers as `@StateObject` and exposes them via `@EnvironmentObject` to Views:
 
    ```swift
@@ -622,7 +619,6 @@ Patterns described in `Architecture.md` and seen implicitly:
    ```
 
 3. **Singleton / shared instance (limited)**
-
    - Some services may expose `shared` static instances (e.g., `TAKService.shared`) as visible in docs:
 
    ```swift
@@ -632,32 +628,26 @@ Patterns described in `Architecture.md` and seen implicitly:
    - This reduces explicit DI but is convenient for cross‑feature usage; it couples code to the concrete type.
 
 4. **Protocol-based abstraction**
-
    - Protocols define interfaces for testability and pluggability (e.g., `CoTMessageGenerator`).
    - Actual implementations (e.g., `ChatCoTGenerator`) are injected into handlers or services that depend only on the protocol.
 
 5. **Rust FFI injection**
-
    - The Rust FFI types (e.g., `omnitak_mobile_connection_t`) are wrapped in Swift classes and injected into `TAKService` / `CertificateEnrollmentService`.
 
 ### Valdi / TS / Node side
 
 1. **Provider / GlobalProviderSource**
-
    - In `src/valdi_modules/src/valdi/valdi_core/src/provider/*`, DI is built around **providers** and `ProviderKey`s.
    - UI components access dependencies via providers, decoupling them from concrete implementations.
 
 2. **Module loader and factories**
-
    - `ModuleLoader.ts` and `ModuleFactory` (in `valdi_core`) manage loading of JS modules and creating instances.
    - Many Valdi modules export **ModuleFactory** objects that declare what services/components they provide.
 
 3. **Worker services**
-
    - `worker` module defines `WorkerService` and `IWorkerService` to run background computations; DI is via service registration and message passing.
 
 4. **Native modules**
-
    - Bridge modules (HTTP client, Persistence, FileSystem, Protobuf) are injected into JS runtime as modules, not imported directly from platform-specific code.
 
 ### Rust server (`omnitak-server`)
@@ -683,11 +673,11 @@ Patterns described in `Architecture.md` and seen implicitly:
 - **Views → Managers** (OK, one‑directional).
 - **Managers → Services / Storage / Utilities / Models** (intended).
 - **Services → CoT / Rust / Network / Models**.
-- **CoTEventHandler** is a *hub*:
+- **CoTEventHandler** is a _hub_:
   - Depends on many services and managers.
   - All CoT‑driven features converge there → high fan‑in and fan‑out.
 
-- **TAKService** is another *central hub*:
+- **TAKService** is another _central hub_:
   - All CoT send/receive goes through it.
   - Interacts with certificate, multi‑server federation, and CoTEventHandler.
 
@@ -786,17 +776,15 @@ omnitak-server::marti (Axum Router)
 ## Potential Dependency Issues
 
 1. **Centralized CoTEventHandler coupling**
-
    - `CoTEventHandler.swift` is likely aware of many domain services and managers.
    - This can create a "god object" that:
      - Is difficult to test in isolation.
      - Needs modification whenever new CoT-based feature is added.
-   - **Mitigation:**  
+   - **Mitigation:**
      - Introduce CoT **event bus** or `CoTEventListener` protocol.
      - Register feature-specific listeners (Chat, Team, Track, Geofence) instead of hardcoding dependencies.
 
 2. **TAKService as global singleton**
-
    - Usage of `TAKService.shared` couples code directly to concrete service and global state.
    - Complex connection logic plus multi-server logic plus CoT send/receive all live in one service.
    - **Mitigation:**
@@ -804,7 +792,6 @@ omnitak-server::marti (Axum Router)
      - Keep `TAKService` as façade but have smaller internal services.
 
 3. **Duplicate feature stacks (Swift vs. Valdi)**
-
    - Features like:
      - `MultiServerFederation.swift` vs `MultiServerFederation.ts`
      - `TakService.swift` vs `TakService.ts`
@@ -816,14 +803,12 @@ omnitak-server::marti (Axum Router)
      - Keep behavior documented and tested in one place.
 
 4. **Tight coupling between services and map overlays**
-
    - Overlays like `BreadcrumbTrailOverlay`, `UnitTrailOverlay`, `VideoMapOverlay` may directly query services (`TrackRecordingService`, `VideoStreamService`).
    - Blurs boundaries between visualization and business logic.
    - **Mitigation:**
      - Have overlays observe view models or pass in data via model objects instead of reaching into services directly.
 
 5. **Plugin API surface area**
-
    - `PluginAPIs.swift` likely exposes powerful capabilities (map access, CoT send/receive, file system).
    - If not carefully segmented and versioned, changes in core services may break plugins.
    - **Mitigation:**
@@ -831,7 +816,6 @@ omnitak-server::marti (Axum Router)
      - Wrap internal services in façade interfaces that can evolve internally.
 
 6. **Rust FFI boundaries**
-
    - `omnitak-mobile` FFI defines a narrow bridge but:
      - If Rust crates change, headers need to be regenerated and xcframework rebuilt.
    - **Mitigation:**
@@ -841,7 +825,6 @@ omnitak-server::marti (Axum Router)
 7. **Potential circular dependency candidates**
 
    Although not explicitly visible without scanning imports, likely suspects:
-
    - Map subsystem ↔ Managers ↔ Services:
      - e.g., `MapStateManager` might know about `WaypointManager`, while `WaypointManager` uses map callbacks.
    - CoT → Services → TAKService → CoT:
@@ -853,7 +836,6 @@ omnitak-server::marti (Axum Router)
      - Map rendering listens to managers but managers don't own controllers.
 
 8. **Shared configuration scattered**
-
    - Server addresses, port numbers, TLS options, and API base URLs (ArcGIS, elevation) may be hardcoded in multiple components (Swift, TS, Rust).
    - **Mitigation:**
      - Centralize configuration into a `Config` / `Settings` layer used by both services and UI.
