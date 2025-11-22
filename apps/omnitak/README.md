@@ -1,897 +1,508 @@
-# OmniTAKMobile - iOS Tactical Awareness App
+# OmniTAK Mobile
 
-Full-featured native iOS tactical awareness app with ATAK-style interface, CoT messaging, map visualization, and drawing tools.
+## Project Overview
 
----
+OmniTAK Mobile is a SwiftUI-based iOS client for the TAK (Tactical Assault Kit) ecosystem. It connects to TAK servers over TCP/UDP/TLS, exchanges Cursor-on-Target (CoT) and GeoChat XML, and provides a tactical map, chat, and mission tools optimized for mobile operators.
 
-## Screenshots
+The app is structured as a modular MVVM-style application with clear separation between Views, Managers (view models), Services, Models, Storage, Map, CoT, Meshtastic, and Utilities subsystems.
 
-<table>
-  <tr>
-    <td align="center">
-      <img src="screenshots/main_map_view.png" width="200"/><br />
-      <b>Main Map View</b><br />
-      Compact status bar, satellite imagery, GPS tracking
-    </td>
-    <td align="center">
-      <img src="screenshots/tools_menu.png" width="200"/><br />
-      <b>Tools Menu</b><br />
-      Teams, Chat, Routes, Drawing, and more
-    </td>
-    <td align="center">
-      <img src="screenshots/drawing_tools.png" width="200"/><br />
-      <b>Drawing Tools</b><br />
-      Polygons, lines, circles with color picker
-    </td>
-    <td align="center">
-      <img src="screenshots/drawings_list.png" width="200"/><br />
-      <b>Drawings List</b><br />
-      Manage and organize all drawings
-    </td>
-  </tr>
-</table>
+**Purpose and main functionality**
 
-**Key Features Shown:**
-- Portrait-optimized UI with compact translucent status bar
-- Satellite mapping with high-resolution imagery
-- Bottom toolbar for quick access to essential tools
-- Full tactical graphics support with drawing tools
-- Real-time status showing connection, GPS, messages
-- Coordinate display in MGRS/UTM/Lat-Lon formats
+- Act as a mobile TAK client for situational awareness and collaboration.
+- Maintain a live connection to one or more TAK servers, sending and receiving CoT/GeoChat traffic.
+- Present tactical data (units, markers, routes, geofences, tracks, reports) on a map and via feature-specific views.
+- Provide operator tools like measurements, drawings, offline maps, mission packages, and reports.
 
----
+**Key features and capabilities**
 
-## Complete Beginner's Guide
+- TAK network connectivity (TCP/UDP/TLS) with client certificates and legacy TLS support.
+- Live map with CoT-based markers, tracks, grid overlays, range/bearing tools, elevation and line-of-sight analysis.
+- GeoChat messaging with text, location, and image attachments.
+- Position broadcasting (PLI), team and unit management, and tactical reports (SPOTREP, SALUTE, MEDEVAC, CAS, etc.).
+- Offline maps and data packages, KML/KMZ import, mission package sync.
+- Meshtastic integration for mesh radio data.
 
-This guide will walk you through every step with no prior iOS development experience required.
+**Likely intended use cases**
 
-### Step 0: Verify Your Mac
+- Field operators needing TAK interoperability from iOS devices.
+- Training and exercises where a mobile TAK client is required.
+- Tactical coordination, map-based planning, and real-time situational awareness.
 
-First, check if you meet the requirements:
+## Table of Contents
 
-```bash
-# Check macOS version (should be 12.0+)
-sw_vers
-
-# Expected output:
-# ProductName:        macOS
-# ProductVersion:     14.x.x  (or 13.x, 12.x)
-# BuildVersion:       ...
-```
-
-If your macOS version is less than 12.0, you'll need to upgrade your Mac first.
-
----
-
-## Prerequisites Setup
-
-### 1. Install Xcode (Required - approximately 15 minutes)
-
-**Option A: Mac App Store (Easiest)**
-1. Open **App Store** on your Mac
-2. Search for **"Xcode"**
-3. Click **"Get"** or **"Install"** (it's free)
-4. Wait 10-15 minutes for approximately 13 GB download
-5. Once installed, open Xcode
-6. Click **"Install"** when prompted for additional components
-7. Accept the license agreement
-
-**Option B: Direct Download**
-1. Visit [developer.apple.com/xcode](https://developer.apple.com/xcode/)
-2. Download the latest Xcode
-3. Drag Xcode to your Applications folder
-
-**Verify Xcode Installation:**
-```bash
-# Check Xcode version
-xcodebuild -version
-
-# Expected output:
-# Xcode 15.x
-# Build version ...
-```
-
-If you see version 15.0 or higher, you're ready to proceed.
-If command not found: Xcode isn't installed properly
-
-### 2. Install Command Line Tools (Required - approximately 5 minutes)
-
-```bash
-# Install command line tools
-xcode-select --install
-```
-
-A popup will appear:
-1. Click **"Install"**
-2. Click **"Agree"** to license
-3. Wait 3-5 minutes for installation
-
-**Verify Installation:**
-```bash
-# Check if tools are installed
-xcode-select -p
-
-# Expected output:
-# /Applications/Xcode.app/Contents/Developer
-```
-
-If you see the path above, you're ready to proceed.
-If error: Run `sudo xcode-select --reset` and try again
-
-### 3. Install Git (Usually Pre-installed - approximately 1 minute)
-
-```bash
-# Check if Git is installed
-git --version
-
-# Expected output:
-# git version 2.x.x
-```
-
-If you see a version number, you're ready to proceed.
-If command not found: Install from [git-scm.com](https://git-scm.com/download/mac)
-
-### 4. Apple ID Setup (Free - approximately 2 minutes)
-
-You need an Apple ID to run apps on devices (even your own iPhone).
-
-If you don't have one:
-1. Go to [appleid.apple.com](https://appleid.apple.com)
-2. Click **"Create Your Apple ID"**
-3. Follow the prompts (it's free)
-
-**Add Apple ID to Xcode:**
-1. Open **Xcode**
-2. Go to **Xcode** menu → **Settings** (or **Preferences** in older versions)
-3. Click **"Accounts"** tab
-4. Click **"+"** at bottom-left
-5. Select **"Apple ID"**
-6. Enter your Apple ID and password
-7. Click **"Next"**
-
-You should see your Apple ID listed with a "Personal Team"
-
----
-
-## Clone and Build the Project
-
-### Step 1: Clone the Repository
-
-Open **Terminal** (Applications → Utilities → Terminal) and run:
-
-```bash
-# Navigate to a folder where you want to download the project
-cd ~/Desktop  # or any folder you prefer
-
-# Clone the repository
-git clone https://github.com/engindearing-projects/omniTAK-mobile.git
-
-# Navigate to the project
-cd omniTAK-mobile/apps/omnitak
-
-# Verify you're in the right place
-ls -la
-```
-
-**Expected output should include:**
-```
-OmniTAKMobile.xcodeproj      <- This is the Xcode project file
-OmniTAKMobile/               <- This folder contains all the code
-README.md                    <- This file
-...
-```
-
-If you see `OmniTAKMobile.xcodeproj`, you're in the right place.
-If not found: You may be in the wrong directory. Run `pwd` to see where you are.
-
-### Step 2: Open in Xcode and Build for Simulator
-
-This is the easiest way to test - no iPhone needed.
-
-```bash
-# Open the project in Xcode (from Terminal)
-open OmniTAKMobile.xcodeproj
-```
-
-Xcode should open with the project loaded.
-
-#### Configure Simulator (One-Time Setup)
-
-1. **At the top-left of Xcode**, you'll see a device dropdown next to "OmniTAKMobile"
-2. Click the device dropdown
-3. You'll see a list like:
-   ```
-   iPhone 16 Pro
-   iPhone 16
-   iPhone 15 Pro
-   iPad Pro
-   ...
-   ```
-4. **Select any iPhone simulator** (e.g., "iPhone 16 Pro")
-
-The dropdown should now show: `OmniTAKMobile > iPhone 16 Pro`
-
-#### Build and Run
-
-**Method 1: Using Xcode GUI (Recommended)**
-
-1. Click the **Play button** at top-left (or press `⌘ + R`)
-2. Watch the build progress bar at the top
-3. **First build takes 2-5 minutes** - be patient
-4. You'll see messages like:
-   ```
-   Building...
-   Compiling MapViewController.swift
-   Linking...
-   Build Succeeded
-   ```
-5. The iOS Simulator will launch automatically
-6. The OmniTAKMobile app will open showing a map
-
-**Method 2: Using Terminal (Advanced)**
-
-```bash
-# Build the app
-xcodebuild -scheme OmniTAKMobile \
-  -configuration Debug \
-  -sdk iphonesimulator \
-  -destination 'platform=iOS Simulator,name=iPhone 16 Pro' \
-  build
-
-# Look for this at the end:
-# ** BUILD SUCCEEDED **
-```
-
-#### What You Should See
-
-After the app launches in the simulator:
-- An iOS device window appears (looks like a real iPhone)
-- A satellite map view (centered on Washington DC by default)
-- Status bar at top showing "OmniTAK" and connection status
-- Bottom toolbar with GPS, zoom, draw buttons
-- "DISC" (disconnected) indicator - this is normal (no server configured yet)
-
-**Simulator Limitations:**
-- GPS location is simulated (doesn't use real location)
-- Can't connect to real TAK servers without network configuration
-- All UI features work properly
-- Drawing, maps, and offline features work
-
----
-
-### Step 3: Build for Physical iPhone/iPad (Optional)
-
-Want to test on your actual iPhone? Follow these steps.
-
-#### A. Configure Code Signing (One-Time - approximately 3 minutes)
-
-**Why do I need this?** Apple requires all apps to be signed, even for testing on your own device.
-
-1. **In Xcode, look at the left sidebar**
-   - You should see a blue **OmniTAKMobile** icon at the top
-   - Click on it
-
-2. **Select the Target**
-   - In the main editor area, you'll see "TARGETS" list
-   - Click **"OmniTAKMobile"** under TARGETS
-
-3. **Go to Signing & Capabilities tab**
-   - At the top of the editor, click **"Signing & Capabilities"**
-
-4. **Configure Automatic Signing**
-   - Find the checkbox **"Automatically manage signing"**
-   - Check this box
-   - Under "Team", click the dropdown
-   - Select your **Apple ID** (it should say "Personal Team")
-
-5. **Change Bundle Identifier (if error appears)**
-   - If you see a red error like "Failed to register bundle identifier"
-   - Change the **Bundle Identifier** from `com.omnitak.mobile` to something unique like:
-     ```
-     com.yourname.omnitak.mobile
-     ```
-   - Replace `yourname` with your actual name or any unique text
-
-**Success looks like:**
-- No red errors in the Signing section
-- You see "Signing Certificate: Apple Development: your@email.com"
-- Bundle Identifier is unique
-
-**Common errors:**
-- "Failed to create provisioning profile" → Your Apple ID isn't added to Xcode (see Prerequisites Step 4)
-- "Bundle identifier already in use" → Change the bundle ID to something unique
-
-#### B. Connect Your iPhone/iPad
-
-1. **Connect your device to your Mac**
-   - Use a USB-C or Lightning cable
-   - **Must be a data cable** (not just charging cable)
-
-2. **Unlock your iPhone/iPad**
-
-3. **Trust This Computer popup**
-   - On your iPhone/iPad, you'll see: "Trust This Computer?"
-   - Tap **"Trust"**
-   - Enter your device passcode
-
-4. **Enable Developer Mode** (iOS 16+ only)
-   - On your iPhone/iPad: **Settings** → **Privacy & Security** → **Developer Mode**
-   - Toggle **Developer Mode** to **ON**
-   - Tap **"Restart"** when prompted
-   - After restart, tap **"Turn On"** to confirm
-
-**Verify device is connected:**
-```bash
-# In Terminal, run:
-xcrun xctrace list devices
-
-# You should see your device listed, like:
-# John's iPhone (16.0) (00008030-XXXXXXXXXXXX)
-```
-
-#### C. Build and Install to Your Device
-
-**In Xcode:**
-
-1. **Select Your Device**
-   - At the top-left, click the device dropdown (currently showing "iPhone 16 Pro")
-   - Under **"iOS Device"** section, select **your connected iPhone**
-   - It will show the device name (e.g., "John's iPhone")
-
-2. **Build and Run**
-   - Click the **Play button** (or press `⌘ + R`)
-   - **First build on device takes 3-7 minutes**
-   - You'll see build progress at the top
-
-3. **Watch for Build Success**
-   ```
-   Build Succeeded
-   Running OmniTAKMobile on John's iPhone
-   ```
-
-#### D. Trust the App (First Install Only - approximately 1 minute)
-
-The app will install but won't open yet. You need to trust it first.
-
-1. **On your iPhone/iPad:**
-   - Go to **Settings** → **General** → **VPN & Device Management**
-   - You'll see your Apple ID under **"DEVELOPER APP"**
-   - Tap on **your Apple ID**
-
-2. **Trust the Developer**
-   - Tap **"Trust [Your Apple ID]"**
-   - Tap **"Trust"** again in the popup
-
-3. **Launch the App**
-   - Go to your home screen
-   - Find and tap **OmniTAKMobile** icon
-   - The app should launch successfully
-
-#### What You Should See on Your Device
-
-- Satellite map view of your current location (GPS works)
-- Compact translucent status bar at top
-- Bottom toolbar with GPS, zoom, draw buttons
-- Your real GPS location shown as a blue dot
-- "DISC" indicator (normal - no server configured yet)
-
-**Device Benefits:**
-- Real GPS location tracking
-- Full performance (faster than simulator)
-- Test all sensors (compass, accelerometer)
-- Real network connectivity
-
-## First Launch - Configure TAK Server
-
-1. **Launch OmniTAKMobile** on your device/simulator
-
-2. **Open Server Configuration**:
-   - Tap the **hamburger menu** (≡) in the top-right
-   - Select **"Servers"** or tap the server status in the status bar
-
-3. **Add TAK Server**:
-   - **Server Name**: "My TAK Server" (or any name)
-   - **Host**: Your TAK server IP or hostname
-   - **Port**: `8087` (typical TAK server port)
-   - **Protocol**: TCP, TLS, or WebSocket
-   - Tap **"Save"** then **"Connect"**
-
-4. **Monitor Connection**:
-   - Status bar shows connection state
-   - Green = Connected, Red = Disconnected
-   - Message counters update as CoT messages flow
-
-5. **Start Using the App**:
-   - Your GPS location broadcasts automatically
-   - Long-press on map to access radial menu
-   - Use bottom toolbar for quick actions
-   - Access drawing tools from right side
-
-## App Features
-
-### Map & Navigation
-- **Multi-layer maps**: Satellite, Hybrid, Standard
-- **MGRS Grid overlay** with configurable density
-- **GPS tracking** with bearing and accuracy
-- **Compass overlay** and coordinate display
-- **Zoom controls** and gesture navigation
-
-### TAK Server Integration
-- **Multi-server support**: Connect to multiple TAK servers
-- **CoT messaging**: Send/receive Cursor-on-Target messages
-- **Position broadcasting**: Automatic self-SA updates
-- **SSL/TLS support**: Secure connections with certificates
-- **Federation support**: Multi-server message routing
-
-### Drawing & Annotations
-- **Drawing tools**: Lines, polygons, circles, markers
-- **Color customization**: Choose colors for each drawing
-- **Persistent storage**: Drawings saved locally
-- **CoT generation**: Drawings broadcast as CoT messages
-- **Edit/delete**: Manage drawings with radial menu
-
-### Communications
-- **Chat system**: Send messages to teams/individuals
-- **Team management**: Create and manage tactical teams
-- **Contact list**: View connected units
-- **Emergency beacon**: Send 911/SOS alerts
-
-### Tactical Tools
-- **Geofencing**: Create zones with entry/exit alerts
-- **Route planning**: Plan and navigate routes
-- **Range & Bearing**: Measure distances and bearings
-- **Elevation profiles**: View terrain elevation
-- **Line of Sight**: Calculate visibility between points
-
-### Advanced Features
-- **Waypoint navigation**: Create and navigate to waypoints
-- **Track recording**: Record movement breadcrumbs
-- **Mission packages**: Share data packages
-- **Plugin system**: Extensible architecture
-- **Offline maps**: Download maps for offline use
-
----
-
-## Troubleshooting
-
-Having issues? Find your problem below and follow the steps to fix it.
-
-### Common Build Errors
-
-#### "No such module 'SwiftUI'" or "Cannot find type 'View'"
-
-**Problem:** Xcode is using the wrong Swift version or toolchain.
-
-**Solution:**
-1. Quit Xcode completely (`⌘ + Q`)
-2. Open Terminal and run:
-   ```bash
-   sudo xcode-select --reset
-   sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-   ```
-3. Reopen Xcode and rebuild
-
----
-
-#### "Code signing error" / "No signing certificate"
-
-**Problem:** You haven't configured your Apple ID or bundle identifier.
-
-**Solution (Step-by-step):**
-1. Open Xcode → **Xcode menu** → **Settings** → **Accounts**
-2. If your Apple ID isn't listed:
-   - Click **"+"** button
-   - Add your Apple ID
-   - Wait for it to load
-3. In your project:
-   - Select **OmniTAKMobile** (blue icon) in left sidebar
-   - Select **OmniTAKMobile** under TARGETS
-   - Click **Signing & Capabilities** tab
-   - Check **"Automatically manage signing"**
-   - Select your Team (your Apple ID)
-4. If you still see errors:
-   - Change **Bundle Identifier** to: `com.YOURNAME.omnitak`
-   - Replace `YOURNAME` with your actual name (no spaces)
-
----
-
-#### "Sandbox: rsync.samba deny(1) file-write-create"
-
-**Problem:** macOS security blocking build files.
-
-**Solution:**
-1. Open **System Settings** (or System Preferences)
-2. Go to **Privacy & Security**
-3. Scroll down to **Developer Tools**
-4. Make sure **Terminal** and **Xcode** are allowed
-5. If not listed, try rebuilding - macOS will prompt you to allow
-
----
-
-#### Build takes forever or freezes at "Compiling..."
-
-**Problem:** Xcode indexes or derived data corruption.
-
-**Solution (try in order):**
-1. **Clean Build Folder:**
-   - Xcode menu → **Product** → **Clean Build Folder** (`Shift + ⌘ + K`)
-   - Wait for it to finish
-   - Try building again
-
-2. **Clear Derived Data:**
-   ```bash
-   rm -rf ~/Library/Developer/Xcode/DerivedData/*
-   ```
-   - Reopen Xcode
-   - Rebuild (first build will take longer)
-
-3. **Restart Xcode:**
-   - Quit Xcode (`⌘ + Q`)
-   - Reopen project
-   - Try again
-
----
-
-#### "The app installation failed" / "Unable to install..."
-
-**Problem:** Old version of app still installed or device storage full.
-
-**Solution:**
-1. **Delete old app from device:**
-   - On iPhone: Long-press app icon → **Remove App** → **Delete App**
-   - On Simulator: Long-press app icon → **Delete App**
-
-2. **Check device storage:**
-   - Settings → General → iPhone Storage
-   - Make sure you have at least 1 GB free
-
-3. **Restart device:**
-   - Turn iPhone off and on
-   - Try installing again
-
----
-
-### Common Device Issues
-
-#### "iPhone not showing in device dropdown"
-
-**Problem:** Device not recognized by Xcode.
-
-**Solution (try each step):**
-1. **Unplug and replug cable** (try different USB port)
-2. **Unlock iPhone** (device must be unlocked)
-3. **Trust computer:**
-   - On iPhone: Tap "Trust" when prompted
-   - Enter passcode
-4. **Restart Xcode:**
-   - Quit and reopen Xcode
-   - Wait 10 seconds for device to appear
-5. **Check cable:**
-   - Make sure you're using a data cable (not charge-only)
-   - Try a different cable if available
-
----
-
-#### "Developer Mode Required" (iOS 16+)
-
-**Problem:** Developer Mode is not enabled on your device.
-
-**Solution:**
-1. On your iPhone: **Settings** → **Privacy & Security** → **Developer Mode**
-2. Toggle **ON**
-3. Tap **"Restart"**
-4. After restart, tap **"Turn On"** to confirm
-5. Try installing app again
-
----
-
-#### "Untrusted Developer" / App won't open
-
-**Problem:** You haven't trusted your developer certificate.
-
-**Solution:**
-1. On iPhone: **Settings** → **General** → **VPN & Device Management**
-2. Under **DEVELOPER APP**, tap your Apple ID
-3. Tap **"Trust [Your Apple ID]"**
-4. Tap **"Trust"** again
-5. Go back to home screen
-6. Tap app icon - it should open now
-
----
-
-### Simulator Issues
-
-#### Simulator is slow or laggy
-
-**Problem:** Simulator using too many resources.
-
-**Solution:**
-1. **Use smaller device:** iPhone SE instead of iPhone 16 Pro Max
-2. **Close other apps** on your Mac
-3. **Reduce graphics quality:**
-   - Simulator menu → **Window** → **Show Device Bezels** (turn OFF)
-4. **Restart simulator:**
-   - Device menu → **Restart**
-
----
-
-#### Simulator shows black screen
-
-**Problem:** Simulator crashed or didn't load properly.
-
-**Solution:**
-1. **Simulator menu** → **Device** → **Erase All Content and Settings**
-2. Confirm erasure
-3. Rebuild and run app
-4. If still black, quit Simulator and Xcode, then reopen
-
----
-
-### Runtime Issues
-
-#### App crashes immediately on launch
-
-**Problem:** Could be several things.
-
-**Solution (try in order):**
-1. **Check Xcode Console for crash log:**
-   - Look at bottom panel in Xcode after crash
-   - Search for "Error" or "Fatal"
-   - If you see "signal SIGKILL", device is low on memory
-
-2. **Check iOS version compatibility:**
-   - Project requires iOS 15.0+
-   - On iPhone: **Settings** → **General** → **About** → **iOS Version**
-   - Must be 15.0 or higher
-
-3. **Clean reinstall:**
-   - Delete app from device/simulator
-   - Clean build folder (Shift + ⌘ + K)
-   - Rebuild and reinstall
-
----
-
-#### GPS location not working (Simulator)
-
-This is normal. Simulators use a fake location by default.
-
-**Set custom location:**
-1. Simulator menu → **Features** → **Location** → **Custom Location**
-2. Enter coordinates (e.g., Washington DC: 38.8977, -77.0365)
-3. App will show this location
-
-**For real GPS:** Use a physical iPhone/iPad instead.
-
----
-
-#### Map shows blank/white screen
-
-**Problem:** Network issue or map tiles not loading.
-
-**Solution:**
-1. **Check internet connection**
-2. **Change map type:**
-   - Long-press on map → **Layers** → Try "Satellite" or "Hybrid"
-3. **Restart app**
-
----
-
-### Still Having Issues?
-
-If none of the above helped:
-
-1. **Check Xcode version:**
-   ```bash
-   xcodebuild -version
-   # Should be 15.0 or higher
-   ```
-
-2. **Update Xcode:**
-   - App Store → **Updates** → Update Xcode
-   - Restart Mac after update
-
-3. **Create issue on GitHub:**
-   - Include exact error message
-   - Include Xcode version
-   - Include macOS version
-   - Include steps you tried
-
-## Advanced Configuration
-
-### Custom Certificate Setup (TLS/SSL)
-
-For secure TAK server connections:
-
-1. **Export your server certificate** (.p12 or .pfx format)
-2. **Add to Xcode project**:
-   - Drag certificate into project navigator
-   - Check "Copy items if needed"
-   - Add to OmniTAKMobile target
-3. **Configure in app**:
-   - Settings → Certificates → Import
-   - Enter certificate password
-   - Select for TAK server connection
-
-### Building Release Version
-
-For App Store or TestFlight distribution:
-
-```bash
-# Build archive
-xcodebuild archive \
-  -scheme OmniTAKMobile \
-  -configuration Release \
-  -archivePath ./build/OmniTAKMobile.xcarchive
-
-# Export IPA
-xcodebuild -exportArchive \
-  -archivePath ./build/OmniTAKMobile.xcarchive \
-  -exportPath ./build \
-  -exportOptionsPlist ExportOptions-Development.plist
-```
+- [Project Overview](#project-overview)
+- [Architecture](#architecture)
+- [C4 Model Architecture](#c4-model-architecture)
+- [Repository Structure](#repository-structure)
+- [Dependencies and Integration](#dependencies-and-integration)
+- [API Documentation](#api-documentation)
+- [Development Notes](#development-notes)
+- [Known Issues and Limitations](#known-issues-and-limitations)
+- [Additional Documentation](#additional-documentation)
 
 ## Architecture
 
-### Application Stack
+### High-level architecture overview
 
+OmniTAK Mobile follows a layered, MVVM-style architecture:
+
+- **Views** (`Views/`, `UI/`)
+  - SwiftUI screens and reusable UI components.
+  - Bind to `ObservableObject` managers via `@StateObject`, `@ObservedObject`, or `@EnvironmentObject`.
+
+- **Managers (ViewModels)** (`Managers/`)
+  - Feature-centric view models (e.g., `ChatManager`, `ServerManager`, `OfflineMapManager`).
+  - Hold UI-ready state and orchestrate calls to services and storage.
+
+- **Services** (`Services/`)
+  - Encapsulate business logic and integration with external systems.
+  - Include `TAKService` (network core), `ChatService`, `PositionBroadcastService`, geospatial and tactical services.
+
+- **Models** (`Models/`)
+  - Domain data structures (CoT events, chats, routes, teams, reports, offline maps, etc.).
+  - Mostly `struct`, `Codable`, `Identifiable`, `Equatable`.
+
+- **CoT subsystem** (`CoT/`)
+  - CoT XML parsing, generation, filtering, and event routing.
+  - Bridges between CoT payloads and higher-level models/services.
+
+- **Map subsystem** (`Map/`)
+  - Map controllers (UIKit/MapKit/3D), overlays, markers, and tile sources.
+  - Renders tactical data from models into visual layers and interactions.
+
+- **Storage** (`Storage/`)
+  - Persistence helpers for chat history, drawings, routes, teams, etc.
+
+- **Utilities & Integrations** (`Utilities/`, `Meshtastic/`)
+  - Calculators, converters (e.g., MGRS), KML/KMZ handling, elevation clients, Meshtastic protobuf parsing.
+
+Data generally flows in one direction:
+
+- Network/sensors/files → Services → Managers → Views.
+- User input → Views → Managers → Services/Storage → Network.
+
+### Technology stack and frameworks
+
+- **Language:** Swift
+- **UI:** SwiftUI with UIKit controllers for map/map-3D integration.
+- **Reactive:** Combine (`@Published`, publishers/subscribers) and some async/await.
+- **Networking:**
+  - `Network` (`NWConnection`, `NWParameters`) for TAK (TCP/UDP/TLS).
+  - `URLSession` for HTTP(S) integrations (ArcGIS, elevation, etc.).
+- **Persistence:** `UserDefaults`, file-based storage; light-weight managers in `Storage/`.
+- **Security:** `Security` framework for TLS, client certificates, and legacy cipher suites.
+
+### Component relationships
+
+#### Core interaction flow
+
+```mermaid
+flowchart LR
+    subgraph UI[UI Layer]
+        VChat[ChatView]
+        VMap[Map Views]
+        VServers[TAKServersView]
+    end
+
+    subgraph VM[Managers (ViewModels)]
+        MChat[ChatManager]
+        MMap[MapStateManager & Feature Managers]
+        MServer[ServerManager]
+    end
+
+    subgraph S[Services]
+        STAK[TAKService]
+        SChat[ChatService]
+        SPOS[PositionBroadcastService]
+        SGeo[Geospatial & Tactical Services]
+    end
+
+    subgraph COT[CoT Subsystem]
+        CParse[CoTMessageParser]
+        CHandler[CoTEventHandler]
+        CGen[CoT Generators]
+    end
+
+    subgraph MAP[Map Subsystem]
+        MCtrl[Map Controllers]
+        MOver[Overlays & Markers]
+    end
+
+    subgraph NET[Network]
+        DNet[DirectTCPSender]
+        TAKSrv[TAK Server]
+    end
+
+    VChat --> MChat
+    VMap --> MMap
+    VServers --> MServer
+
+    MChat --> SChat
+    MMap --> SGeo
+    MServer --> STAK
+
+    SChat --> STAK
+    SPOS --> STAK
+    SGeo --> STAK
+
+    STAK --> DNet
+    DNet <--> TAKSrv
+
+    STAK --> CParse
+    CParse --> CHandler
+    CHandler --> MChat
+    CHandler --> MMap
+
+    MMap --> MCtrl
+    MCtrl --> MOver
+``
+
+#### Request and data flow (high-level)
+
+- **Outbound:** `SwiftUI View → Manager → Feature Service → TAKService → DirectTCPSender → NWConnection → TAK server`.
+- **Inbound:** `TAK server → NWConnection → DirectTCPSender → CoTMessageParser → TAKService/CoTEventHandler → Managers → SwiftUI Views`.
+
+### Key design patterns
+
+- **MVVM:** Views are kept simple and rely on Managers for logic and state.
+- **Layered architecture:** Clear separation between UI, view-model, service, model, and infrastructure layers.
+- **Reactive state propagation:** Combine (`@Published`) used to push updates from services/managers to views.
+- **Protocol-oriented design:** Traits and capabilities are expressed as Swift protocols (e.g., CoT generators), improving testability and reuse.
+- **Singletons where appropriate:** Some core services (`ChatService.shared`, `PositionBroadcastService.shared`) are singletons used across the app.
+
+## C4 Model Architecture
+
+> Note: These diagrams are inferred from the code organization and may omit runtime details or dynamic dependencies.
+
+### Context diagram
+
+<details>
+<summary>View C4 Context Diagram</summary>
+
+```mermaid
+C4Context
+title OmniTAK Mobile - Context Diagram
+
+Person(operator, "Field Operator", "Uses OmniTAK Mobile on iOS for situational awareness and communication.")
+
+System(omniTAK, "OmniTAK Mobile", "iOS TAK client built with SwiftUI.")
+
+System_Ext(takServer, "TAK Server", "Receives and distributes CoT and GeoChat traffic over TCP/UDP/TLS.")
+System_Ext(arcgis, "ArcGIS / Map Services", "Provides basemaps, feature layers, and portal content via HTTPS.")
+System_Ext(elevation, "Elevation / Terrain APIs", "Supplies elevation profiles, line-of-sight and terrain data.")
+System_Ext(meshtastic, "Meshtastic Mesh", "Mesh radio devices exchanging protobuf messages.")
+System_Ext(files, "KML/KMZ & Data Packages", "Imported/exported geospatial and mission package files.")
+
+Rel(operator, omniTAK, "Uses", "Touch UI")
+Rel(omniTAK, takServer, "Sends/receives CoT, GeoChat", "TCP/UDP/TLS")
+Rel(omniTAK, arcgis, "Requests tiles & features", "HTTPS/REST")
+Rel(omniTAK, elevation, "Requests elevation, LOS", "HTTPS/REST")
+Rel(omniTAK, meshtastic, "Exchanges telemetry/messages", "Serial/BLE/WiFi (protobuf)")
+Rel(omniTAK, files, "Imports/exports", "Filesystem / share sheet")
 ```
-┌─────────────────────────────────────────┐
-│   SwiftUI Views (UI Layer)              │
-│   - MapViewController                   │
-│   - Drawing Tools                       │
-│   - Chat Interface                      │
-│   - Settings Panels                     │
-└─────────────────────────────────────────┘
-              ↓
-┌─────────────────────────────────────────┐
-│   Coordinators & Services               │
-│   - TAKService (CoT messaging)          │
-│   - DrawingManager                      │
-│   - LocationManager                     │
-│   - ChatManager                         │
-│   - Federation (multi-server)           │
-└─────────────────────────────────────────┘
-              ↓
-┌─────────────────────────────────────────┐
-│   Map Integration                       │
-│   - MapKit (Apple Maps)                 │
-│   - Custom Overlays (MGRS, drawings)    │
-│   - Annotations (markers, units)        │
-└─────────────────────────────────────────┘
-              ↓
-┌─────────────────────────────────────────┐
-│   Data Layer                            │
-│   - SwiftData/CoreData persistence      │
-│   - UserDefaults (preferences)          │
-│   - File storage (certificates, maps)  │
-└─────────────────────────────────────────┘
-              ↓
-┌─────────────────────────────────────────┐
-│   Rust Core (XCFramework)               │
-│   - omnitak_mobile FFI                  │
-│   - Network protocols                   │
-│   - CoT parsing/generation              │
-└─────────────────────────────────────────┘
-              ↓
-        TAK Server
-    (TCP/TLS/WebSocket)
+
+</details>
+
+### Container diagram
+
+<details>
+<summary>View C4 Container Diagram</summary>
+
+```mermaid
+C4Container
+title OmniTAK Mobile - Container Diagram
+
+System_Boundary(omni, "OmniTAK Mobile") {
+  Container(ui, "SwiftUI / UI Layer", "SwiftUI + UIKit", "Screens, panels, and controls for map, chat, servers, reports, etc.")
+  Container(managers, "Managers (ViewModels)", "Swift / Combine", "ObservableObjects that hold feature state and orchestrate services.")
+  Container(services, "Services Layer", "Swift", "Business logic for TAK networking, chat, tracking, geospatial tools, mission features.")
+  Container(models, "Domain Models", "Swift structs", "CoT, chat, teams, routes, reports, offline maps, settings, etc.")
+  Container(cot, "CoT Subsystem", "Swift", "Parses/generates CoT & GeoChat XML; routes events to features.")
+  Container(map, "Map Subsystem", "SwiftUI + UIKit/MapKit/3D", "Renders tactical map, overlays, markers, and interaction.")
+  Container(storage, "Storage Layer", "Swift", "Persists chat, routes, drawings, teams, and settings.")
+  Container(meshtasticC, "Meshtastic Integration", "Swift + Protobuf", "Parses Meshtastic protobuf messages into domain models.")
+}
+
+System_Ext(takServer, "TAK Server", "CoT / GeoChat")
+System_Ext(arcgis, "ArcGIS / Map Services", "Basemap & feature APIs")
+System_Ext(elevation, "Elevation / Terrain APIs", "Elevation and LOS")
+System_Ext(meshNet, "Meshtastic Mesh", "Mesh radio nodes")
+
+Rel(ui, managers, "Binds via", "Combine & property wrappers")
+Rel(managers, services, "Invokes", "Swift method calls")
+Rel(services, models, "Reads/Writes", "In-memory data")
+Rel(services, cot, "Uses for XML <-> model conversion", "Function calls")
+Rel(services, map, "Feeds map data", "Markers, overlays")
+Rel(services, storage, "Persists / loads", "Domain models")
+Rel(services, meshtasticC, "Parses/serializes", "Protobuf messages")
+
+Rel(services, takServer, "Sends/receives CoT & GeoChat", "TCP/UDP/TLS via Network framework")
+Rel(map, arcgis, "Requests tiles & features", "HTTPS")
+Rel(services, elevation, "Requests elevation & LOS", "HTTPS")
+Rel(meshtasticC, meshNet, "Exchanges protobuf messages", "Serial/BLE/WiFi")
 ```
 
-### Key Components
+</details>
 
-- **MapViewController**: Main ATAK-style tactical map view
-- **TAKService**: Manages CoT connections and message routing
-- **DrawingManager**: Handles tactical drawing and annotations
-- **RadialMenuCoordinator**: Context-sensitive radial menus
-- **MultiServerFederation**: Multi-server connection management
-- **LocationManager**: GPS tracking and position broadcasting
+## Repository Structure
 
-### Data Flow
+> This is a minimal overview of the most important directories. Names are inferred from code structure and may differ slightly from the actual tree.
 
-1. **User Action** → UI Event → Coordinator
-2. **Coordinator** → Service Layer → Data Processing
-3. **Service** → Rust FFI → Network/Protocol
-4. **Network** → TAK Server → CoT Messages
-5. **CoT Received** → Parse → Update UI
-
-## Project Structure
-
-```
+```text
 OmniTAKMobile/
-├── OmniTAKMobile.xcodeproj     # Xcode project
-├── OmniTAKMobile/              # Source code
-│   ├── MapViewController.swift # Main map view
-│   ├── TAKService.swift        # TAK server integration
-│   ├── DrawingTools*.swift     # Drawing system
-│   ├── Chat*.swift             # Chat system
-│   ├── Team*.swift             # Team management
-│   ├── Route*.swift            # Route planning
-│   ├── Geofence*.swift         # Geofencing
-│   ├── RadialMenu*.swift       # Radial menus
-│   └── ...                     # Other features
-├── OmniTAKMobile.xcframework/  # Rust core library
-├── Assets.xcassets/            # Images and icons
-├── Info.plist                  # App configuration
-└── README.md                   # This file
+  Core/           # App entry point and root composition
+  Views/          # SwiftUI screens for map, chat, servers, reports, tools
+  UI/             # Reusable UI components, radial menu, MIL-STD-2525 symbols
+  Managers/       # Feature view-models (ChatManager, ServerManager, etc.)
+  Services/       # Business logic and integrations (TAKService, ChatService, ...)
+  Models/         # Domain models (CoT, chat, teams, routes, reports, etc.)
+  CoT/            # CoT parsing, generation, filtering, dispatch
+  Map/            # Map controllers, overlays, markers, tile sources
+  Storage/        # Persistence helpers for chat, routes, drawings, teams
+  Utilities/      # Calculators, converters, network helpers, KML/KMZ
+  Meshtastic/     # Meshtastic protobuf models and parsers
+  Resources/      # Assets, certificates, bundled docs
 ```
 
-## Development
+- **Core files:** `OmniTAKMobileApp.swift`, `ContentView.swift` bootstrap the application and inject shared services.
+- **Key cross-cutting files:** `TAKService.swift` (network core), `CoTMessageParser.swift`, `CoTEventHandler.swift`, map controllers under `Map/Controllers`.
 
-### Running Tests
+## Dependencies and Integration
 
-```bash
-# Run all tests
-xcodebuild test \
-  -scheme OmniTAKMobile \
-  -destination 'platform=iOS Simulator,name=iPhone 16 Pro'
+### Internal service dependencies
 
-# Run specific test
-xcodebuild test \
-  -scheme OmniTAKMobile \
-  -destination 'platform=iOS Simulator,name=iPhone 16 Pro' \
-  -only-testing:OmniTAKMobileTests/TAKServiceTests
-```
+- **Views → Managers:**
+  - Each feature view holds a reference to its manager (e.g. `ChatView → ChatManager`, `OfflineMapsView → OfflineMapManager`).
+- **Managers → Services:**
+  - Managers orchestrate one or more services (e.g. `ChatManager → ChatService + ChatPersistence`).
+- **Services → TAKService:**
+  - Many services use `TAKService` for network transport (e.g. chat, position broadcast, geofences, mission packages).
+- **CoT subsystem:**
+  - `TAKService` wires incoming messages into `CoTMessageParser` and `CoTEventHandler`, which then distribute events to managers/services.
 
-### Debugging
+### External systems and protocols
 
-**Enable verbose logging:**
+> External libraries are intentionally omitted; this focuses on networked systems and protocols.
+
+- **TAK server connectivity**
+  - `DirectTCPSender` uses `NWConnection` for TCP/UDP/TLS connections.
+  - `TAKService` manages connection lifecycle, send/receive buffers, and statistics.
+  - TLS is configured via `Security` APIs and supports client certificates and optional legacy cipher suites.
+
+- **ArcGIS / map services**
+  - Tile and feature services are consumed over HTTPS via `URLSession`.
+  - Used by map tile sources and feature layers in `Map/TileSources` and related services.
+
+- **Elevation / terrain APIs**
+  - Used by services like `ElevationProfileService` and `LineOfSightService` to support elevation profiles and LOS analysis.
+
+- **Meshtastic mesh network**
+  - Protobuf messages parsed in `Meshtastic/` and mapped to internal models.
+  - Integrated as an additional data source for tactical information.
+
+- **File-based integrations**
+  - KML/KMZ parsing and import via utilities under `Utilities/`.
+  - Data packages and mission packages handled by corresponding services and storage managers.
+
+- **Event streams / message flows**
+  - CoT/GeoChat traffic from TAK is effectively a continuous message stream that is:
+    - Buffered and parsed by `CoTMessageParser`.
+    - Routed by `CoTEventHandler` to managers.
+  - Meshtastic messages form a separate, protobuf-based stream.
+
+## API Documentation
+
+> The app does not expose an HTTP/REST API. The "APIs" documented here are internal Swift service APIs and the TAK network endpoints they consume.
+
+### TAK network endpoints
+
+OmniTAK Mobile connects to configured TAK servers using host, port, and protocol information maintained by `ServerManager` and the `TAKServer` model.
+
+- **Endpoint types:**
+  - `tcp://<host>:<port>`
+  - `udp://<host>:<port>`
+  - `tls://<host>:<port>` (TLS over TCP, with optional client certificate)
+
+- **Configuration fields (TAKServer model):**
+  - `name: String` – human-readable label.
+  - `host: String` – server hostname or IP.
+  - `port: UInt16` – service port.
+  - `protocolType: String` – typically `"tcp"`, `"udp"`, or `"tls"`.
+  - `useTLS: Bool` – whether to use TLS.
+  - `certificateName: String?` and `certificatePassword: String?` – optional client certificate.
+  - `allowLegacyTLS: Bool` – enable older TLS versions/ciphers.
+
+#### Connection lifecycle (TAKService)
+
+- **Connect**
+
 ```swift
-// In AppDelegate or main app file
-#if DEBUG
-print("Debug mode enabled")
-// Enable detailed TAK protocol logging
-TAKService.debugMode = true
-#endif
+connect(
+  host: String,
+  port: UInt16,
+  protocolType: String,
+  useTLS: Bool,
+  certificateName: String? = nil,
+  certificatePassword: String? = nil,
+  allowLegacyTLS: Bool = false,
+  completion: @escaping (Bool) -> Void
+)
 ```
 
-**View device logs in Xcode:**
-1. Window → Devices and Simulators
-2. Select your device
-3. Click "Open Console" button
-4. Filter by "OmniTAKMobile"
+Establishes a connection to a TAK server using the `Network` framework. When ready, the internal receive loop starts and inbound messages are delivered via callbacks.
 
-**Network debugging:**
-```bash
-# Monitor network traffic (requires physical device)
-rvictl -s <device-udid>
-sudo tcpdump -i rvi0 -n -s 0 -w omnitak.pcap
-# Open omnitak.pcap in Wireshark
+- **Disconnect**
+
+```swift
+disconnect()
 ```
 
-### Code Style
+Closes the active connection and stops receiving messages.
 
-- **SwiftUI** for UI components
-- **MVVM** architecture pattern
-- **Observable Objects** for state management
-- **Swift Concurrency** (async/await) for networking
-- **SwiftData** for persistence
+- **Send CoT message**
 
-## Contributing
+```swift
+send(cotMessage: String, priority: MessagePriority)
+```
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Commit changes: `git commit -am 'Add new feature'`
-4. Push to branch: `git push origin feature/my-feature`
-5. Submit a Pull Request
+Takes a CoT XML string (generated by feature-specific CoT generators) and sends it to the server. Outbound messages ultimately flow through `DirectTCPSender`.
 
-## License
+### Internal service APIs
 
-[Specify your license here]
+#### ChatService
 
-## Support
+- **Role:** Implements GeoChat-style messaging over TAK.
+- **State:**
+  - `messages: [ChatMessage]`
+  - `conversations: [Conversation]`
+  - `participants: [ChatParticipant]`
+  - `unreadCount: Int`, `queuedMessages: [QueuedMessage]`
+- **Key operations:**
+  - `configure(takService: TAKService, locationManager: LocationManager)`
+  - `sendTextMessage(_ text: String, to conversationId: String)`
+  - `sendLocationMessage(location: CLLocation, to conversationId: String)`
+  - `processQueue()` – re-send queued messages when connectivity returns.
 
-For issues, questions, or contributions:
-- **Issues**: [GitHub Issues](https://github.com/engindearing-projects/omniTAK-mobile/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/engindearing-projects/omniTAK-mobile/discussions)
+**Request/response format (conceptual):**
 
-## Credits
+- **Outbound request:**
+  - Input: `text`, target conversation, optional location/attachment.
+  - Processing: Build `ChatMessage` model → convert to GeoChat/CoT XML → send via `TAKService`.
 
-Built with:
-- **Swift** and **SwiftUI**
-- **MapKit** for mapping
-- **Rust** core library for TAK protocol
-- Inspired by **ATAK** (Android Team Awareness Kit)
+- **Inbound response:**
+  - Input: GeoChat/CoT XML from TAK server.
+  - Processing: Parse XML → map to `ChatMessage` and `Conversation` → update `ChatManager` state.
 
----
+#### PositionBroadcastService
 
-**Note**: This app is for educational and tactical awareness purposes. Ensure you have proper authorization before connecting to production TAK servers.
+- **Role:** Regularly publishes own position to TAK (PLI events).
+- **Configuration & state:**
+  - `isEnabled: Bool`, `updateInterval: TimeInterval`, `staleTime: TimeInterval`.
+  - Identity fields: `userCallsign`, `userUID`, `teamColor`, `teamRole`, `userUnitType`.
+- **Key operations:**
+  - `configure(takService: TAKService, locationManager: LocationManager)`
+  - `startBroadcasting()` / `stopBroadcasting()`
+  - `broadcastPositionNow()`
+
+**Request/response format (conceptual):**
+
+- **Outbound:** Periodic tasks create a PLI CoT XML event from current GPS fix and identity fields, then send via `TAKService`.
+- **Inbound:** Other units' PLIs arrive as CoT, parsed into `CoTEvent` and rendered as markers/tracks on the map.
+
+#### CoT parsing and distribution
+
+- **Parsing:** `CoTMessageParser` takes raw XML strings and extracts:
+  - CoT events → `CoTEvent` models.
+  - Chat messages → `ChatMessage` and related models.
+- **Distribution:** `CoTEventHandler` receives parsed models and routes them to:
+  - Chat, map, tracks, geofences, team, and report managers/services.
+
+## Development Notes
+
+### Project-specific conventions
+
+- **Directory-based modularization:** Features are grouped into coherent folders (`Chat`, `Map`, `Reports`, `Meshtastic`, etc.) under `Views/`, `Managers/`, `Services/`, and `Models/`.
+- **MVVM naming:**
+  - Views use `*View` suffix.
+  - Managers use `*Manager` suffix and conform to `ObservableObject`.
+  - Services use `*Service` suffix and encapsulate business logic.
+- **Models:** Generally `struct`, `Codable`, and `Identifiable` to simplify storage and SwiftUI integration.
+- **CoT utilities:** Generators and parsers are organized under `CoT/Generators` and `CoT/Parsers` by feature.
+
+Areas where additional documentation would help:
+
+- Clearer description of feature boundaries (e.g., which manager/service owns which responsibilities in edge cases).
+- Explicit lifecycle notes for singletons and shared services.
+- End-to-end examples for complex flows (e.g., mission packages, Meshtastic integration).
+
+### Testing requirements
+
+Inferred patterns suggest:
+
+- **Unit tests** for:
+  - CoT/GeoChat parsing and generation (XML ↔ models round-trips).
+  - Service-level logic (e.g., message queueing and retry in `ChatService`, broadcast timing in `PositionBroadcastService`).
+  - Utility calculators/converters (measurement, coordinate conversions).
+
+- **Integration tests** for:
+  - TAK connectivity scenarios (connect, disconnect, reconnect, legacy TLS).
+  - Map integration paths (markers, overlays, offline tiles) with mocked data.
+
+The repository would benefit from:
+
+- Documented locations and naming of existing tests.
+- Guidance on how to run tests and what environment variables/configuration are needed for networked tests.
+
+### Performance considerations
+
+From the design:
+
+- **Network buffering:**
+  - `DirectTCPSender` maintains a string buffer with locking for partial TCP reads; careful handling minimizes allocations and parsing overhead.
+- **Reactive updates:**
+  - Combine-based propagation limits manual KVO and keeps UI updates efficient, but heavy `@Published` lists (e.g., many markers) can be expensive.
+- **Map rendering:**
+  - Overlays and markers should be used judiciously; large numbers of CoT markers or tracks may impact performance.
+
+Potential optimization areas (worth documenting or investigating):
+
+- Strategies for throttling high-frequency CoT traffic.
+- Marker clustering or decimation of tracks on the map.
+- Background processing of heavy XML parsing or file imports.
+
+## Known Issues and Limitations
+
+Based on the architecture and code patterns, likely or explicit limitations include:
+
+- **TLS security trade-offs:**
+  - The TLS configuration in `DirectTCPSender` accepts self-signed certificates and may disable strict server verification. This is necessary for some TAK deployments but reduces security and should be documented and reviewed for production.
+
+- **No public HTTP API:**
+  - Integration is done via TAK servers and external services; you cannot call OmniTAK Mobile over HTTP as a service.
+
+- **Reliance on external services:**
+  - Functionality such as basemaps, elevation, and some mission tools depend on availability and configuration of ArcGIS and elevation services.
+
+- **Feature surface area:**
+  - The app includes many tactical tools (reports, mission packages, Meshtastic, offline maps). Some flows may be partially implemented or depend on external systems that are not fully documented here.
+
+Where to capture TODOs and technical debt (recommended but not enforced by the code):
+
+- Use inline `TODO:` / `FIXME:` comments in code for localized issues.
+- Maintain feature-level markdown docs describing incomplete or experimental subsystems.
+
+## Additional Documentation
+
+Additional documentation exists within the repository and should be consulted for feature-specific details and API references. Common locations and types include:
+
+- `Resources/Documentation/` – in-repo documentation for features and interfaces.
+- `OmniTAKMobile/` subdirectories – many subsystems have local comments and inline docs.
+
+Suggested additions that would help new developers:
+
+- A dedicated **Architecture** document describing major subsystems and data flows.
+- Per-feature guides for:
+  - TAK server configuration and certificate enrollment.
+  - Chat/GeoChat usage and offline behavior.
+  - Map tools (measurement, drawing, reports, mission packages).
+  - Meshtastic integration setup and troubleshooting.
