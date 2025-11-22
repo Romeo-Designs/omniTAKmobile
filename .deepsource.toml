@@ -1,16 +1,31 @@
 version = 1
 
+test_patterns = ["tests/**, **/test_*.py"]
+
+exclude_patterns = ["venv/**"]
+
 [[analyzers]]
 name = "javascript"
 
   [analyzers.meta]
   plugins = [
     "react",
-    "vue"
+    "vue",
+    "angularjs",
+    "meteor",
+    "ember",
+    "angular"
   ]
   environment = [
     "vitest",
-    "nodejs"
+    "nodejs",
+    "browser",
+    "mongo",
+    "jquery",
+    "jest",
+    "cypress",
+    "mocha",
+    "jasmine"
   ]
 
 [[analyzers]]
@@ -39,3 +54,18 @@ name = "black"
 
 [[code_formatters]]
 name = "prettier"
+
+[[code_formatters]]
+name = "ruff"
+
+[[code_formatters]]
+name = "autopep8"
+
+[[code_formatters]]
+name = "yapf"
+
+[[code_formatters]]
+name = "isort"
+
+[[code_formatters]]
+name = "standardjs"
