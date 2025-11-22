@@ -1,6 +1,7 @@
 # Architecture Overview
 
 ## Table of Contents
+
 - [Introduction](#introduction)
 - [Design Principles](#design-principles)
 - [Architectural Pattern](#architectural-pattern)
@@ -15,6 +16,7 @@
 ## Introduction
 
 OmniTAK Mobile is built using a modern iOS architecture that emphasizes:
+
 - **Reactive Programming** - Real-time updates via Combine framework
 - **Separation of Concerns** - Clear boundaries between UI, business logic, and data
 - **Testability** - Loosely coupled components with dependency injection
@@ -27,14 +29,18 @@ The application follows Apple's recommended patterns for SwiftUI apps while impl
 ## Design Principles
 
 ### 1. **Single Responsibility**
+
 Each class has one primary responsibility:
+
 - **Managers** - State management for specific features
 - **Services** - Business logic and external integrations
 - **Views** - UI presentation only
 - **Models** - Data structures
 
 ### 2. **Dependency Injection**
+
 Components receive dependencies through initializers or published properties:
+
 ```swift
 // Example: CoTEventHandler receives dependencies
 func configure(takService: TAKService, chatManager: ChatManager) {
@@ -44,7 +50,9 @@ func configure(takService: TAKService, chatManager: ChatManager) {
 ```
 
 ### 3. **Reactive State Management**
+
 All state changes propagate through Combine publishers:
+
 ```swift
 class ChatManager: ObservableObject {
     @Published var conversations: [Conversation] = []
@@ -53,7 +61,9 @@ class ChatManager: ObservableObject {
 ```
 
 ### 4. **Protocol-Oriented Design**
+
 Interfaces defined through protocols for flexibility and testing:
+
 ```swift
 protocol CoTMessageGenerator {
     func generateCoTMessage() -> String
@@ -116,16 +126,18 @@ OmniTAK Mobile implements **MVVM** with Combine for reactive bindings:
 ### Component Layers
 
 #### 1. **View Layer** (`Views/`)
+
 - SwiftUI views for UI presentation
 - Observes ViewModels via `@ObservedObject` or `@EnvironmentObject`
 - Handles user interactions
 - No business logic
 
 **Example:**
+
 ```swift
 struct ChatView: View {
     @ObservedObject var chatManager: ChatManager
-    
+
     var body: some View {
         List(chatManager.conversations) { conversation in
             ConversationRow(conversation: conversation)
@@ -135,20 +147,22 @@ struct ChatView: View {
 ```
 
 #### 2. **ViewModel Layer** (`Managers/`)
+
 - `ObservableObject` classes that manage feature state
 - Expose `@Published` properties for view binding
 - Coordinate between services and views
 - Handle user actions
 
 **Example:**
+
 ```swift
 class ChatManager: ObservableObject {
     @Published var conversations: [Conversation] = []
     @Published var unreadCount: Int = 0
-    
+
     private let chatService: ChatService
     private let persistence: ChatPersistence
-    
+
     func sendMessage(_ text: String, to recipient: String) {
         let message = chatService.createMessage(text, recipient)
         chatService.send(message)
@@ -158,12 +172,14 @@ class ChatManager: ObservableObject {
 ```
 
 #### 3. **Service Layer** (`Services/`)
+
 - Business logic implementation
 - External API integrations
 - Network operations
 - Background tasks
 
 **Example:**
+
 ```swift
 class ChatService {
     func createMessage(_ text: String, _ recipient: String) -> ChatMessage {
@@ -171,7 +187,7 @@ class ChatService {
         let xml = generateGeoChatXML(text: text, recipient: recipient)
         return ChatMessage(text: text, recipient: recipient, cotXML: xml)
     }
-    
+
     func send(_ message: ChatMessage) {
         // Send via TAKService
         TAKService.shared.send(cotMessage: message.cotXML)
@@ -180,12 +196,14 @@ class ChatService {
 ```
 
 #### 4. **Model Layer** (`Models/`)
+
 - Pure data structures
 - Codable for persistence
 - Identifiable for SwiftUI
 - No business logic
 
 **Example:**
+
 ```swift
 struct ChatMessage: Identifiable, Codable {
     let id: UUID
@@ -232,6 +250,7 @@ struct ChatMessage: Identifiable, Codable {
 ### Core Subsystems
 
 #### 1. **Network Subsystem**
+
 Handles all TAK server communication:
 
 ```
@@ -264,12 +283,14 @@ Handles all TAK server communication:
 ```
 
 **Key Components:**
+
 - **TAKService** - Main networking coordinator
 - **DirectTCPSender** - Low-level socket communication
 - **CoTMessageParser** - XML to structured events
 - **CoTEventHandler** - Event routing and distribution
 
 #### 2. **Map Subsystem**
+
 Renders tactical map with overlays:
 
 ```
@@ -305,6 +326,7 @@ Renders tactical map with overlays:
 ```
 
 #### 3. **Storage Subsystem**
+
 Manages data persistence:
 
 ```
@@ -364,6 +386,7 @@ ATAKMapView
 ### Communication Patterns
 
 #### 1. **Combine Publishers** (Primary)
+
 Real-time state updates flow through published properties:
 
 ```swift
@@ -379,6 +402,7 @@ takService.$isConnected
 ```
 
 #### 2. **Delegate Pattern**
+
 For one-to-one callbacks:
 
 ```swift
@@ -392,6 +416,7 @@ class DirectTCPSender {
 ```
 
 #### 3. **NotificationCenter**
+
 For cross-app events:
 
 ```swift
@@ -402,6 +427,7 @@ NotificationCenter.default.post(
 ```
 
 #### 4. **Closures/Callbacks**
+
 For async operations:
 
 ```swift
@@ -440,7 +466,7 @@ func connect(host: String, completion: @escaping (Bool) -> Void) {
        ├─► Chat Message → ChatManager → UI update
        ├─► Emergency → Alert user
        └─► Waypoint → WaypointManager
-       
+
 6. UI Updates (via @Published)
        │
        │ Combine propagation
@@ -503,6 +529,7 @@ All observers receive update
 ### Thread Safety Strategy
 
 #### Main Thread
+
 - **All UI updates** must be on main thread
 - **@Published property updates** automatically dispatch to main
 - **SwiftUI view rendering**
@@ -516,6 +543,7 @@ DispatchQueue.main.async {
 #### Background Threads
 
 **Network Operations:**
+
 ```swift
 private let queue = DispatchQueue(label: "com.omnitak.network")
 
@@ -528,6 +556,7 @@ func connect() {
 ```
 
 **File I/O:**
+
 ```swift
 DispatchQueue.global(qos: .utility).async {
     // Save to disk
@@ -536,6 +565,7 @@ DispatchQueue.global(qos: .utility).async {
 ```
 
 **GPS/Location:**
+
 ```swift
 // CoreLocation automatically uses background thread
 locationManager.startUpdatingLocation()
@@ -544,6 +574,7 @@ locationManager.startUpdatingLocation()
 ### Synchronization Primitives
 
 #### NSLock (for buffer access)
+
 ```swift
 private let bufferLock = NSLock()
 
@@ -555,6 +586,7 @@ func appendToBuffer(_ data: String) {
 ```
 
 #### Serial Dispatch Queue (for ordered operations)
+
 ```swift
 private let messageQueue = DispatchQueue(label: "com.omnitak.messages")
 
@@ -570,7 +602,9 @@ messageQueue.async {
 ### Retention Strategy
 
 #### 1. **Weak References for Delegates**
+
 Prevent retain cycles:
+
 ```swift
 protocol CoTEventHandlerDelegate: AnyObject { }
 
@@ -580,11 +614,13 @@ class CoTEventHandler {
 ```
 
 #### 2. **Cancellables Management**
+
 Store Combine subscriptions:
+
 ```swift
 class ChatManager {
     private var cancellables = Set<AnyCancellable>()
-    
+
     func setupBindings() {
         takService.$isConnected
             .sink { /* ... */ }
@@ -594,7 +630,9 @@ class ChatManager {
 ```
 
 #### 3. **Capture Lists in Closures**
+
 Avoid retain cycles:
+
 ```swift
 connection.stateUpdateHandler = { [weak self] state in
     guard let self = self else { return }
@@ -605,6 +643,7 @@ connection.stateUpdateHandler = { [weak self] state in
 ### Resource Cleanup
 
 #### Connection Cleanup
+
 ```swift
 deinit {
     connection?.cancel()
@@ -613,6 +652,7 @@ deinit {
 ```
 
 #### Subscription Cleanup
+
 ```swift
 // Cancellables automatically cleaned up when Set is deallocated
 private var cancellables = Set<AnyCancellable>()
@@ -623,13 +663,17 @@ private var cancellables = Set<AnyCancellable>()
 ## Performance Considerations
 
 ### 1. **Lazy Loading**
+
 Load data on-demand:
+
 ```swift
 lazy var offlineMapManager = OfflineMapManager()
 ```
 
 ### 2. **Debouncing**
+
 Reduce update frequency:
+
 ```swift
 searchText.publisher
     .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
@@ -637,13 +681,17 @@ searchText.publisher
 ```
 
 ### 3. **Caching**
+
 Cache expensive computations:
+
 ```swift
 private var tileCache: [String: UIImage] = [:]
 ```
 
 ### 4. **Background Processing**
+
 Move heavy tasks off main thread:
+
 ```swift
 DispatchQueue.global(qos: .userInitiated).async {
     let parsed = self.parseXML(data)
@@ -658,15 +706,17 @@ DispatchQueue.global(qos: .userInitiated).async {
 ## Testing Architecture
 
 ### Unit Testing Strategy
+
 - **Models** - Pure data structures, easy to test
 - **Services** - Business logic with injected dependencies
 - **ViewModels** - Test state changes via published properties
 
 ### Mock Objects
+
 ```swift
 class MockTAKService: TAKService {
     var shouldSucceed = true
-    
+
     override func connect() {
         isConnected = shouldSucceed
     }
@@ -684,4 +734,4 @@ class MockTAKService: TAKService {
 
 ---
 
-*Last Updated: November 22, 2025*
+_Last Updated: November 22, 2025_

@@ -36,20 +36,17 @@ You do not need to know every crate, but it helps to understand the high‑level
 
 - **`omnitak-cert`**  
   Certificate and TLS utilities:
-  
   - Builds TLS client configurations (via `rustls`).
   - Handles certificate enrollment from TAK servers over HTTP using username/password.
 
 - **`omnitak-mobile`**  
   Mobile‑facing library:
-  
   - Compiled as a static library for iOS and a dynamic library for Android.
   - Exposes a C interface (`include/omnitak_mobile.h`) for native apps.
   - Wraps client, CoT, and certificate logic into a simpler API for mobile apps.
 
 - **`omnitak-server`**  
   A TAK server implementation:
-  
   - Listens for CoT messages over TCP/TLS.
   - Routes/broadcasts messages between connected clients.
   - Ships with example TLS certificates for development.
@@ -93,33 +90,31 @@ If you want a local server for testing:
    See <https://www.rust-lang.org/tools/install>.
 
 2. **Build the server** (from the repo root):
-   
+
    ```bash
    cd crates/omnitak-server
    cargo build --release
    ```
 
 3. **Run a basic server** (example; exact binary name may vary):
-   
+
    ```bash
    cargo run --release --example basic_server
    ```
-   
+
    Or, if there is a main binary:
-   
+
    ```bash
    cargo run --release
    ```
 
 4. **TLS testing**:
-   
    - The `crates/omnitak-server/certs` directory contains:
      - A local certificate authority (CA).
      - Server and client certificates/keys.
    - You can run a TLS‑enabled example (e.g., `tls_server`) and connect your client using the provided test certificates.
 
 5. **Connect from your mobile app or another client** using:
-   
    - Host: `127.0.0.1` or your machine’s IP.
    - Port: the port configured in the example.
    - TLS: enabled/disabled depending on the example.
@@ -135,23 +130,19 @@ OmniTAK Mobile uses the `omnitak-cert` crate to manage TLS and certificate enrol
 ### 4.1 How Certificate Enrollment Typically Works
 
 1. **You receive**:
-   
    - TAK server enrollment URL (e.g., `https://tak.example.org/enroll`).
    - A username and password (or other credentials).
 
 2. **The mobile app**:
-   
    - Calls into the Rust `omnitak-cert` logic via `omnitak-mobile`.
    - Sends an enrollment request over HTTPS.
    - Receives a client certificate and key if the credentials are valid.
 
 3. **The app stores**:
-   
    - The client certificate and private key securely (e.g., Keychain/Keystore).
    - The CA certificate or trust anchor for the TAK server.
 
 4. **Subsequent connections**:
-   
    - Use mutual TLS (mTLS) with your client certificate.
    - The server can authenticate and authorize you based on that certificate.
 
@@ -228,13 +219,11 @@ If your app or deployment provides documentation, follow that first. In general:
 ### 8.1 Connection Issues
 
 - **Cannot connect to server**:
-  
   - Verify hostname/IP and port.
   - Check whether TLS is required and that you have the correct setting.
   - Ensure your device has network connectivity and can reach the server.
 
 - **Certificate errors**:
-  
   - Confirm that your certificate is still valid (not expired or revoked).
   - Re‑enroll your certificate if your credentials have changed.
   - Make sure the server’s CA certificate is trusted by your app.
@@ -242,13 +231,11 @@ If your app or deployment provides documentation, follow that first. In general:
 ### 8.2 CoT/Map Issues
 
 - **You don’t see yourself on the map**:
-  
   - Ensure location permissions are granted to the app.
   - Confirm that the app is configured to send position updates.
   - Check that you are connected to the server or Meshtastic gateway.
 
 - **You don’t see other users**:
-  
   - Verify that they are connected to the same server/network.
   - Confirm that filters or layers in the app are not hiding their icons.
 
