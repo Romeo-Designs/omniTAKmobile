@@ -146,7 +146,7 @@ native.omnitak_shutdown()
 
 ## Integration with Valdi
 
-The TypeScript interface in `omni-BASE/modules/omnitak_mobile/` uses Valdi's polyglot module system to call these FFI functions:
+The TypeScript interface in `omni-BASE/docs/modules/omnitak_mobile/` uses Valdi's polyglot module system to call these FFI functions:
 
 ```typescript
 // TypeScript (Valdi)

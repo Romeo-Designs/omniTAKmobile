@@ -395,4 +395,4 @@ git push origin v1.0.0
 - Bazel iOS build: `/home/user/omni-BASE/.bazelrc.ios`
 - Main app bundle ID: `com.engindearing.omnitak.mobile`
 - Build scripts: `/home/user/omni-BASE/scripts/build_ios.sh`
-- Native bridge: `/home/user/omni-BASE/modules/omnitak_mobile/ios/native/`
+- Native bridge: `/home/user/omni-BASE/docs/modules/omnitak_mobile/ios/native/`
