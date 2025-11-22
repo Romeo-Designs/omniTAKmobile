@@ -1,6 +1,7 @@
 # Troubleshooting Guide
 
 ## Table of Contents
+
 - [Connection Issues](#connection-issues)
 - [Certificate Problems](#certificate-problems)
 - [GPS and Location Issues](#gps-and-location-issues)
@@ -19,6 +20,7 @@
 ### Cannot Connect to TAK Server
 
 **Symptoms:**
+
 - "Disconnected" status in top bar
 - No position updates from other users
 - Messages not sending
@@ -42,6 +44,7 @@
 ```
 
 **Common errors:**
+
 - `tak.example.com` (needs `.com` or correct TLD)
 - `192.168.1.100:8089` (port should be in separate field)
 - Local IP when on different network
@@ -53,6 +56,7 @@
 **Cause:** Wrong protocol selected (TCP vs TLS)
 
 **Solution:**
+
 1. Settings > Servers > Edit server
 2. If server uses TLS, select "TLS" protocol
 3. If plain TCP, select "TCP"
@@ -63,6 +67,7 @@
 **Symptoms:** Connection times out after 30 seconds
 
 **Solution:**
+
 - Ask server admin to whitelist your IP
 - Check if server port is open: `telnet tak.example.com 8089`
 - Try different network (cellular vs WiFi)
@@ -70,12 +75,14 @@
 ### Connection Drops Frequently
 
 **Symptoms:**
+
 - Connects but disconnects after few minutes
 - Intermittent "Reconnecting..." status
 
 #### Cause 1: Mobile Network Switching
 
 **Solution:**
+
 1. Settings > Network Preferences
 2. Enable "Aggressive Reconnect"
 3. Set reconnect interval to 10 seconds
@@ -83,12 +90,14 @@
 #### Cause 2: Server Timeout
 
 **Solution:**
+
 1. Increase position broadcast frequency (keeps connection alive)
 2. Settings > Position Broadcast > Interval: 30 seconds
 
 #### Cause 3: Certificate Expiry
 
 **Check certificate:**
+
 1. Settings > Certificates
 2. Look for warning icon 📛 next to certificate
 3. If expired, import new certificate
@@ -133,12 +142,14 @@ If server uses self-signed certificate:
 #### Check 1: File Format
 
 **Supported formats:**
+
 - ✅ .p12 (PKCS#12)
 - ✅ .pfx (same as .p12)
 - ❌ .pem (not directly supported)
 - ❌ .crt/.cer (not directly supported)
 
 **Convert PEM to P12:**
+
 ```bash
 openssl pkcs12 -export \
   -in client.pem \
@@ -150,11 +161,13 @@ openssl pkcs12 -export \
 #### Check 2: Password
 
 **Common issues:**
+
 - Extra spaces when typing
 - Caps Lock enabled
 - Wrong password provided
 
 **Solution:**
+
 - Copy/paste password from secure source
 - Contact admin for correct password
 - Try empty password (some certs have no password)
@@ -162,6 +175,7 @@ openssl pkcs12 -export \
 #### Check 3: File Corruption
 
 **Test certificate:**
+
 ```bash
 # On Mac/Linux:
 openssl pkcs12 -info -in certificate.p12 -noout
@@ -174,10 +188,12 @@ openssl pkcs12 -info -in certificate.p12 -noout
 **Warning:** 📛 "Certificate expires soon" or "Certificate expired"
 
 **Impact:**
+
 - May not be able to connect to server
 - TLS handshake may fail
 
 **Solution:**
+
 1. Contact TAK server administrator
 2. Request new certificate
 3. Import new certificate
@@ -189,11 +205,13 @@ openssl pkcs12 -info -in certificate.p12 -noout
 **Error:** "Certificate not found in Keychain"
 
 **This happens after:**
+
 - iOS update
 - App reinstall
 - iCloud Keychain sync issues
 
 **Solution:**
+
 1. Re-import certificate from original .p12 file
 2. Or scan QR code again for re-enrollment
 
@@ -204,6 +222,7 @@ openssl pkcs12 -info -in certificate.p12 -noout
 ### "No GPS Signal"
 
 **Symptoms:**
+
 - Your position not showing on map
 - Blue puck missing
 - "GPS: 0/0" in status bar
@@ -237,6 +256,7 @@ iOS Settings > General > Transfer or Reset iPhone > Reset > Reset Location & Pri
 ### Position Not Updating
 
 **Symptoms:**
+
 - Blue puck on map but doesn't move
 - Stale coordinate in status bar
 - Other users' positions update but not yours
@@ -244,6 +264,7 @@ iOS Settings > General > Transfer or Reset iPhone > Reset > Reset Location & Pri
 #### Cause: Background Restrictions
 
 **Solution:**
+
 1. iOS Settings > OmniTAK Mobile
 2. Background App Refresh: Enable
 3. Location: "Always"
@@ -251,12 +272,14 @@ iOS Settings > General > Transfer or Reset iPhone > Reset > Reset Location & Pri
 #### Cause: Low Power Mode
 
 **Solution:**
+
 - Disable Low Power Mode (Settings > Battery)
 - Or keep app in foreground when in Low Power Mode
 
 ### Inaccurate Position
 
 **Symptoms:**
+
 - Position jumps around
 - Shows wrong location
 - GPS accuracy > 50 meters
@@ -283,6 +306,7 @@ iOS Settings > General > Transfer or Reset iPhone > Reset > Reset Location & Pri
 ### Map Tiles Not Loading
 
 **Symptoms:**
+
 - Gray squares instead of map
 - "Loading..." tiles that never load
 - Partial map display
@@ -314,6 +338,7 @@ iOS Settings > General > Transfer or Reset iPhone > Reset > Reset Location & Pri
 ### Markers Not Appearing
 
 **Symptoms:**
+
 - Connected but no team markers visible
 - Only your position shows
 
@@ -338,6 +363,7 @@ iOS Settings > General > Transfer or Reset iPhone > Reset > Reset Location & Pri
 ### MGRS Grid Not Showing
 
 **Solution:**
+
 1. Tap Layers ☰
 2. Enable "MGRS Grid"
 3. Zoom in (grid only shows at zoom level 10+)
@@ -346,6 +372,7 @@ iOS Settings > General > Transfer or Reset iPhone > Reset > Reset Location & Pri
 ### Map Performance Issues
 
 **Symptoms:**
+
 - Lag when panning/zooming
 - Choppy animations
 - App feels sluggish
@@ -376,6 +403,7 @@ iOS Settings > General > Transfer or Reset iPhone > Reset > Reset Location & Pri
 ### Messages Not Sending
 
 **Symptoms:**
+
 - Message stuck with "Sending..." status
 - Messages in pending state
 - No delivery confirmation
@@ -397,6 +425,7 @@ iOS Settings > General > Transfer or Reset iPhone > Reset > Reset Location & Pri
 #### Solution 3: Message Queue
 
 **If many pending messages:**
+
 1. Wait for connection to stabilize
 2. Messages will send automatically when connected
 3. Or delete pending messages and resend
@@ -404,6 +433,7 @@ iOS Settings > General > Transfer or Reset iPhone > Reset > Reset Location & Pri
 ### Messages Not Receiving
 
 **Symptoms:**
+
 - Can send but not receive messages
 - No notifications from chat
 - Conversation appears one-sided
@@ -424,6 +454,7 @@ iOS Settings > General > Transfer or Reset iPhone > Reset > Reset Location & Pri
 ### Photo Attachments Failing
 
 **Symptoms:**
+
 - "Failed to attach photo"
 - Photo shows but doesn't send
 - Recipient sees placeholder
@@ -431,6 +462,7 @@ iOS Settings > General > Transfer or Reset iPhone > Reset > Reset Location & Pri
 #### Solution 1: Photo Size
 
 **Large photos may fail:**
+
 1. Settings > Chat > Photo Quality: Medium
 2. Or use Photos app to resize before sharing
 
@@ -452,6 +484,7 @@ iOS Settings > General > Transfer or Reset iPhone > Reset > Reset Location & Pri
 ### App Running Slow
 
 **Common causes:**
+
 - Too many markers on map
 - Large message history
 - Memory leaks
@@ -479,6 +512,7 @@ iOS Settings > General > Transfer or Reset iPhone > Reset > Reset Location & Pri
 ### High Battery Drain
 
 **Expected behavior:**
+
 - Location services use significant battery
 - Continuous network connection drains battery
 - Real-time position updates require power
@@ -503,6 +537,7 @@ iOS Settings > General > Transfer or Reset iPhone > Reset > Reset Location & Pri
 ### App Using Too Much Data
 
 **Check data usage:**
+
 - iOS Settings > Cellular > OmniTAK Mobile
 
 #### Reduce data usage:
@@ -527,6 +562,7 @@ iOS Settings > General > Transfer or Reset iPhone > Reset > Reset Location & Pri
 ### App Crashes on Launch
 
 **Common causes:**
+
 - Corrupted settings
 - Bad certificate data
 - iOS update incompatibility
@@ -554,6 +590,7 @@ iOS Settings > General > Transfer or Reset iPhone > Reset > Reset Location & Pri
 ### App Freezes
 
 **Symptoms:**
+
 - UI unresponsive
 - Can't tap buttons
 - Map doesn't pan
@@ -588,6 +625,7 @@ iOS Settings > General > Transfer or Reset iPhone > Reset > Reset Location & Pri
 ### Cannot Find Meshtastic Device
 
 **Symptoms:**
+
 - Device list empty
 - "Scanning..." never completes
 - Known device not appearing
@@ -605,6 +643,7 @@ iOS Settings > General > Transfer or Reset iPhone > Reset > Reset Location & Pri
 #### Solution 3: Device Pairing
 
 Some Meshtastic devices need iOS pairing:
+
 1. iOS Settings > Bluetooth
 2. Wait for device to appear
 3. Tap to pair
@@ -655,6 +694,7 @@ Some Meshtastic devices need iOS pairing:
 ```
 
 **Test with:**
+
 - Google Earth (should open without errors)
 - KML validator online
 
@@ -672,6 +712,7 @@ Some Meshtastic devices need iOS pairing:
 ### Data Package Not Syncing
 
 **Symptoms:**
+
 - Package imported locally but not on server
 - Server packages not downloading
 
@@ -713,6 +754,7 @@ Some Meshtastic devices need iOS pairing:
 ### Update Available But Won't Install
 
 **Solution:**
+
 1. Delete existing app
 2. Restart device
 3. Reinstall latest version
@@ -720,11 +762,13 @@ Some Meshtastic devices need iOS pairing:
 ### App Size Too Large
 
 **OmniTAK app size:**
+
 - Download: ~50MB
 - Installed: ~100MB
 - With offline maps: Variable (500MB+ possible)
 
 **Free up space:**
+
 - Delete unused apps
 - Offload apps (Settings > General > iPhone Storage)
 - Delete offline maps in OmniTAK if not needed
@@ -761,6 +805,7 @@ Before contacting support, gather:
 https://github.com/tyroe1998/omniTAKmobile/issues
 
 **Include:**
+
 - Diagnostic information (above)
 - Screenshots
 - Crash logs (if available)
@@ -789,4 +834,4 @@ Before reporting an issue, try these steps:
 
 ---
 
-*Last Updated: November 22, 2025*
+_Last Updated: November 22, 2025_
