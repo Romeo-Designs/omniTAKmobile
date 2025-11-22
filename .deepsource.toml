@@ -5,6 +5,16 @@ test_patterns = ["tests/**, **/test_*.py"]
 exclude_patterns = ["venv/**"]
 
 [[analyzers]]
+name = "kotlin"
+
+  [analyzers.meta]
+  runtime_version = "1.8"
+  language_version = "1.7"
+
+[[analyzers]]
+name = "cxx"
+
+[[analyzers]]
 name = "test-coverage"
 
 [[analyzers]]
@@ -72,3 +82,9 @@ name = "isort"
 
 [[code_formatters]]
 name = "standardjs"
+
+[[code_formatters]]
+name = "clang-format"
+
+[[code_formatters]]
+name = "ktlint"
