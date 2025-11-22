@@ -1,6 +1,7 @@
 # Getting Started Guide
 
 ## Table of Contents
+
 - [Welcome to OmniTAK Mobile](#welcome-to-omnitak-mobile)
 - [System Requirements](#system-requirements)
 - [Installation](#installation)
@@ -32,21 +33,21 @@
 
 ### Minimum Requirements
 
-| Requirement | Specification |
-|-------------|--------------|
-| **Device** | iPhone 7 or newer, iPad (5th generation) or newer |
-| **OS** | iOS 15.0 or later |
-| **Storage** | 100 MB (plus space for offline maps) |
-| **Network** | WiFi, Cellular, or Mesh (Meshtastic) |
+| Requirement | Specification                                     |
+| ----------- | ------------------------------------------------- |
+| **Device**  | iPhone 7 or newer, iPad (5th generation) or newer |
+| **OS**      | iOS 15.0 or later                                 |
+| **Storage** | 100 MB (plus space for offline maps)              |
+| **Network** | WiFi, Cellular, or Mesh (Meshtastic)              |
 
 ### Recommended
 
-| Requirement | Specification |
-|-------------|--------------|
-| **Device** | iPhone 12 or newer, iPad Pro |
-| **OS** | iOS 16.0 or later |
-| **Storage** | 500 MB+ for offline maps |
-| **GPS** | Device with built-in GPS (all iPhones, WiFi+Cellular iPads) |
+| Requirement | Specification                                               |
+| ----------- | ----------------------------------------------------------- |
+| **Device**  | iPhone 12 or newer, iPad Pro                                |
+| **OS**      | iOS 16.0 or later                                           |
+| **Storage** | 500 MB+ for offline maps                                    |
+| **GPS**     | Device with built-in GPS (all iPhones, WiFi+Cellular iPads) |
 
 ### Permissions Required
 
@@ -100,13 +101,13 @@ Grant the required permissions:
 ```
 📍 Location Services
    "Allow While Using App" or "Always" (recommended)
-   
+
 📷 Camera Access
    "OK" to enable QR code scanning
-   
+
 📸 Photo Library
    "Select Photos" or "Allow Access to All Photos"
-   
+
 🔔 Notifications
    "Allow" to receive alerts and chat messages
 ```
@@ -122,6 +123,7 @@ Callsign: Alpha-1
 ```
 
 **Guidelines:**
+
 - 3-20 characters
 - Letters, numbers, hyphens only
 - Unique within your team
@@ -267,38 +269,38 @@ Look for these indicators:
 
 ### Status Bar (Top)
 
-| Icon | Meaning |
-|------|---------|
-| 📡 **Connected** | Connected to TAK server |
-| 📡 **Disconnected** | Not connected |
-| 📍 **GPS: 12/15** | GPS accuracy (12 of 15 satellites) |
-| 🔋 **85%** | Device battery level |
-| **10:30** | Current time |
-| **N 37.7749** | Your latitude |
-| **W 122.4194** | Your longitude |
+| Icon                | Meaning                            |
+| ------------------- | ---------------------------------- |
+| 📡 **Connected**    | Connected to TAK server            |
+| 📡 **Disconnected** | Not connected                      |
+| 📍 **GPS: 12/15**   | GPS accuracy (12 of 15 satellites) |
+| 🔋 **85%**          | Device battery level               |
+| **10:30**           | Current time                       |
+| **N 37.7749**       | Your latitude                      |
+| **W 122.4194**      | Your longitude                     |
 
 ### Bottom Toolbar
 
-| Button | Function |
-|--------|----------|
-| 🔍 **Zoom** | Center on your location |
-| ☰ **Layers** | Toggle map layers (satellite, MGRS grid, trails) |
-| ✏️ **Draw** | Drawing tools (marker, line, circle, polygon) |
-| 💬 **Chat** | Open chat conversations |
-| 📍 **Tools** | Tools menu (measurements, waypoints, routes) |
-| ⚙️ **Settings** | App settings and configuration |
+| Button          | Function                                         |
+| --------------- | ------------------------------------------------ |
+| 🔍 **Zoom**     | Center on your location                          |
+| ☰ **Layers**   | Toggle map layers (satellite, MGRS grid, trails) |
+| ✏️ **Draw**     | Drawing tools (marker, line, circle, polygon)    |
+| 💬 **Chat**     | Open chat conversations                          |
+| 📍 **Tools**    | Tools menu (measurements, waypoints, routes)     |
+| ⚙️ **Settings** | App settings and configuration                   |
 
 ### Map Gestures
 
-| Gesture | Action |
-|---------|--------|
-| **Single tap** | Select marker/waypoint |
-| **Long press** | Open radial menu at location |
-| **Double tap** | Zoom in |
-| **Two-finger tap** | Zoom out |
-| **Pinch** | Zoom in/out |
-| **Drag** | Pan map |
-| **Two-finger rotate** | Rotate map |
+| Gesture               | Action                       |
+| --------------------- | ---------------------------- |
+| **Single tap**        | Select marker/waypoint       |
+| **Long press**        | Open radial menu at location |
+| **Double tap**        | Zoom in                      |
+| **Two-finger tap**    | Zoom out                     |
+| **Pinch**             | Zoom in/out                  |
+| **Drag**              | Pan map                      |
+| **Two-finger rotate** | Rotate map                   |
 
 ### Radial Menu (Long Press)
 
@@ -314,6 +316,7 @@ Long-press anywhere on the map to open the radial menu:
 ```
 
 Options:
+
 - **Drop Marker** - Place waypoint at location
 - **Measure** - Start distance measurement
 - **Send Location** - Share coordinates in chat
@@ -422,27 +425,27 @@ Let's walk through a basic mission scenario to learn the essential features.
 
 ### Essential Shortcuts
 
-| Action | Method |
-|--------|--------|
-| **Center on me** | Tap 🔍 button |
-| **Quick marker** | Long-press map, select "Drop Marker" |
-| **Send location** | Long-press, select "Send Location" |
-| **Emergency** | Hold Tools button 📍 for 2 seconds |
-| **Toggle layers** | Tap ☰ button |
-| **Quick chat** | Tap 💬, select contact, type message |
+| Action            | Method                               |
+| ----------------- | ------------------------------------ |
+| **Center on me**  | Tap 🔍 button                        |
+| **Quick marker**  | Long-press map, select "Drop Marker" |
+| **Send location** | Long-press, select "Send Location"   |
+| **Emergency**     | Hold Tools button 📍 for 2 seconds   |
+| **Toggle layers** | Tap ☰ button                        |
+| **Quick chat**    | Tap 💬, select contact, type message |
 
 ### Status Icons
 
-| Icon | Meaning |
-|------|---------|
-| ● **Blue** | You |
-| ▲ **Blue** | Friendly unit |
-| ▼ **Red** | Hostile unit |
-| ◆ **Yellow** | Neutral |
-| ◆ **Gray** | Unknown |
-| 🚩 | Waypoint/marker |
-| 🚨 | Emergency alert |
-| ⚠️ | Warning/caution |
+| Icon         | Meaning         |
+| ------------ | --------------- |
+| ● **Blue**   | You             |
+| ▲ **Blue**   | Friendly unit   |
+| ▼ **Red**    | Hostile unit    |
+| ◆ **Yellow** | Neutral         |
+| ◆ **Gray**   | Unknown         |
+| 🚩           | Waypoint/marker |
+| 🚨           | Emergency alert |
+| ⚠️           | Warning/caution |
 
 ---
 
@@ -460,4 +463,4 @@ You're now ready to start using OmniTAK Mobile for tactical operations. Remember
 
 ---
 
-*Last Updated: November 22, 2025*
+_Last Updated: November 22, 2025_

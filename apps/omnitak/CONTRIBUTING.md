@@ -51,26 +51,26 @@ open OmniTAKMobile.xcodeproj
 
 ### Current Requirements (Swift/iOS)
 
-| Tool | Minimum Version | Recommended Version | Notes |
-|------|----------------|---------------------|-------|
-| **macOS** | 12.0 | 14.0+ | Required for Xcode |
-| **Xcode** | 15.0 | Latest stable | Install from App Store |
-| **Swift** | 5.9 | 6.2+ | Included with Xcode |
-| **iOS Target** | 15.0 | 17.0+ | Deployment target |
-| **Command Line Tools** | Latest | Latest | Run `xcode-select --install` |
-| **Git** | 2.30+ | Latest | Usually pre-installed |
+| Tool                   | Minimum Version | Recommended Version | Notes                        |
+| ---------------------- | --------------- | ------------------- | ---------------------------- |
+| **macOS**              | 12.0            | 14.0+               | Required for Xcode           |
+| **Xcode**              | 15.0            | Latest stable       | Install from App Store       |
+| **Swift**              | 5.9             | 6.2+                | Included with Xcode          |
+| **iOS Target**         | 15.0            | 17.0+               | Deployment target            |
+| **Command Line Tools** | Latest          | Latest              | Run `xcode-select --install` |
+| **Git**                | 2.30+           | Latest              | Usually pre-installed        |
 
 ### Future Requirements (Planned Architecture)
 
 The project documentation references a planned multi-platform architecture using:
 
-| Tool | Version | Purpose | Status |
-|------|---------|---------|--------|
-| **Rust** | 1.70+ | Core logic crates | Planned |
-| **Cargo** | Latest | Rust package manager | Planned |
-| **Bazel** | 6.0+ | Build orchestration | Planned |
-| **Node.js** | 18+ | Tooling (if needed) | Optional |
-| **Android Studio** | Latest | Android builds | Planned |
+| Tool               | Version | Purpose              | Status   |
+| ------------------ | ------- | -------------------- | -------- |
+| **Rust**           | 1.70+   | Core logic crates    | Planned  |
+| **Cargo**          | Latest  | Rust package manager | Planned  |
+| **Bazel**          | 6.0+    | Build orchestration  | Planned  |
+| **Node.js**        | 18+     | Tooling (if needed)  | Optional |
+| **Android Studio** | Latest  | Android builds       | Planned  |
 
 > **Note**: If you're working on Rust crates or Bazel integration, please refer to the architecture documentation in `docs/guidebook.md` and `docs/Architecture.md`.
 
@@ -146,6 +146,7 @@ Follow conventional commit format:
 ```
 
 **Types:**
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes
@@ -217,26 +218,26 @@ private var _internalCache: [String: Any] = [:]
 ```swift
 // MARK: - Organize code with marks
 class ChatManager: ObservableObject {
-    
+
     // MARK: - Properties
-    
+
     @Published var conversations: [Conversation] = []
     private let service: ChatService
-    
+
     // MARK: - Initialization
-    
+
     init(service: ChatService) {
         self.service = service
     }
-    
+
     // MARK: - Public Methods
-    
+
     func sendMessage(_ text: String) {
         // Implementation
     }
-    
+
     // MARK: - Private Methods
-    
+
     private func processIncomingMessage(_ message: Message) {
         // Implementation
     }
@@ -249,7 +250,7 @@ class ChatManager: ObservableObject {
 // Prefer composition over large views
 struct ChatView: View {
     @StateObject private var viewModel: ChatViewModel
-    
+
     var body: some View {
         VStack {
             ChatHeaderView()
@@ -384,9 +385,7 @@ interface ServerConfig {
   useTLS: boolean;
 }
 
-export async function connectToServer(
-  config: ServerConfig
-): Promise<Connection> {
+export async function connectToServer(config: ServerConfig): Promise<Connection> {
   // Implementation
 }
 ```
@@ -426,7 +425,7 @@ import XCTest
 @testable import OmniTAKMobile
 
 final class CoTMessageParserTests: XCTestCase {
-    
+
     func testParseValidCoTMessage() throws {
         // Given
         let xml = """
@@ -434,19 +433,19 @@ final class CoTMessageParserTests: XCTestCase {
         <event version="2.0" uid="test-123" type="a-f-G">
         </event>
         """
-        
+
         // When
         let message = try CoTMessageParser.parse(xml)
-        
+
         // Then
         XCTAssertEqual(message.uid, "test-123")
         XCTAssertEqual(message.type, "a-f-G")
     }
-    
+
     func testParseInvalidXMLThrows() {
         // Given
         let invalidXML = "<invalid"
-        
+
         // When/Then
         XCTAssertThrowsError(try CoTMessageParser.parse(invalidXML)) { error in
             XCTAssertTrue(error is CoTError)
@@ -502,27 +501,33 @@ When creating a PR, include:
 
 ```markdown
 ## Description
+
 Brief description of changes
 
 ## Type of Change
+
 - [ ] Bug fix
 - [ ] New feature
 - [ ] Breaking change
 - [ ] Documentation update
 
 ## Testing
+
 How have these changes been tested?
 
 ## Screenshots (if applicable)
+
 Include screenshots for UI changes
 
 ## Checklist
+
 - [ ] Code follows style guidelines
 - [ ] Tests added/updated
 - [ ] Documentation updated
 - [ ] No new warnings introduced
 
 ## Related Issues
+
 Closes #123
 Relates to #456
 ```
@@ -536,6 +541,7 @@ Relates to #456
 ### Draft PRs
 
 Use draft PRs for:
+
 - Work in progress
 - Requesting early feedback
 - Demonstrating approach before full implementation
@@ -547,12 +553,14 @@ Use draft PRs for:
 ### For Authors
 
 **Responding to Feedback:**
+
 - Address all comments, even if just to acknowledge
 - Mark conversations as resolved when addressed
 - Be open to suggestions and alternative approaches
 - Ask for clarification if feedback is unclear
 
 **Making Changes:**
+
 ```bash
 # Make requested changes
 git add .
