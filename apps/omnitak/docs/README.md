@@ -50,16 +50,19 @@
 ## Quick Links
 
 ### For New Users
+
 1. [Getting Started Guide](UserGuide/GettingStarted.md)
 2. [Connecting to a TAK Server](UserGuide/ServerConnection.md)
 3. [Basic Features Overview](UserGuide/Features.md)
 
 ### For Developers
+
 1. [Development Environment Setup](DeveloperGuide/GettingStarted.md)
 2. [Architecture Overview](Architecture.md)
 3. [Coding Patterns & Best Practices](DeveloperGuide/CodingPatterns.md)
 
 ### For System Administrators
+
 1. [Server Connection Guide](UserGuide/ServerConnection.md)
 2. [Certificate Management](Features/CertificateManagement.md)
 3. [TLS Configuration](Features/Networking.md#tls-configuration)
@@ -69,6 +72,7 @@
 ## Key Features
 
 ### 🗺️ Map & Visualization
+
 - Apple MapKit with custom tile sources (ArcGIS, OSM)
 - MIL-STD-2525 military symbology
 - MGRS grid overlay
@@ -77,6 +81,7 @@
 - Offline map caching
 
 ### 📡 Communications
+
 - CoT (Cursor on Target) protocol
 - TCP, UDP, and TLS connectivity
 - Multi-server federation
@@ -85,6 +90,7 @@
 - Emergency beacon (911, Ring the Bell, In Contact)
 
 ### 🔐 Security
+
 - Client certificate authentication
 - TLS 1.0-1.3 support
 - Keychain integration
@@ -92,6 +98,7 @@
 - Self-signed CA support
 
 ### 🛠️ Tools & Features
+
 - Drawing tools (marker, line, circle, polygon)
 - Measurement tools (distance, bearing, area)
 - Route planning with navigation
@@ -101,6 +108,7 @@
 - Tactical report generation (CAS, MEDEVAC, SPOTREP)
 
 ### 🌐 Off-Grid Capability
+
 - Meshtastic mesh networking
 - Offline map tiles
 - Message queue for intermittent connectivity
@@ -111,6 +119,7 @@
 ## Technology Stack
 
 ### Frameworks
+
 - **SwiftUI** - Modern declarative UI framework
 - **Combine** - Reactive programming and state management
 - **MapKit** - Map rendering and location services
@@ -121,11 +130,13 @@
 - **CoreBluetooth** - Bluetooth LE for Meshtastic
 
 ### External Services
+
 - **ArcGIS REST Services** - Basemap tile sources
 - **OpenStreetMap** - Open tile source
 - **TAK Server** - Tactical awareness server
 
 ### Design Patterns
+
 - **MVVM** (Model-View-ViewModel)
 - **Reactive Programming** (Combine Publishers)
 - **Singleton** (Shared managers)
@@ -136,27 +147,30 @@
 
 ## Project Statistics
 
-| Metric | Value |
-|--------|-------|
-| **Swift Files** | 150+ |
-| **Lines of Code** | 25,000+ |
-| **Managers** | 11 |
-| **Services** | 27 |
-| **Views** | 60+ |
-| **Models** | 23 model files |
-| **CoT Event Types** | 6+ supported |
-| **Map Tile Sources** | 8+ basemaps |
-| **Supported iOS** | 15.0+ |
+| Metric               | Value          |
+| -------------------- | -------------- |
+| **Swift Files**      | 150+           |
+| **Lines of Code**    | 25,000+        |
+| **Managers**         | 11             |
+| **Services**         | 27             |
+| **Views**            | 60+            |
+| **Models**           | 23 model files |
+| **CoT Event Types**  | 6+ supported   |
+| **Map Tile Sources** | 8+ basemaps    |
+| **Supported iOS**    | 15.0+          |
 
 ---
 
 ## Documentation Conventions
 
 ### Code Examples
+
 All code examples in this documentation are written in Swift and follow the project's coding standards. Examples are fully functional unless otherwise noted.
 
 ### File Paths
+
 File paths are shown relative to the project root:
+
 ```
 OmniTAKMobile/
   Core/
@@ -166,6 +180,7 @@ OmniTAKMobile/
 ```
 
 ### Symbols
+
 - 📁 **Folder/Directory**
 - 📄 **File**
 - 🔧 **Configuration**
@@ -175,6 +190,7 @@ OmniTAKMobile/
 - 🗺️ **Map-related**
 
 ### Terminology
+
 - **CoT** - Cursor on Target (tactical messaging protocol)
 - **TAK** - Team Awareness Kit (tactical awareness system)
 - **ATAK** - Android Team Awareness Kit
@@ -201,12 +217,12 @@ Found an error or want to improve the documentation? See the [Contributing Guide
 
 ## Version History
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.2.0 | Nov 2025 | Certificate enrollment, enhanced CoT receiving, emergency beacon, KML import, photo sharing |
-| 1.1.0 | Oct 2025 | Multi-server federation, offline maps, data packages |
-| 1.0.0 | Sep 2025 | Initial release with core TAK functionality |
+| Version | Date     | Changes                                                                                     |
+| ------- | -------- | ------------------------------------------------------------------------------------------- |
+| 1.2.0   | Nov 2025 | Certificate enrollment, enhanced CoT receiving, emergency beacon, KML import, photo sharing |
+| 1.1.0   | Oct 2025 | Multi-server federation, offline maps, data packages                                        |
+| 1.0.0   | Sep 2025 | Initial release with core TAK functionality                                                 |
 
 ---
 
-*Last Updated: November 22, 2025*
+_Last Updated: November 22, 2025_
