@@ -227,7 +227,7 @@ class ArcGISFeatureService: ObservableObject {
         saveConfigurations()
     }
 
-    // MARK: - MapKit Overlay Conversion
+    // MARK: - MapKit Overly Conversion
 
     /// Convert features to MapKit annotations (for point features)
     func createPointAnnotations(
