@@ -5,6 +5,9 @@ test_patterns = ["tests/**, **/test_*.py"]
 exclude_patterns = ["venv/**"]
 
 [[analyzers]]
+name = "test-coverage"
+
+[[analyzers]]
 name = "javascript"
 
   [analyzers.meta]
