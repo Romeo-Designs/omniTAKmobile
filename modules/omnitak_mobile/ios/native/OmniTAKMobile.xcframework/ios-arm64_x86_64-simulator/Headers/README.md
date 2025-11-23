@@ -30,6 +30,7 @@ Cross-platform FFI bridge for iOS and Android integration with omni-TAK.
 ```
 
 This creates an XCFramework at `../../target/OmniTAKMobile.xcframework` containing:
+
 - `aarch64-apple-ios` - iOS devices (iPhone/iPad)
 - Universal simulator library (ARM64 + x86_64)
 
@@ -41,6 +42,7 @@ export ANDROID_NDK_HOME=~/Library/Android/sdk/ndk/27.0.12077973
 ```
 
 This creates JNI libraries at `../../target/android-jniLibs/` for:
+
 - `arm64-v8a` - Modern ARM devices
 - `armeabi-v7a` - Older ARM devices
 - `x86_64` - Emulators
@@ -162,7 +164,7 @@ const connectionId = await takService.connect({
   reconnectDelayMs: 5000,
 });
 
-takService.onCotReceived(connectionId, (xml) => {
+takService.onCotReceived(connectionId, xml => {
   console.log('Received CoT:', xml);
 });
 
@@ -170,6 +172,7 @@ await takService.sendCot(connectionId, cotXml);
 ```
 
 Valdi automatically generates the platform-specific bridge code:
+
 - iOS: Swift wrapper calling C functions
 - Android: JNI wrapper calling native library
 
@@ -208,6 +211,7 @@ Valdi automatically generates the platform-specific bridge code:
 ## Thread Safety
 
 All FFI functions are thread-safe. The library uses:
+
 - `DashMap` for concurrent connection storage
 - `Mutex` for callback management
 - Tokio runtime for async operations
@@ -224,6 +228,7 @@ Callbacks are invoked from background threads. Ensure proper synchronization in 
 ## Error Handling
 
 Functions return:
+
 - `0` on success, `-1` on error (for `int32_t` returns)
 - `0` on error, `connection_id > 0` on success (for `uint64_t` returns)
 - Check `ConnectionStatus.last_error_code` for detailed errors

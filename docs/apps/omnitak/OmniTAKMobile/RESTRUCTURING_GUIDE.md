@@ -1,6 +1,7 @@
 # OmniTAK Mobile - OOP Restructuring Guide
 
 ## Overview
+
 This iOS application has been restructured from a flat 200+ file structure into a proper Object-Oriented Programming (OOP) architecture with logical separation of concerns.
 
 ## New Directory Structure
@@ -128,26 +129,31 @@ OmniTAKMobile/
 ## Benefits of New Structure
 
 ### 1. **Separation of Concerns**
+
 - Each directory has a specific responsibility
 - Easy to locate files based on their function
 - Clear boundaries between different layers
 
 ### 2. **Scalability**
+
 - New features can be added without cluttering existing code
 - Clear patterns for where new files should go
 - Easier to navigate for new team members
 
 ### 3. **Maintainability**
+
 - Related files are grouped together
 - Easier to find and fix bugs
 - Better code organization for refactoring
 
 ### 4. **Testing**
+
 - Clear boundaries make unit testing easier
 - Can test layers independently
 - Mock dependencies more easily
 
 ### 5. **Build Performance**
+
 - Better dependency management
 - Xcode can better optimize builds with organized structure
 - Easier to identify compilation dependencies
@@ -155,27 +161,32 @@ OmniTAKMobile/
 ## Architecture Patterns
 
 ### MVVM Pattern
+
 - **Models/**: Data structures and business entities
 - **Views/**: SwiftUI views (presentation layer)
 - **Services/** + **Managers/**: ViewModels and business logic
 
 ### Repository Pattern
+
 - **Storage/**: Data persistence layer
 - **Services/**: Abstracts data access from business logic
 
 ### Coordinator Pattern
+
 - **Map/Controllers/**: Manages map-related navigation and state
 - **UI/RadialMenu/**: Radial menu coordination
 
 ## Migration Notes
 
 ### What Changed
+
 1. All files moved from flat structure to organized directories
 2. Xcode project file references automatically updated
 3. Build settings and configurations unchanged
 4. No code changes required (only file locations)
 
 ### What Stayed the Same
+
 - Import statements (Swift handles this automatically)
 - Asset references
 - Build configurations
@@ -185,22 +196,26 @@ OmniTAKMobile/
 ## Next Steps
 
 ### 1. Verify Build
+
 ```bash
 cd /Users/iesouskurios/omniTAK-mobile/apps/omnitak
 xcodebuild -project OmniTAKMobile.xcodeproj -scheme OmniTAKMobile clean build
 ```
 
 ### 2. Open in Xcode
+
 ```bash
 open OmniTAKMobile.xcodeproj
 ```
 
 ### 3. Check File References
+
 - In Xcode, verify all files show correct paths
 - Look for any red (missing) files in the navigator
 - If any files show as missing, right-click → "Show in Finder" to relocate
 
 ### 4. Build and Test
+
 - Run the app on simulator
 - Test major features
 - Check for any import errors (unlikely)
@@ -208,32 +223,40 @@ open OmniTAKMobile.xcodeproj
 ## Troubleshooting
 
 ### Missing File References
+
 If Xcode shows red files:
+
 1. Select the file in Xcode navigator
 2. Open File Inspector (⌘⌥1)
 3. Click folder icon next to path
 4. Navigate to correct location
 
 ### Build Errors
+
 If you encounter build errors:
+
 1. Clean build folder (⌘⇧K)
 2. Delete derived data
 3. Restart Xcode
 4. Rebuild project
 
 ### Import Errors
+
 Swift uses module-based imports, so file location doesn't affect imports. If you see import errors:
+
 1. Check that all files are included in build target
 2. Verify module name hasn't changed
 
 ## Backup
 
 A backup of the original Xcode project was created at:
+
 ```
 /Users/iesouskurios/omniTAK-mobile/apps/omnitak/OmniTAKMobile.xcodeproj.backup
 ```
 
 If needed, you can restore by:
+
 ```bash
 rm -rf OmniTAKMobile.xcodeproj
 mv OmniTAKMobile.xcodeproj.backup OmniTAKMobile.xcodeproj
@@ -242,6 +265,7 @@ mv OmniTAKMobile.xcodeproj.backup OmniTAKMobile.xcodeproj
 ## Contributing
 
 When adding new files, follow this structure:
+
 - **Models**: Add new data structures here
 - **Views**: Add new SwiftUI views here
 - **Services**: Add new business logic services here

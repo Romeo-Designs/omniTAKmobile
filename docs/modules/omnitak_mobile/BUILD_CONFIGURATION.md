@@ -51,10 +51,12 @@ alias(
 **Purpose**: Import the pre-built Rust static library compiled for iOS architectures.
 
 **Architectures Supported**:
+
 - `ios-arm64`: Physical iPhone/iPad devices
 - `ios-arm64_x86_64-simulator`: Xcode simulator (both Intel and Apple Silicon Macs)
 
 **How to Rebuild**:
+
 ```bash
 cd /Users/iesouskurios/Downloads/omni-TAK/crates/omnitak-mobile
 ./build_ios.sh
@@ -77,6 +79,7 @@ swift_library(
 **Purpose**: Provides Swift wrapper around Rust FFI functions.
 
 **Key Functions**:
+
 - `OmniTAKNativeBridge.parseCot(xmlString:)` → Parse CoT XML
 - `OmniTAKNativeBridge.connectTAK(host:port:)` → Connect to TAK server
 - `OmniTAKNativeBridge.sendCot(cotData:)` → Send CoT message
@@ -106,12 +109,14 @@ client_objc_library(
 **Custom View**: `SCMapLibreMapView` extends `SCValdiView`
 
 **Valdi Attributes**:
+
 - `options`: Map configuration (style URL, initial position)
 - `markers`: Array of marker data (coordinates, icons, labels)
 - `camera`: Camera position (center, zoom, bearing, pitch)
 - Callbacks: `onMapReady`, `onMarkerTap`, `onMapTap`, `onCameraChanged`
 
 **Files**:
+
 - `ios/maplibre/SCMapLibreMapView.h`
 - `ios/maplibre/SCMapLibreMapView.m`
 
@@ -140,16 +145,19 @@ cc_library(
 **Purpose**: JNI bridge between Kotlin and Rust FFI.
 
 **Key JNI Functions**:
+
 - `Java_com_engindearing_omnitak_OmniTAKNativeBridge_parseCot`
 - `Java_com_engindearing_omnitak_OmniTAKNativeBridge_connectTAK`
 - `Java_com_engindearing_omnitak_OmniTAKNativeBridge_sendCot`
 
 **Features**:
+
 - Thread-safe callback management
 - JNI string conversion utilities
 - Android logging integration
 
 **Files**:
+
 - `android/native/omnitak_jni.cpp`
 - `android/native/include/omnitak_jni.h`
 
@@ -169,6 +177,7 @@ kt_android_library(
 **Purpose**: Kotlin wrapper for JNI functions, provides high-level API.
 
 **Key Classes**:
+
 - `OmniTAKNativeBridge`: Main bridge interface
 - `CoTMessage`: Data class for CoT messages
 - `TAKConnection`: Connection state management
@@ -194,6 +203,7 @@ kt_android_library(
 **Custom View**: `MapLibreMapView` extends `ValdiView`
 
 **Files**:
+
 - `android/maplibre/MapLibreMapView.kt`
 - `android/maplibre/MapLibreMapViewAttributesBinder.kt`
 
@@ -236,6 +246,7 @@ valdi_module(
 **Purpose**: Main entry point that compiles TypeScript and links all native code.
 
 **Generated Targets**:
+
 - `omnitak_mobile` - Main module target
 - `omnitak_mobile_kt` - Android Kotlin library
 - `omnitak_mobile_objc` - iOS Objective-C library
@@ -292,6 +303,7 @@ bazel query 'deps(//modules/omnitak_mobile:ios_native_bridge)'
 ### iOS
 
 1. **Add Swift/Objective-C source files**:
+
    ```bash
    # Place files in appropriate directory
    ios/native/      # Swift bridges
@@ -299,6 +311,7 @@ bazel query 'deps(//modules/omnitak_mobile:ios_native_bridge)'
    ```
 
 2. **Update BUILD.bazel**:
+
    ```python
    client_objc_library(
        name = "new_ios_lib",
@@ -325,6 +338,7 @@ bazel query 'deps(//modules/omnitak_mobile:ios_native_bridge)'
 ### Android
 
 1. **Add Kotlin/Java source files**:
+
    ```bash
    # Place files in appropriate directory
    android/native/     # Kotlin bridges
@@ -332,6 +346,7 @@ bazel query 'deps(//modules/omnitak_mobile:ios_native_bridge)'
    ```
 
 2. **Update BUILD.bazel**:
+
    ```python
    kt_android_library(
        name = "new_android_lib",
@@ -357,6 +372,7 @@ bazel query 'deps(//modules/omnitak_mobile:ios_native_bridge)'
 ### Adding C++ JNI Code
 
 1. **Create `.cpp` and `.h` files**:
+
    ```bash
    android/native/my_feature_jni.cpp
    android/native/include/my_feature_jni.h
@@ -379,6 +395,7 @@ bazel query 'deps(//modules/omnitak_mobile:ios_native_bridge)'
 ### iOS: MapLibre via CocoaPods
 
 **Option 1: Manual Framework Import**
+
 ```python
 objc_import(
     name = "maplibre_framework",
@@ -395,6 +412,7 @@ client_objc_library(
 ```
 
 **Option 2: CocoaPods Integration** (if supported by Valdi)
+
 ```python
 # In WORKSPACE or MODULE.bazel
 load("@rules_pods//pods:defs.bzl", "pods")
@@ -408,6 +426,7 @@ pods(
 ### Android: MapLibre via Maven
 
 **Update WORKSPACE**:
+
 ```python
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 
@@ -426,6 +445,7 @@ maven_install(
 ```
 
 **Use in BUILD.bazel**:
+
 ```python
 kt_android_library(
     name = "android_maplibre_wrapper",
@@ -443,12 +463,15 @@ kt_android_library(
 **Problem**: `cc_import` cannot locate the XCFramework file.
 
 **Solution**:
+
 1. Verify the XCFramework exists:
+
    ```bash
    ls -la docs/modules/omnitak_mobile/ios/native/OmniTAKMobile.xcframework/
    ```
 
 2. Rebuild the XCFramework:
+
    ```bash
    cd /Users/iesouskurios/Downloads/omni-TAK/crates/omnitak-mobile
    ./build_ios.sh
@@ -461,6 +484,7 @@ kt_android_library(
 **Problem**: `swift_library` cannot find dependencies.
 
 **Solution**:
+
 1. Ensure `@build_bazel_rules_swift` is properly loaded in WORKSPACE
 2. Check module name matches:
    ```python
@@ -475,7 +499,9 @@ kt_android_library(
 **Problem**: Android build cannot find JNI functions.
 
 **Solution**:
+
 1. Use `alwayslink = True` on the JNI cc_library:
+
    ```python
    cc_library(
        name = "android_jni_bridge",
@@ -497,8 +523,10 @@ kt_android_library(
 **Problem**: `@import MapLibre;` fails in Objective-C code.
 
 **Solution**:
+
 1. **Temporary workaround**: Comment out MapLibre code during initial Bazel build
 2. **Long-term solution**: Add MapLibre framework import:
+
    ```python
    objc_import(
        name = "maplibre_ios",
@@ -516,7 +544,9 @@ kt_android_library(
 **Problem**: Different Kotlin versions in dependencies.
 
 **Solution**:
+
 1. Check Kotlin version in WORKSPACE:
+
    ```python
    load("@rules_kotlin//kotlin:repositories.bzl", "kotlin_repositories")
    kotlin_repositories(kotlin_compiler_version = "1.8.0")
@@ -529,12 +559,15 @@ kt_android_library(
 **Problem**: Bazel builds are taking too long.
 
 **Solution**:
+
 1. Enable remote caching:
+
    ```bash
    bazel build --remote_cache=https://your-cache-server //modules/omnitak_mobile:omnitak_mobile
    ```
 
 2. Use incremental builds:
+
    ```bash
    # Build only changed targets
    bazel build //modules/omnitak_mobile:omnitak_mobile
@@ -605,6 +638,7 @@ kt_android_library(
 To use OmniTAK Mobile in a Valdi application:
 
 1. **Add dependency to your app's BUILD.bazel**:
+
    ```python
    valdi_application(
        name = "my_app",
@@ -615,11 +649,13 @@ To use OmniTAK Mobile in a Valdi application:
    ```
 
 2. **Import in TypeScript**:
+
    ```typescript
    import { OmniTAKModule } from '@valdi/omnitak/OmniTAKModule';
    ```
 
 3. **Build the application**:
+
    ```bash
    # iOS
    bazel build //apps/my_app:my_app_ios --platforms=@build_bazel_rules_apple//apple:ios_arm64
@@ -678,6 +714,7 @@ docs/modules/omnitak_mobile/
 ## Support
 
 For build issues specific to:
+
 - **Valdi framework**: Check internal Valdi documentation
 - **OmniTAK Mobile**: See `docs/modules/omnitak_mobile/README.md`
 - **Rust FFI**: See the omni-TAK repository

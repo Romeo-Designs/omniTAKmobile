@@ -17,12 +17,12 @@
 ```
 1. Call mcp_context7_resolve-library-id with library name
    → Receives Context7-compatible library ID
-   
+
 2. Call mcp_context7_get-library-docs with:
    - context7CompatibleLibraryID (from step 1)
    - topic (specific feature/API being used)
    - page (if more context needed)
-   
+
 3. Use the returned documentation for accurate code generation
 ```
 
@@ -102,25 +102,30 @@ OmniTAK Mobile is a **cross-platform TAK (Team Awareness Kit) client** providing
 **Project File**: `apps/omnitak/OmniTAKMobile.xcodeproj/`
 
 **Bundle Identifiers**:
+
 - Current: `com.romeodesigns.omnitak.mobile`
 - Legacy: `com.engindearing.omnitak.mobile` (may appear in some build settings)
 
 **Development Teams**:
+
 - Current: `U2W38YFFP6`
 - Legacy: `4HSANV485G`
 
 **Code Signing**:
+
 - Automatic signing enabled by default
 - For physical device builds: requires Apple ID in Xcode → Settings → Accounts
 - For simulator builds: no signing required
 
 **Build Settings**:
+
 - Swift version: 5.0
 - Deployment target: iOS 15.0+
 - Framework search paths: configured for `OmniTAKMobile.xcframework`
 - XCFramework location: `apps/omnitak/OmniTAKMobile.xcframework/` (contains ios-arm64 and ios-arm64_x86_64-simulator slices)
 
 **Entitlements** (`OmniTAKMobile.entitlements`):
+
 1. **aps-environment**: Push notification support (development/production)
 2. **com.apple.developer.associated-domains**: Universal links
 3. **NSCameraUsageDescription**: Camera access for photo attachments
@@ -133,7 +138,8 @@ OmniTAK Mobile is a **cross-platform TAK (Team Awareness Kit) client** providing
 **Info.plist Configuration** (`Resources/Info.plist`):
 
 Key settings for TAK operations:
-- **NSAppTransportSecurity**: 
+
+- **NSAppTransportSecurity**:
   - `NSAllowsArbitraryLoads`: true (required for TAK server connections)
   - `NSAllowsLocalNetworking`: true (local TAK servers)
 - **UIBackgroundModes**: 7 modes enabled
@@ -148,6 +154,7 @@ Key settings for TAK operations:
 - **UISceneConfigurations**: Scene-based app lifecycle
 
 **App Entry Point** (`Core/OmniTAKMobileApp.swift`):
+
 ```swift
 @main
 struct OmniTAKMobileApp: App {
@@ -160,6 +167,7 @@ struct OmniTAKMobileApp: App {
 ```
 
 **Scheme Configuration**:
+
 - Main scheme: `OmniTAKMobile.xcscheme` (shared)
 - Debug configuration: includes debug symbols, verbose logging
 - Release configuration: optimized, stripped symbols
@@ -174,6 +182,7 @@ struct OmniTAKMobileApp: App {
 ### Plugin System (`plugin-template/`, `modules/omnitak_plugin_system/`)
 
 Plugins are **separate repositories** cloned from template:
+
 - **iOS Priority**: Built with Bazel, signed with OmniTAK certificates via GitLab CI/CD
 - **Manifest**: `plugin.json` declares permissions (`network.access`, `cot.read`, etc.)
 - **Sandboxing**: Plugins use subset of app entitlements, isolated API boundaries
@@ -218,7 +227,7 @@ cd crates/
 rustup target add aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios
 cargo build --release --target aarch64-apple-ios
 
-# Build Android targets  
+# Build Android targets
 rustup target add aarch64-linux-android armv7-linux-androideabi
 cargo build --release --target aarch64-linux-android
 
@@ -228,6 +237,7 @@ cargo test -p omnitak-cot
 ```
 
 **Key Files**:
+
 - `crates/omnitak-mobile/src/lib.rs`: FFI entry points (`#[no_mangle] pub extern "C"`)
 - `modules/omnitak_mobile/ios/native/omnitak_mobile.h`: C header for Swift
 
@@ -262,6 +272,7 @@ TAK uses **XML-based Cursor on Target** messages:
 ### Meshtastic Integration
 
 New feature for **off-grid LoRa mesh networking**:
+
 - Serial/USB and TCP connection types (BLE planned)
 - Automatic CoT↔Protobuf translation
 - Message chunking for >200 byte payloads
@@ -272,6 +283,7 @@ New feature for **off-grid LoRa mesh networking**:
 ### Building for Different Targets
 
 **Simulator Build** (fastest, no signing needed):
+
 ```bash
 cd apps/omnitak
 open OmniTAKMobile.xcodeproj
@@ -279,6 +291,7 @@ open OmniTAKMobile.xcodeproj
 ```
 
 **Device Build** (requires Apple ID):
+
 1. Connect iPhone/iPad via USB
 2. Xcode → Settings → Accounts → Add Apple ID
 3. Project Settings → Signing & Capabilities → Select Team
@@ -287,6 +300,7 @@ open OmniTAKMobile.xcodeproj
 6. On device: Settings → General → VPN & Device Management → Trust certificate
 
 **Release Build**:
+
 ```bash
 xcodebuild -scheme OmniTAKMobile \
   -configuration Release \
@@ -297,18 +311,22 @@ xcodebuild -scheme OmniTAKMobile \
 ### Common Xcode Issues
 
 **XCFramework not found**:
+
 - Symptom: `ld: framework not found OmniTAKMobile`
 - Solution: Rebuild Rust libraries with `crates/build_ios.sh`
 
 **Code signing errors**:
+
 - Symptom: `Signing for "OmniTAKMobile" requires a development team`
 - Solution: Add Apple ID to Xcode, change bundle identifier to unique value
 
 **Duplicate symbols**:
+
 - Symptom: `duplicate symbol _omnitak_init`
 - Solution: Clean build folder (Shift+⌘+K), restart Xcode
 
 **Device not recognized**:
+
 - Check: USB cable is data-capable (not charge-only)
 - Enable: Settings → Privacy & Security → Developer Mode (iOS 16+)
 - Trust: "Trust This Computer" popup on device
@@ -316,12 +334,14 @@ xcodebuild -scheme OmniTAKMobile \
 ### Adding New Swift Files
 
 When adding files to Xcode project:
+
 1. Right-click folder in Project Navigator → New File
 2. Choose Swift File template
 3. **Important**: Check "Add to targets: OmniTAKMobile"
 4. File automatically added to `project.pbxproj`
 
 For files created outside Xcode:
+
 1. Drag file into Project Navigator
 2. Check "Copy items if needed"
 3. Verify target membership in File Inspector (⌥+⌘+1)
@@ -329,11 +349,13 @@ For files created outside Xcode:
 ### Framework Linking
 
 The `OmniTAKMobile.xcframework` provides FFI to Rust:
+
 - Location: `apps/omnitak/OmniTAKMobile.xcframework/`
 - Slices: `ios-arm64` (devices), `ios-arm64_x86_64-simulator` (simulators)
 - Linked via: Xcode project → General → Frameworks, Libraries, and Embedded Content
 
 To update XCFramework:
+
 ```bash
 cd crates/
 ./build_ios.sh
@@ -348,7 +370,7 @@ cd crates/
 class TAKService: ObservableObject {
     @Published var isConnected = false
     @Published var messageCount = 0
-    
+
     // Persist with UserDefaults
     func saveServer(_ config: ServerConfig) {
         UserDefaults.standard.set(try? JSONEncoder().encode(config), forKey: "servers")
@@ -403,21 +425,22 @@ if let (certData, keyData) = CertificateManager.shared.loadCertificate(name) {
 - **Connection issues**: Look for `🔧`, `🔌`, `✅` emoji markers in TAKService logs
 
 **Common Issues**:
-- "Undefined symbol: _omnitak_init" → Rebuild Rust with `crates/build_ios.sh`
+
+- "Undefined symbol: \_omnitak_init" → Rebuild Rust with `crates/build_ios.sh`
 - Certificate errors → Check Keychain storage, verify PEM format
 - Bazel OOM → Increase Docker memory or add swap (8GB minimum)
 
 ## Key Files Reference
 
-| File | Purpose |
-|------|---------|
-| `crates/omnitak-mobile/src/lib.rs` | FFI entry points |
-| `apps/omnitak/OmniTAKMobile/Services/TAKService.swift` | iOS TAK client |
-| `modules/omnitak_mobile/ios/native/omnitak_mobile.h` | C header for FFI |
-| `scripts/build_ios.sh` | iOS build automation |
-| `apps/omnitak_android/BUILD.bazel` | Android Bazel config |
-| `docs/MESHTASTIC_INTEGRATION.md` | Meshtastic protocol guide |
-| `plugin-template/plugin.json` | Plugin manifest template |
+| File                                                   | Purpose                   |
+| ------------------------------------------------------ | ------------------------- |
+| `crates/omnitak-mobile/src/lib.rs`                     | FFI entry points          |
+| `apps/omnitak/OmniTAKMobile/Services/TAKService.swift` | iOS TAK client            |
+| `modules/omnitak_mobile/ios/native/omnitak_mobile.h`   | C header for FFI          |
+| `scripts/build_ios.sh`                                 | iOS build automation      |
+| `apps/omnitak_android/BUILD.bazel`                     | Android Bazel config      |
+| `docs/MESHTASTIC_INTEGRATION.md`                       | Meshtastic protocol guide |
+| `plugin-template/plugin.json`                          | Plugin manifest template  |
 
 ## Conventions
 

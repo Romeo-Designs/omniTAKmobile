@@ -423,26 +423,31 @@ func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayR
 ## Troubleshooting
 
 ### "Module not found" errors
+
 - Ensure all files are in the Xcode project
 - Clean build folder (Cmd+Shift+K)
 - Rebuild project (Cmd+B)
 
 ### Location permissions not requested
+
 - Verify Info.plist keys are correct
 - Check capitalization and spelling
 - Delete app and reinstall to reset permissions
 
 ### Compass not updating
+
 - Check device has magnetometer (not available in simulator)
 - Test on physical device
 - Ensure heading updates started: `navigationService.startHeadingUpdates()`
 
 ### Waypoints not persisting
+
 - Check console for encoding/decoding errors
 - Verify UserDefaults access permissions
 - Test with simple waypoint first
 
 ### Navigation not starting
+
 - Verify location permissions granted
 - Check GPS signal (may take time to acquire)
 - Ensure waypoint has valid coordinates
@@ -460,6 +465,7 @@ After successful integration:
 ## Support
 
 For issues or questions:
+
 - Check console logs for error messages
 - Review `WAYPOINT_NAVIGATION_IMPLEMENTATION.md` for detailed documentation
 - Verify integration steps completed correctly

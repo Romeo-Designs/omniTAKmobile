@@ -7,18 +7,21 @@ OmniTAK Mobile includes comprehensive TLS/SSL support for connecting to TAK serv
 ## Supported TLS Versions
 
 ### Default Mode (Secure)
+
 - **Minimum**: TLS 1.2
 - **Maximum**: TLS 1.3
 - **Recommended for**: All modern TAK servers (2020+)
 
 ### Legacy Mode (Opt-in)
-- **Minimum**: TLS 1.0 
+
+- **Minimum**: TLS 1.0
 - **Maximum**: TLS 1.3
 - **Use only when**: Connecting to very old TAK servers that cannot be upgraded
 
 ## Supported Cipher Suites
 
 ### Modern Cipher Suites (Default)
+
 ```
 TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384  (Recommended)
 TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256  (Recommended)
@@ -27,6 +30,7 @@ TLS_RSA_WITH_AES_128_GCM_SHA256
 ```
 
 ### Legacy Cipher Suites (For Old Servers)
+
 ```
 TLS_RSA_WITH_AES_256_CBC_SHA
 TLS_RSA_WITH_AES_128_CBC_SHA
@@ -34,7 +38,7 @@ TLS_RSA_WITH_AES_128_CBC_SHA
 
 ## Features
 
-###  What's Supported
+### What's Supported
 
 - **TLS 1.2 and 1.3** (default, secure)
 - **TLS 1.0 and 1.1** (opt-in, legacy mode)
@@ -44,7 +48,7 @@ TLS_RSA_WITH_AES_128_CBC_SHA
 - **Automatic TLS version negotiation**
 - **Real-time TLS negotiation logging** (debug mode)
 
-###  Security Features
+### Security Features
 
 - **Self-signed CA support**: Accepts server certificates signed by custom CAs
 - **Client certificates**: Mutual TLS authentication with .p12 certificates
@@ -102,6 +106,7 @@ In debug builds, OmniTAK logs detailed TLS negotiation information:
 ## Common TAK Server Configurations
 
 ### FreeTAKServer (Default)
+
 ```
 Protocol: TLS
 Port: 8089
@@ -112,6 +117,7 @@ Legacy Mode: Not needed
 ```
 
 ### TAK Server 4.x (Military)
+
 ```
 Protocol: TLS
 Port: 8089
@@ -122,6 +128,7 @@ Legacy Mode: Not needed
 ```
 
 ### TAK Server 3.x (Older)
+
 ```
 Protocol: TLS
 Port: 8089
@@ -132,6 +139,7 @@ Legacy Mode: May be needed
 ```
 
 ### WinTAK Server (Legacy)
+
 ```
 Protocol: TLS
 Port: 8087
@@ -148,6 +156,7 @@ Legacy Mode: Often needed
 **Problem**: Server requires older TLS version
 
 **Solution**: Enable legacy TLS mode
+
 ```swift
 server.allowLegacyTLS = true
 ```
@@ -157,6 +166,7 @@ server.allowLegacyTLS = true
 **Problem**: Cipher suite mismatch
 
 **Check**: Server's OpenSSL version and supported ciphers
+
 ```bash
 openssl ciphers -v 'ALL:COMPLEMENTOFALL'
 ```
@@ -172,13 +182,14 @@ openssl ciphers -v 'ALL:COMPLEMENTOFALL'
 **Problem**: Server requires client cert but none provided
 
 **Solution**:
+
 1. Enroll using QR code
 2. Import .p12 certificate manually
 3. Configure server with `certificateName`
 
 ## Security Considerations
 
-###  Legacy TLS Risks
+### Legacy TLS Risks
 
 Enabling `allowLegacyTLS: true` allows TLS 1.0 and 1.1, which have known vulnerabilities:
 
@@ -190,12 +201,14 @@ Enabling `allowLegacyTLS: true` allows TLS 1.0 and 1.1, which have known vulnera
 ### When to Use Legacy Mode
 
 **Only enable legacy TLS when:**
+
 1.  Server cannot be upgraded
 2.  Network is trusted (VPN, private network)
 3.  Temporary solution until server is upgraded
 4.  Testing/development only
 
 **Do NOT enable for:**
+
 1.  Production deployments
 2.  Public/untrusted networks
 3.  Sensitive operations
@@ -239,6 +252,7 @@ openssl s_client -connect tak.example.com:8089 -cipher 'ALL'
 **TLS Configuration**: `TAKService.swift:66-120`
 
 **Key Features**:
+
 - Minimum TLS version selection (line 75-79)
 - Legacy cipher suite configuration (line 84-93)
 - TLS negotiation monitoring (line 99-114)
@@ -249,6 +263,7 @@ openssl s_client -connect tak.example.com:8089 -cipher 'ALL'
 **Configuration**: `ServerManager.swift:13-40`
 
 **Fields**:
+
 ```swift
 var useTLS: Bool                  // Enable TLS/SSL
 var certificateName: String?      // Client cert name
@@ -258,14 +273,14 @@ var allowLegacyTLS: Bool          // Enable TLS 1.0/1.1
 
 ## Compatibility Matrix
 
-| TAK Server Version | TLS Version | Legacy Mode | Client Cert | Notes |
-|-------------------|-------------|-------------|-------------|-------|
-| FreeTAKServer 2.x | 1.2, 1.3 | No | Yes | Modern, recommended |
-| TAK Server 4.x | 1.2, 1.3 | No | Yes | Military/DoD |
-| TAK Server 3.x | 1.0-1.2 | Maybe | Yes | Older, update recommended |
-| WinTAK Server | 1.0-1.2 | Often | Optional | Legacy support |
-| CloudTAK | 1.2, 1.3 | No | Yes | Cloud-hosted |
-| Custom/DIY | Varies | Depends | Varies | Test first |
+| TAK Server Version | TLS Version | Legacy Mode | Client Cert | Notes                     |
+| ------------------ | ----------- | ----------- | ----------- | ------------------------- |
+| FreeTAKServer 2.x  | 1.2, 1.3    | No          | Yes         | Modern, recommended       |
+| TAK Server 4.x     | 1.2, 1.3    | No          | Yes         | Military/DoD              |
+| TAK Server 3.x     | 1.0-1.2     | Maybe       | Yes         | Older, update recommended |
+| WinTAK Server      | 1.0-1.2     | Often       | Optional    | Legacy support            |
+| CloudTAK           | 1.2, 1.3    | No          | Yes         | Cloud-hosted              |
+| Custom/DIY         | Varies      | Depends     | Varies      | Test first                |
 
 ## Migration Guide
 
@@ -274,18 +289,21 @@ var allowLegacyTLS: Bool          // Enable TLS 1.0/1.1
 If you're currently using legacy TLS mode, here's how to upgrade:
 
 1. **Check server version**
+
 ```bash
 # SSH to server
 tak-server --version
 ```
 
 2. **Update server if possible**
+
 ```bash
 # Example: FreeTAKServer
 pip install FreeTAKServer --upgrade
 ```
 
 3. **Configure server for TLS 1.2+**
+
 ```yaml
 # FreeTAKServer config
 tls:
@@ -294,6 +312,7 @@ tls:
 ```
 
 4. **Disable legacy mode in OmniTAK**
+
 ```swift
 server.allowLegacyTLS = false
 ```
@@ -328,4 +347,4 @@ A: Check debug logs for "TLS Negotiated: TLS X.X" message.
 
 **Remember**: Default TLS 1.2+ mode is secure and works with 95% of TAK servers. Only enable legacy mode when absolutely necessary!
 
- **Secure by default, legacy when needed.**
+**Secure by default, legacy when needed.**

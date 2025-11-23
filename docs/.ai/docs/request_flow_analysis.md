@@ -70,7 +70,6 @@ Key entry classes:
 The repo ships a simple CoT router/server used for testing or small deployments:
 
 - **Crate:** `crates/omnitak-server`
-
   - `src/server.rs`
     - `TakServer` is the main entry:
       - Binds TCP and/or TLS listening sockets from config.
@@ -276,7 +275,6 @@ For TLS, `accept_tls_loop` performs a handshake, then wraps the stream passed to
 In `crates/omnitak-server/src/client.rs` (shape summarised; code is present but lengthy):
 
 - `Client::handle(router_tx)`:
-
   - Uses `tokio::select!` or similar to:
     - Read CoT XML from `self.stream` with a read timeout.
     - Receive broadcasted messages from `self.rx_broadcast`.
@@ -839,7 +837,7 @@ Below is a textual diagram showing a full CoT lifecycle.
 ### 1. Client‑side CoT (iOS) – Outbound & Inbound
 
 ```text
-[User] 
+[User]
   |
   v
 [SwiftUI View] (e.g., ChatView, PositionBroadcastView)
@@ -858,7 +856,7 @@ Below is a textual diagram showing a full CoT lifecycle.
 [Network stack / OS / TLS]                                 |
   |   - Bytes travel over the network                      |
   v                                                        |
-+----------------------------------------------------------+ 
++----------------------------------------------------------+
 |                      Remote side (Rust)                 |
 |                                                        |
 |   [TcpListener / TlsListener]                           |
@@ -943,7 +941,7 @@ Below is a textual diagram showing a full CoT lifecycle.
 ### 3. Valdi/TS CoT Lifecycle (Conceptual)
 
 ```text
-[User] 
+[User]
   |
   v
 [Valdi Screen] (EnhancedMapScreen.tsx, Chat UI in TS)

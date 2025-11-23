@@ -72,4 +72,4 @@ Consequence: A permanent ban from any sort of public interaction within the comm
 
 This Code of Conduct is adapted from the Contributor Covenant, version 2.1, available at https://www.contributor-covenant.org/version/2/1/code_of_conduct.html.
 
-For answers to common questions about this code of conduct, see the FAQ at https://www.contributor-covenant.org/faq. 
+For answers to common questions about this code of conduct, see the FAQ at https://www.contributor-covenant.org/faq.

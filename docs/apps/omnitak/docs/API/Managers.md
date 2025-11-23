@@ -1,6 +1,7 @@
 # Managers API Reference
 
 ## Table of Contents
+
 - [Overview](#overview)
 - [ServerManager](#servermanager)
 - [CertificateManager](#certificatemanager)
@@ -43,7 +44,7 @@ Manages TAK server configurations and connection profiles.
 ```swift
 class ServerManager: ObservableObject {
     static let shared = ServerManager()
-    
+
     @Published var servers: [TAKServer] = []
     @Published var selectedServer: TAKServer?
     @Published var activeServerIndex: Int = 0
@@ -52,15 +53,15 @@ class ServerManager: ObservableObject {
 
 ### Properties
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `servers` | `[TAKServer]` | List of configured servers |
-| `selectedServer` | `TAKServer?` | Currently selected server |
-| `activeServerIndex` | `Int` | Index of active server |
+| Property            | Type          | Description                |
+| ------------------- | ------------- | -------------------------- |
+| `servers`           | `[TAKServer]` | List of configured servers |
+| `selectedServer`    | `TAKServer?`  | Currently selected server  |
+| `activeServerIndex` | `Int`         | Index of active server     |
 
 ### Methods
 
-#### addServer(_:)
+#### addServer(\_:)
 
 ```swift
 func addServer(_ server: TAKServer)
@@ -69,9 +70,11 @@ func addServer(_ server: TAKServer)
 Adds a new server configuration.
 
 **Parameters:**
+
 - `server`: TAKServer - Server configuration to add
 
 **Example:**
+
 ```swift
 let server = TAKServer(
     name: "Production TAK",
@@ -99,7 +102,7 @@ func updateServer(at index: Int, with server: TAKServer)
 
 Updates an existing server configuration.
 
-#### selectServer(_:)
+#### selectServer(\_:)
 
 ```swift
 func selectServer(_ server: TAKServer)
@@ -108,6 +111,7 @@ func selectServer(_ server: TAKServer)
 Sets the active server and triggers reconnection.
 
 **Example:**
+
 ```swift
 if let server = ServerManager.shared.servers.first {
     ServerManager.shared.selectServer(server)
@@ -139,7 +143,7 @@ Manages client certificates for TLS authentication with TAK servers.
 ```swift
 class CertificateManager: ObservableObject {
     static let shared = CertificateManager()
-    
+
     @Published var certificates: [TAKCertificate] = []
     @Published var selectedCertificate: TAKCertificate?
 }
@@ -147,10 +151,10 @@ class CertificateManager: ObservableObject {
 
 ### Properties
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `certificates` | `[TAKCertificate]` | Available certificates |
-| `selectedCertificate` | `TAKCertificate?` | Active certificate for connections |
+| Property              | Type               | Description                        |
+| --------------------- | ------------------ | ---------------------------------- |
+| `certificates`        | `[TAKCertificate]` | Available certificates             |
+| `selectedCertificate` | `TAKCertificate?`  | Active certificate for connections |
 
 ### Methods
 
@@ -163,6 +167,7 @@ func importCertificate(from data: Data, password: String) throws -> TAKCertifica
 Imports a .p12 certificate file.
 
 **Parameters:**
+
 - `data`: Data - Raw .p12 file data
 - `password`: String - Certificate password
 
@@ -171,6 +176,7 @@ Imports a .p12 certificate file.
 **Throws:** `CertificateError` if import fails
 
 **Example:**
+
 ```swift
 do {
     let fileURL = URL(fileURLWithPath: "/path/to/cert.p12")
@@ -182,7 +188,7 @@ do {
 }
 ```
 
-#### saveCertificate(_:data:password:)
+#### saveCertificate(\_:data:password:)
 
 ```swift
 func saveCertificate(_ name: String, data: Data, password: String) throws
@@ -191,6 +197,7 @@ func saveCertificate(_ name: String, data: Data, password: String) throws
 Saves certificate to iOS Keychain.
 
 **Parameters:**
+
 - `name`: String - Certificate identifier
 - `data`: Data - .p12 certificate data
 - `password`: String - Certificate password
@@ -205,7 +212,7 @@ Retrieves certificate data from Keychain.
 
 **Returns:** Tuple of (certificate data, password)
 
-#### deleteCertificate(_:)
+#### deleteCertificate(\_:)
 
 ```swift
 func deleteCertificate(_ name: String) throws
@@ -224,6 +231,7 @@ Extracts `SecIdentity` for TLS authentication.
 **Returns:** `SecIdentity` - Identity for TLS client authentication
 
 **Example:**
+
 ```swift
 let (data, password) = try CertificateManager.shared.getCertificateData(for: "my-cert")
 let identity = try CertificateManager.shared.getIdentity(for: data, password: password)
@@ -232,7 +240,7 @@ let identity = try CertificateManager.shared.getIdentity(for: data, password: pa
 
 ### Certificate Validation
 
-#### validateCertificate(_:)
+#### validateCertificate(\_:)
 
 ```swift
 func validateCertificate(_ certificate: TAKCertificate) -> CertificateValidationResult
@@ -241,6 +249,7 @@ func validateCertificate(_ certificate: TAKCertificate) -> CertificateValidation
 Checks certificate expiry and validity.
 
 **Returns:**
+
 - `.valid` - Certificate is valid
 - `.expiringSoon` - Expires within 30 days
 - `.expired` - Certificate has expired
@@ -258,7 +267,7 @@ Manages chat conversations, messages, and participants.
 ```swift
 class ChatManager: ObservableObject {
     static let shared = ChatManager()
-    
+
     @Published var conversations: [Conversation] = []
     @Published var activeConversation: Conversation?
     @Published var unreadCount: Int = 0
@@ -268,16 +277,16 @@ class ChatManager: ObservableObject {
 
 ### Properties
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `conversations` | `[Conversation]` | All chat conversations |
-| `activeConversation` | `Conversation?` | Currently open conversation |
-| `unreadCount` | `Int` | Total unread message count |
-| `participants` | `[ChatParticipant]` | Known participants from position updates |
+| Property             | Type                | Description                              |
+| -------------------- | ------------------- | ---------------------------------------- |
+| `conversations`      | `[Conversation]`    | All chat conversations                   |
+| `activeConversation` | `Conversation?`     | Currently open conversation              |
+| `unreadCount`        | `Int`               | Total unread message count               |
+| `participants`       | `[ChatParticipant]` | Known participants from position updates |
 
 ### Methods
 
-#### sendMessage(_:to:)
+#### sendMessage(\_:to:)
 
 ```swift
 func sendMessage(_ text: String, to recipient: String)
@@ -286,15 +295,17 @@ func sendMessage(_ text: String, to recipient: String)
 Sends a chat message to a recipient or group.
 
 **Parameters:**
+
 - `text`: String - Message text
 - `recipient`: String - Recipient UID or "All Chat Users"
 
 **Example:**
+
 ```swift
 ChatManager.shared.sendMessage("Enemy sighted at grid 12345678", to: "ANDROID-789")
 ```
 
-#### receiveMessage(_:)
+#### receiveMessage(\_:)
 
 ```swift
 func receiveMessage(_ message: ChatMessage)
@@ -302,7 +313,7 @@ func receiveMessage(_ message: ChatMessage)
 
 Processes incoming chat message from CoT handler.
 
-#### sendPhotoMessage(_:image:to:)
+#### sendPhotoMessage(\_:image:to:)
 
 ```swift
 func sendPhotoMessage(_ caption: String?, image: UIImage, to recipient: String)
@@ -311,6 +322,7 @@ func sendPhotoMessage(_ caption: String?, image: UIImage, to recipient: String)
 Sends a photo attachment with optional caption.
 
 **Example:**
+
 ```swift
 let image = UIImage(named: "recon_photo")!
 ChatManager.shared.sendPhotoMessage("Target building", image: image, to: "ANDROID-789")
@@ -324,7 +336,7 @@ func getOrCreateConversation(with uid: String) -> Conversation
 
 Retrieves existing conversation or creates new one.
 
-#### markConversationAsRead(_:)
+#### markConversationAsRead(\_:)
 
 ```swift
 func markConversationAsRead(_ conversation: Conversation)
@@ -332,7 +344,7 @@ func markConversationAsRead(_ conversation: Conversation)
 
 Clears unread count for conversation.
 
-#### deleteConversation(_:)
+#### deleteConversation(\_:)
 
 ```swift
 func deleteConversation(_ conversation: Conversation)
@@ -363,7 +375,7 @@ Manages message filtering criteria for CoT events.
 ```swift
 class CoTFilterManager: ObservableObject {
     static let shared = CoTFilterManager()
-    
+
     @Published var activeFilters: [CoTFilterCriteria] = []
     @Published var filterEnabled: Bool = false
 }
@@ -371,14 +383,14 @@ class CoTFilterManager: ObservableObject {
 
 ### Properties
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `activeFilters` | `[CoTFilterCriteria]` | Active filter rules |
-| `filterEnabled` | `Bool` | Master enable/disable |
+| Property        | Type                  | Description           |
+| --------------- | --------------------- | --------------------- |
+| `activeFilters` | `[CoTFilterCriteria]` | Active filter rules   |
+| `filterEnabled` | `Bool`                | Master enable/disable |
 
 ### Methods
 
-#### addFilter(_:)
+#### addFilter(\_:)
 
 ```swift
 func addFilter(_ filter: CoTFilterCriteria)
@@ -387,6 +399,7 @@ func addFilter(_ filter: CoTFilterCriteria)
 Adds a filter criterion.
 
 **Example:**
+
 ```swift
 let filter = CoTFilterCriteria(
     type: .affiliation(Affiliation.friendly),
@@ -403,7 +416,7 @@ func removeFilter(at index: Int)
 
 Removes filter at index.
 
-#### shouldDisplay(_:)
+#### shouldDisplay(\_:)
 
 ```swift
 func shouldDisplay(_ event: CoTEvent) -> Bool
@@ -414,6 +427,7 @@ Tests if event passes all active filters.
 **Returns:** `true` if event should be displayed
 
 **Example:**
+
 ```swift
 if CoTFilterManager.shared.shouldDisplay(cotEvent) {
     // Add to map
@@ -451,11 +465,11 @@ class DrawingToolsManager: ObservableObject {
 
 ### Properties
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `drawingMode` | `DrawingMode` | Active drawing tool |
-| `selectedColor` | `Color` | Drawing color |
-| `currentDrawing` | `Drawing?` | In-progress drawing |
+| Property         | Type          | Description         |
+| ---------------- | ------------- | ------------------- |
+| `drawingMode`    | `DrawingMode` | Active drawing tool |
+| `selectedColor`  | `Color`       | Drawing color       |
+| `currentDrawing` | `Drawing?`    | In-progress drawing |
 
 ### Drawing Modes
 
@@ -480,11 +494,12 @@ func startDrawing(mode: DrawingMode, color: Color)
 Activates drawing mode.
 
 **Example:**
+
 ```swift
 DrawingToolsManager.shared.startDrawing(mode: .line, color: .blue)
 ```
 
-#### addPoint(_:)
+#### addPoint(\_:)
 
 ```swift
 func addPoint(_ coordinate: CLLocationCoordinate2D)
@@ -523,7 +538,7 @@ Manages geofences and monitors location events.
 ```swift
 class GeofenceManager: ObservableObject {
     static let shared = GeofenceManager()
-    
+
     @Published var geofences: [Geofence] = []
     @Published var activeGeofenceEvents: [GeofenceEvent] = []
 }
@@ -531,14 +546,14 @@ class GeofenceManager: ObservableObject {
 
 ### Properties
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `geofences` | `[Geofence]` | Defined geofences |
+| Property               | Type              | Description              |
+| ---------------------- | ----------------- | ------------------------ |
+| `geofences`            | `[Geofence]`      | Defined geofences        |
 | `activeGeofenceEvents` | `[GeofenceEvent]` | Recent entry/exit events |
 
 ### Methods
 
-#### addGeofence(_:)
+#### addGeofence(\_:)
 
 ```swift
 func addGeofence(_ geofence: Geofence)
@@ -547,6 +562,7 @@ func addGeofence(_ geofence: Geofence)
 Adds and starts monitoring geofence.
 
 **Example:**
+
 ```swift
 let geofence = Geofence(
     id: UUID(),
@@ -559,7 +575,7 @@ let geofence = Geofence(
 GeofenceManager.shared.addGeofence(geofence)
 ```
 
-#### removeGeofence(_:)
+#### removeGeofence(\_:)
 
 ```swift
 func removeGeofence(_ geofence: Geofence)
@@ -567,7 +583,7 @@ func removeGeofence(_ geofence: Geofence)
 
 Removes and stops monitoring geofence.
 
-#### checkLocation(_:)
+#### checkLocation(\_:)
 
 ```swift
 func checkLocation(_ location: CLLocation)
@@ -616,7 +632,7 @@ func startMeasurement(mode: MeasurementMode)
 
 Begins measurement.
 
-#### addMeasurementPoint(_:)
+#### addMeasurementPoint(\_:)
 
 ```swift
 func addMeasurementPoint(_ coordinate: CLLocationCoordinate2D)
@@ -647,7 +663,7 @@ Manages Meshtastic mesh network connections.
 ```swift
 public class MeshtasticManager: ObservableObject {
     static let shared = MeshtasticManager()
-    
+
     @Published public var isConnected: Bool = false
     @Published public var discoveredDevices: [MeshtasticDevice] = []
     @Published public var connectedDevice: MeshtasticDevice?
@@ -665,7 +681,7 @@ func startBluetoothScan()
 
 Begins BLE scan for Meshtastic devices.
 
-#### connectToDevice(_:)
+#### connectToDevice(\_:)
 
 ```swift
 func connectToDevice(_ device: MeshtasticDevice)
@@ -674,6 +690,7 @@ func connectToDevice(_ device: MeshtasticDevice)
 Connects to Meshtastic device.
 
 **Example:**
+
 ```swift
 if let device = MeshtasticManager.shared.discoveredDevices.first {
     MeshtasticManager.shared.connectToDevice(device)
@@ -688,7 +705,7 @@ func disconnect()
 
 Disconnects from current device.
 
-#### sendMessage(_:)
+#### sendMessage(\_:)
 
 ```swift
 func sendMessage(_ message: String) throws
@@ -709,7 +726,7 @@ Manages offline map tile downloads and storage.
 ```swift
 class OfflineMapManager: ObservableObject {
     static let shared = OfflineMapManager()
-    
+
     @Published var downloadedRegions: [OfflineRegion] = []
     @Published var currentDownload: DownloadProgress?
     @Published var isDownloading: Bool = false
@@ -718,7 +735,7 @@ class OfflineMapManager: ObservableObject {
 
 ### Methods
 
-#### downloadRegion(_:)
+#### downloadRegion(\_:)
 
 ```swift
 func downloadRegion(_ region: OfflineRegion)
@@ -727,9 +744,11 @@ func downloadRegion(_ region: OfflineRegion)
 Downloads tiles for specified region.
 
 **Parameters:**
+
 - `region`: OfflineRegion with bounds, zoom range, tile source
 
 **Example:**
+
 ```swift
 let region = OfflineRegion(
     name: "San Francisco",
@@ -749,7 +768,7 @@ func cancelDownload()
 
 Cancels active download.
 
-#### deleteRegion(_:)
+#### deleteRegion(\_:)
 
 ```swift
 func deleteRegion(_ region: OfflineRegion)
@@ -770,7 +789,7 @@ Manages tactical waypoints and markers.
 ```swift
 class WaypointManager: ObservableObject {
     static let shared = WaypointManager()
-    
+
     @Published var waypoints: [Waypoint] = []
     @Published var selectedWaypoint: Waypoint?
 }
@@ -778,7 +797,7 @@ class WaypointManager: ObservableObject {
 
 ### Methods
 
-#### addWaypoint(_:)
+#### addWaypoint(\_:)
 
 ```swift
 func addWaypoint(_ waypoint: Waypoint)
@@ -787,6 +806,7 @@ func addWaypoint(_ waypoint: Waypoint)
 Adds waypoint and broadcasts to TAK server.
 
 **Example:**
+
 ```swift
 let waypoint = Waypoint(
     name: "Rally Point Alpha",
@@ -797,7 +817,7 @@ let waypoint = Waypoint(
 WaypointManager.shared.addWaypoint(waypoint)
 ```
 
-#### removeWaypoint(_:)
+#### removeWaypoint(\_:)
 
 ```swift
 func removeWaypoint(_ waypoint: Waypoint)
@@ -805,7 +825,7 @@ func removeWaypoint(_ waypoint: Waypoint)
 
 Removes waypoint and sends delete CoT.
 
-#### updateWaypoint(_:)
+#### updateWaypoint(\_:)
 
 ```swift
 func updateWaypoint(_ waypoint: Waypoint)
@@ -826,7 +846,7 @@ Manages data package import/export (KML, KMZ, mission packages).
 ```swift
 class DataPackageManager: ObservableObject {
     static let shared = DataPackageManager()
-    
+
     @Published var importedPackages: [DataPackage] = []
 }
 ```
@@ -844,6 +864,7 @@ Imports KML/KMZ file.
 **Returns:** DataPackage with extracted features
 
 **Example:**
+
 ```swift
 do {
     let package = try DataPackageManager.shared.importKML(from: fileURL)
@@ -853,7 +874,7 @@ do {
 }
 ```
 
-#### exportPackage(_:)
+#### exportPackage(\_:)
 
 ```swift
 func exportPackage(_ package: DataPackage) throws -> URL
@@ -863,7 +884,7 @@ Exports data package to file.
 
 **Returns:** URL of exported file
 
-#### sharePackage(_:)
+#### sharePackage(\_:)
 
 ```swift
 func sharePackage(_ package: DataPackage)
@@ -941,4 +962,4 @@ GeofenceManager.shared.$activeGeofenceEvents
 
 ---
 
-*Last Updated: November 22, 2025*
+_Last Updated: November 22, 2025_

@@ -1,6 +1,7 @@
 # Models API Reference
 
 ## Table of Contents
+
 - [Overview](#overview)
 - [CoT Models](#cot-models)
 - [Chat Models](#chat-models)
@@ -60,13 +61,13 @@ struct CoTEvent: Identifiable, Codable, Equatable {
     let start: Date             // Start time
     let stale: Date             // Stale time
     let how: String             // How acquired (e.g., "m-g" = GPS)
-    
+
     // Location
     let coordinate: CLLocationCoordinate2D
     let hae: Double             // Height above ellipsoid (meters)
     let ce: Double              // Circular error (meters)
     let le: Double              // Linear error (meters)
-    
+
     // Detail
     let callsign: String
     let team: String?
@@ -76,6 +77,7 @@ struct CoTEvent: Identifiable, Codable, Equatable {
 ```
 
 **Usage:**
+
 ```swift
 let event = CoTEvent(
     id: UUID().uuidString,
@@ -99,11 +101,11 @@ struct EnhancedCoTMarker: Identifiable, Equatable {
     var type: String
     var team: String?
     var lastUpdate: Date
-    
+
     // Trail
     var trailCoordinates: [CLLocationCoordinate2D] = []
     var trailTimestamps: [Date] = []
-    
+
     // Status
     var battery: Int?
     var speed: Double?
@@ -131,13 +133,13 @@ struct ChatMessage: Identifiable, Codable, Equatable {
     let recipientCallsign: String
     let messageText: String
     let timestamp: Date
-    
+
     // Location
     var coordinate: CLLocationCoordinate2D?
-    
+
     // Attachment
     var attachment: ImageAttachment?
-    
+
     // Status
     var status: MessageStatus = .pending
     var isRead: Bool = false
@@ -222,6 +224,7 @@ struct Waypoint: Identifiable, Codable, Equatable {
 ```
 
 **Usage:**
+
 ```swift
 let waypoint = Waypoint(
     id: UUID(),
@@ -276,31 +279,31 @@ struct PointMarker: Identifiable, Codable, Equatable {
 ```swift
 struct CASRequest: Identifiable, Codable {
     let id: UUID
-    
+
     // Line 1-3: Location
     var ipLocation: CLLocationCoordinate2D      // Initial Point
     var targetLocation: CLLocationCoordinate2D  // Target
     var egress: String                          // Egress direction
-    
+
     // Line 4: Target Type
     var targetType: String                      // "Troops in open", etc.
-    
+
     // Line 5: Target Description
     var targetDescription: String
-    
+
     // Line 6: Location of Friendly Forces
     var friendlyLocation: CLLocationCoordinate2D
     var friendlyMarking: String
-    
+
     // Line 7: Mark Type
     var markType: String                        // "Smoke", "IR", etc.
-    
+
     // Line 8: Location of Target
     var targetMarking: String
-    
+
     // Line 9: Egress
     var egressDirection: String
-    
+
     // Metadata
     var requestedBy: String
     var timestamp: Date
@@ -317,41 +320,41 @@ struct CASRequest: Identifiable, Codable {
 ```swift
 struct MEDEVACRequest: Identifiable, Codable {
     let id: UUID
-    
+
     // Line 1: Location of pickup site
     var pickupLocation: CLLocationCoordinate2D
     var frequency: String                       // Radio freq
     var callsign: String
-    
+
     // Line 2: Call sign and frequency at pickup site
     var pickupCallsign: String
     var pickupFrequency: String
-    
+
     // Line 3: Number of patients by precedence
     var urgentPatients: Int
     var priorityPatients: Int
     var routinePatients: Int
-    
+
     // Line 4: Special equipment required
     var specialEquipment: [String]              // "Hoist", "Ventilator"
-    
+
     // Line 5: Number of patients by type
     var litterPatients: Int
     var ambulatoryPatients: Int
-    
+
     // Line 6: Security at pickup site
     var securityStatus: String                  // "No enemy", "Possible"
-    
+
     // Line 7: Method of marking pickup site
     var marking: String                         // "Smoke", "Panels"
-    
+
     // Line 8: Patient nationality and status
     var nationality: String
     var combatStatus: String                    // "US Military", "EPW"
-    
+
     // Line 9: NBC contamination
     var nbcContamination: String                // "None", "Chemical"
-    
+
     var requestedBy: String
     var timestamp: Date
     var status: RequestStatus
@@ -635,7 +638,7 @@ struct MissionPackageContent: Codable, Equatable {
     var filename: String
     var type: ContentType
     var data: Data
-    
+
     enum ContentType: String, Codable {
         case kml
         case image
@@ -696,4 +699,4 @@ static func == (lhs: MyModel, rhs: MyModel) -> Bool {
 
 ---
 
-*Last Updated: November 22, 2025*
+_Last Updated: November 22, 2025_

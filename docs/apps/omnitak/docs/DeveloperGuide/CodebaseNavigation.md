@@ -1,6 +1,7 @@
 # Codebase Navigation Guide
 
 ## Table of Contents
+
 - [Overview](#overview)
 - [Project Structure](#project-structure)
 - [Finding Specific Functionality](#finding-specific-functionality)
@@ -152,20 +153,26 @@ OmniTAKMobile/
 ### "I want to modify..."
 
 #### Map Rendering
+
 **Location**: `OmniTAKMobile/Map/Controllers/MapViewController.swift`
+
 - Main map view: Line 1-3210
 - MapKit integration: Throughout
 - Annotation rendering: Search for `MapAnnotation`
 
 #### Server Connection
+
 **Location**: `OmniTAKMobile/Services/TAKService.swift`
+
 - Connect method: Line ~200
 - TLS configuration: Line ~300
 - Message sending: Line ~500
 - DirectTCPSender class: Line ~700
 
 #### Chat Messages
+
 **Locations**:
+
 - State: `OmniTAKMobile/Managers/ChatManager.swift` (790 lines)
 - Business logic: `OmniTAKMobile/Services/ChatService.swift` (310 lines)
 - UI: `OmniTAKMobile/Views/Chat/ChatView.swift`
@@ -173,25 +180,33 @@ OmniTAKMobile/
 - CoT generation: `OmniTAKMobile/CoT/Generators/ChatCoTGenerator.swift`
 
 #### Position Broadcasting
+
 **Location**: `OmniTAKMobile/Services/PositionBroadcastService.swift` (398 lines)
+
 - Enable/disable: Line ~20
 - Update interval: Line ~35
 - CoT generation: Line ~250
 
 #### CoT Message Parsing
+
 **Locations**:
+
 - Main parser: `OmniTAKMobile/CoT/CoTMessageParser.swift`
 - Event handler: `OmniTAKMobile/CoT/CoTEventHandler.swift`
 - Specific parsers: `OmniTAKMobile/CoT/Parsers/`
 
 #### Drawing Tools
+
 **Locations**:
+
 - Manager: `OmniTAKMobile/Managers/DrawingToolsManager.swift`
 - UI: `OmniTAKMobile/Views/Drawing/`
 - Models: `OmniTAKMobile/Models/DrawingModels.swift`
 
 #### Certificates
+
 **Location**: `OmniTAKMobile/Managers/CertificateManager.swift` (436 lines)
+
 - Import: Line ~100
 - Validation: Line ~200
 - Keychain: Line ~300
@@ -202,28 +217,28 @@ OmniTAKMobile/
 
 ### Largest Files (Lines of Code)
 
-| File | Lines | Purpose |
-|------|-------|---------|
-| `MapViewController.swift` | 3210 | Main map interface |
-| `TAKService.swift` | 1105 | Network communication |
-| `ChatManager.swift` | 790 | Chat state management |
-| `TrackRecordingService.swift` | 635 | GPS track recording |
-| `GeofenceService.swift` | 538 | Geofence monitoring |
-| `CertificateManager.swift` | 436 | TLS certificate handling |
-| `MeasurementService.swift` | 422 | Measurement tools |
-| `PositionBroadcastService.swift` | 398 | PLI broadcasting |
-| `ChatService.swift` | 310 | Chat business logic |
-| `ChatModels.swift` | 259 | Chat data structures |
+| File                             | Lines | Purpose                  |
+| -------------------------------- | ----- | ------------------------ |
+| `MapViewController.swift`        | 3210  | Main map interface       |
+| `TAKService.swift`               | 1105  | Network communication    |
+| `ChatManager.swift`              | 790   | Chat state management    |
+| `TrackRecordingService.swift`    | 635   | GPS track recording      |
+| `GeofenceService.swift`          | 538   | Geofence monitoring      |
+| `CertificateManager.swift`       | 436   | TLS certificate handling |
+| `MeasurementService.swift`       | 422   | Measurement tools        |
+| `PositionBroadcastService.swift` | 398   | PLI broadcasting         |
+| `ChatService.swift`              | 310   | Chat business logic      |
+| `ChatModels.swift`               | 259   | Chat data structures     |
 
 ### Critical Entry Points
 
-| Function | File | Purpose |
-|----------|------|---------|
-| `@main` | `OmniTAKMobileApp.swift` | App entry point |
-| `ATAKMapView` | `MapViewController.swift` | Main view |
-| `connect()` | `TAKService.swift` | Server connection |
-| `sendMessage()` | `ChatManager.swift` | Send chat |
-| `processCoTEvent()` | `CoTEventHandler.swift` | Handle incoming CoT |
+| Function            | File                      | Purpose             |
+| ------------------- | ------------------------- | ------------------- |
+| `@main`             | `OmniTAKMobileApp.swift`  | App entry point     |
+| `ATAKMapView`       | `MapViewController.swift` | Main view           |
+| `connect()`         | `TAKService.swift`        | Server connection   |
+| `sendMessage()`     | `ChatManager.swift`       | Send chat           |
+| `processCoTEvent()` | `CoTEventHandler.swift`   | Handle incoming CoT |
 
 ---
 
@@ -274,24 +289,28 @@ OmniTAKMobile/
 ### Search Patterns
 
 #### Find Class Definition
+
 ```bash
 # In terminal
 grep -r "class MyClassName" OmniTAKMobile/
 ```
 
 #### Find Method Usage
+
 ```bash
 # Find all calls to a method
 grep -r "myMethodName(" OmniTAKMobile/
 ```
 
 #### Find Protocol Conformance
+
 ```bash
 # Find classes conforming to protocol
 grep -r ": MyProtocol" OmniTAKMobile/
 ```
 
 #### Find SwiftUI Views
+
 ```bash
 # All views conforming to View protocol
 grep -r "struct.*: View" OmniTAKMobile/Views/
@@ -304,26 +323,31 @@ grep -r "struct.*: View" OmniTAKMobile/Views/
 ### Adding a New Feature
 
 **1. Define Model** (if needed)
+
 - Location: `OmniTAKMobile/Models/`
 - File: `MyFeatureModels.swift`
 - Pattern: `struct`, `Identifiable`, `Codable`
 
 **2. Create Manager** (for state)
+
 - Location: `OmniTAKMobile/Managers/`
 - File: `MyFeatureManager.swift`
 - Pattern: `ObservableObject`, `@Published`
 
 **3. Create Service** (for logic)
+
 - Location: `OmniTAKMobile/Services/`
 - File: `MyFeatureService.swift`
 - Pattern: Singleton or injected
 
 **4. Create View**
+
 - Location: `OmniTAKMobile/Views/MyFeature/`
 - File: `MyFeatureView.swift`
 - Pattern: SwiftUI `View`
 
 **5. Integrate**
+
 - Add to main view (usually `ATAKMapView`)
 - Add navigation/toolbar button
 - Test end-to-end
@@ -331,32 +355,39 @@ grep -r "struct.*: View" OmniTAKMobile/Views/
 ### Adding CoT Message Type
 
 **1. Update Parser**
+
 - File: `CoTMessageParser.swift`
 - Add parsing logic for new type
 
 **2. Create Generator**
+
 - File: `CoT/Generators/MyTypeCoTGenerator.swift`
 - Implement XML generation
 
 **3. Update Handler**
+
 - File: `CoTEventHandler.swift`
 - Add routing for new type
 
 **4. Add Model** (if complex)
+
 - File: `Models/MyTypeModels.swift`
 
 ### Modifying UI
 
 **SwiftUI Views**:
+
 - Location: `OmniTAKMobile/Views/`
 - Hot reload: Cmd+Option+P (preview)
 - Inspect hierarchy: View > Show SwiftUI Inspector
 
 **Map Overlays**:
+
 - Location: `OmniTAKMobile/Map/Overlays/`
 - Add to `MapOverlayCoordinator`
 
 **Custom Components**:
+
 - Create reusable views in `Views/Components/`
 
 ---
@@ -366,25 +397,31 @@ grep -r "struct.*: View" OmniTAKMobile/Views/
 ### Xcode Navigation
 
 **Quick Open**:
+
 - `Cmd + Shift + O` → Open file by name
 
 **Find in Project**:
+
 - `Cmd + Shift + F` → Project-wide search
 
 **Jump to Definition**:
+
 - `Cmd + Click` on symbol
 
 **Show Related Items**:
+
 - `Ctrl + 1` → Show related files/tests
 
 ### Code Organization
 
 **File Size**: If file exceeds 500 lines, consider splitting into:
+
 - Extensions
 - Separate view components
 - Helper classes
 
 **Naming**: Follow existing patterns:
+
 - Managers: `*Manager.swift`
 - Services: `*Service.swift`
 - Models: `*Models.swift`
@@ -393,10 +430,12 @@ grep -r "struct.*: View" OmniTAKMobile/Views/
 ### Testing
 
 **Unit Tests**:
+
 - Location: `OmniTAKMobileTests/`
 - Run: `Cmd + U`
 
 **UI Tests**:
+
 - Location: `OmniTAKMobileUITests/`
 - Run: `Cmd + U` (all) or test diamond
 
@@ -432,4 +471,4 @@ These are stable infrastructure:
 
 ---
 
-*Last Updated: November 22, 2025*
+_Last Updated: November 22, 2025_

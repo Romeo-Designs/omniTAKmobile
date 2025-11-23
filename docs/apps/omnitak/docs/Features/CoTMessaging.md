@@ -1,6 +1,7 @@
 # CoT Messaging System
 
 ## Table of Contents
+
 - [Overview](#overview)
 - [CoT Protocol Fundamentals](#cot-protocol-fundamentals)
 - [Architecture](#architecture)
@@ -18,6 +19,7 @@
 The **Cursor on Target (CoT)** messaging system is the core communication protocol of OmniTAK Mobile. It enables real-time tactical awareness by exchanging standardized XML messages with TAK servers and other TAK clients.
 
 ### Key Features
+
 - ✅ Full CoT XML parsing and generation
 - ✅ Real-time event routing via Combine
 - ✅ Support for 6+ message types
@@ -27,6 +29,7 @@ The **Cursor on Target (CoT)** messaging system is the core communication protoc
 - ✅ Waypoint synchronization
 
 ### Files
+
 - **Parser**: `OmniTAKMobile/CoT/CoTMessageParser.swift` (396 lines)
 - **Handler**: `OmniTAKMobile/CoT/CoTEventHandler.swift` (333 lines)
 - **Generators**: `OmniTAKMobile/CoT/Generators/` (4 generator files)
@@ -39,6 +42,7 @@ The **Cursor on Target (CoT)** messaging system is the core communication protoc
 ### What is CoT?
 
 **Cursor on Target (CoT)** is an XML-based protocol for sharing tactical information. Each message represents an event with:
+
 - **Who** - Unique identifier and callsign
 - **What** - Event type (position, chat, alert, etc.)
 - **Where** - Latitude/longitude/elevation
@@ -77,6 +81,7 @@ a-f-G-U-C
 ```
 
 **Common Prefixes:**
+
 - `a-` = Atom (position/SA messages)
 - `b-` = Bit (tactical data)
 - `t-` = Task (metadata/protocol)
@@ -270,7 +275,7 @@ class CoTMessageParser {
                 return .waypoint(cotEvent)
             }
         }
-        
+
         return .unknown(eventType)
     }
 }
@@ -304,12 +309,12 @@ private static func parsePositionUpdate(xml: String) -> CoTEvent? {
           let lon = extractPointAttribute("lon", from: xml) else {
         return nil
     }
-    
+
     let hae = extractPointAttribute("hae", from: xml) ?? 0.0
     let callsign = extractDetailValue("callsign", from: xml) ?? uid
     let team = extractDetailValue("__group", attributeName: "name", from: xml)
     let role = extractDetailValue("__group", attributeName: "role", from: xml)
-    
+
     return CoTEvent(
         uid: uid,
         type: type,
@@ -345,12 +350,12 @@ private static func parseEmergencyAlert(xml: String) -> EmergencyAlert? {
           let lon = extractPointAttribute("lon", from: xml) else {
         return nil
     }
-    
+
     let callsign = extractDetailValue("callsign", from: xml) ?? "Unknown"
     let alertType = EmergencyAlert.AlertType.from(type: type)
     let message = extractDetailValue("remarks", from: xml)
     let cancel = xml.contains("cancel=\"true\"")
-    
+
     return EmergencyAlert(
         id: UUID().uuidString,
         uid: uid,
@@ -426,7 +431,7 @@ The event handler routes parsed CoT events to appropriate subsystems and publish
 ```swift
 class CoTEventHandler: ObservableObject {
     static let shared = CoTEventHandler()
-    
+
     // Private initializer ensures single instance
     private init() {
         requestNotificationPermissions()
@@ -460,7 +465,7 @@ let unknownEventPublisher = PassthroughSubject<String, Never>()
 func configure(takService: TAKService, chatManager: ChatManager) {
     self.takService = takService
     self.chatManager = chatManager
-    
+
     print("CoTEventHandler: Configured with TAKService and ChatManager")
 }
 ```
@@ -504,22 +509,22 @@ func handle(event: CoTEventType) {
 private func handlePositionUpdate(_ event: CoTEvent) {
     // Update latest position
     self.latestPositionUpdate = event
-    
+
     // Publish to subscribers
     positionUpdatePublisher.send(event)
-    
+
     // Post notification
     NotificationCenter.default.post(
         name: Self.positionUpdateNotification,
         object: event
     )
-    
+
     // Update TAKService markers
     takService?.updateMarker(from: event)
-    
+
     // Update chat participant (for presence)
     chatManager?.updateParticipant(uid: event.uid, callsign: event.callsign, coordinate: event.coordinate)
-    
+
     #if DEBUG
     print("📍 Position Update: \(event.callsign) at (\(event.coordinate.latitude), \(event.coordinate.longitude))")
     #endif
@@ -532,24 +537,24 @@ private func handlePositionUpdate(_ event: CoTEvent) {
 private func handleChatMessage(_ message: ChatMessage) {
     // Update latest chat
     self.latestChatMessage = message
-    
+
     // Publish to subscribers
     chatMessagePublisher.send(message)
-    
+
     // Post notification
     NotificationCenter.default.post(
         name: Self.chatMessageNotification,
         object: message
     )
-    
+
     // Add to ChatManager
     chatManager?.receiveMessage(message)
-    
+
     // Show local notification if app in background
     if enableNotifications {
         scheduleLocalNotification(for: message)
     }
-    
+
     #if DEBUG
     print("💬 Chat Message: \(message.senderCallsign): \(message.messageText)")
     #endif
@@ -567,21 +572,21 @@ private func handleEmergencyAlert(_ alert: EmergencyAlert) {
     } else {
         // Add to active alerts
         activeEmergencies.append(alert)
-        
+
         // Publish to subscribers
         emergencyAlertPublisher.send(alert)
-        
+
         // Post notification
         NotificationCenter.default.post(
             name: Self.emergencyAlertNotification,
             object: alert
         )
-        
+
         // Show critical notification
         if enableEmergencyAlerts {
             scheduleCriticalNotification(for: alert)
         }
-        
+
         print("🚨 Emergency Alert: \(alert.alertType.rawValue) - \(alert.callsign)")
     }
 }
@@ -604,9 +609,9 @@ class ChatCoTGenerator {
         let uid = UUID().uuidString
         let now = ISO8601DateFormatter().string(from: Date())
         let stale = ISO8601DateFormatter().string(from: Date().addingTimeInterval(3600))
-        
+
         let recipientUIDs = conversation.isGroupChat ? "All Chat Users" : conversation.participants.map { $0.uid }.joined(separator: ",")
-        
+
         let xml = """
         <?xml version="1.0" encoding="UTF-8"?>
         <event version="2.0" uid="\(uid)" type="b-t-f" time="\(now)" start="\(now)" stale="\(stale)" how="h-g-i-g-o">
@@ -624,7 +629,7 @@ class ChatCoTGenerator {
             </detail>
         </event>
         """
-        
+
         return xml
     }
 }
@@ -640,7 +645,7 @@ class MarkerCoTGenerator {
     static func generateCoT(for marker: PointMarker, staleTime: TimeInterval = 3600) -> String {
         let now = ISO8601DateFormatter().string(from: Date())
         let stale = ISO8601DateFormatter().string(from: Date().addingTimeInterval(staleTime))
-        
+
         let xml = """
         <?xml version="1.0" encoding="UTF-8"?>
         <event version="2.0" uid="\(marker.uid)" type="\(marker.cotType)" time="\(now)" start="\(now)" stale="\(stale)" how="h-e">
@@ -653,10 +658,10 @@ class MarkerCoTGenerator {
             </detail>
         </event>
         """
-        
+
         return xml
     }
-    
+
     /// Generate batch of CoT messages
     static func generateBatchCoT(markers: [PointMarker], staleTime: TimeInterval = 3600) -> [String] {
         return markers.map { generateCoT(for: $0, staleTime: staleTime) }
@@ -675,9 +680,9 @@ class GeofenceCoTGenerator {
         let uid = UUID().uuidString
         let now = ISO8601DateFormatter().string(from: Date())
         let stale = ISO8601DateFormatter().string(from: Date().addingTimeInterval(300))
-        
+
         let eventType = event.eventType == .entry ? "geofence-entry" : "geofence-exit"
-        
+
         let xml = """
         <?xml version="1.0" encoding="UTF-8"?>
         <event version="2.0" uid="\(uid)" type="b-m-p-s-p-loc" time="\(now)" start="\(now)" stale="\(stale)" how="h-e">
@@ -689,7 +694,7 @@ class GeofenceCoTGenerator {
             </detail>
         </event>
         """
-        
+
         return xml
     }
 }
@@ -706,7 +711,7 @@ class TeamCoTGenerator {
         let uid = UUID().uuidString
         let now = ISO8601DateFormatter().string(from: Date())
         let stale = ISO8601DateFormatter().string(from: Date().addingTimeInterval(3600))
-        
+
         let xml = """
         <?xml version="1.0" encoding="UTF-8"?>
         <event version="2.0" uid="\(uid)" type="t-x-m-c" time="\(now)" start="\(now)" stale="\(stale)" how="h-e">
@@ -718,7 +723,7 @@ class TeamCoTGenerator {
             </detail>
         </event>
         """
-        
+
         return xml
     }
 }
@@ -749,19 +754,20 @@ a- (Atom)
 
 #### Common Types
 
-| Type | Description |
-|------|-------------|
-| `a-f-G-U-C` | Friendly ground unit (combat) |
+| Type        | Description                         |
+| ----------- | ----------------------------------- |
+| `a-f-G-U-C` | Friendly ground unit (combat)       |
 | `a-f-G-E-V` | Friendly ground equipment (vehicle) |
-| `a-h-G-U-C` | Hostile ground unit |
-| `a-n-G` | Neutral ground |
-| `a-u-G` | Unknown ground |
+| `a-h-G-U-C` | Hostile ground unit                 |
+| `a-n-G`     | Neutral ground                      |
+| `a-u-G`     | Unknown ground                      |
 
 ### Chat Messages (`b-t-f`)
 
 GeoChat text messages with location and recipients.
 
 **Structure:**
+
 - Type: `b-t-f`
 - Text in `<remarks>` element
 - Recipients in `<chatgrp>` and `<dest>` elements
@@ -773,13 +779,14 @@ Critical alerts for emergency situations.
 
 #### Alert Types
 
-| Type | Description |
-|------|-------------|
-| `b-a-o-tfc` | 911 Emergency |
-| `b-a-o-can` | Ring the Bell (alert all) |
+| Type        | Description                    |
+| ----------- | ------------------------------ |
+| `b-a-o-tfc` | 911 Emergency                  |
+| `b-a-o-can` | Ring the Bell (alert all)      |
 | `b-a-o-opn` | In Contact (troops in contact) |
 
 **Cancellation:**
+
 - Set `cancel="true"` attribute
 - Same UID as original alert
 
@@ -788,6 +795,7 @@ Critical alerts for emergency situations.
 Tactical markers/waypoints.
 
 **Structure:**
+
 - Type: `b-m-p-w`
 - Name in `<contact callsign=""/>`
 - Icon in `<usericon iconsetpath=""/>`
@@ -866,7 +874,7 @@ TAKService.shared.send(cotMessage: cotXML)
 class MapViewModel: ObservableObject {
     @Published var markers: [EnhancedCoTMarker] = []
     private var cancellables = Set<AnyCancellable>()
-    
+
     init() {
         // Subscribe to position updates
         CoTEventHandler.shared.positionUpdatePublisher
@@ -874,7 +882,7 @@ class MapViewModel: ObservableObject {
                 self?.updateMarker(from: event)
             }
             .store(in: &cancellables)
-        
+
         // Subscribe to emergency alerts
         CoTEventHandler.shared.emergencyAlertPublisher
             .sink { [weak self] alert in
@@ -882,7 +890,7 @@ class MapViewModel: ObservableObject {
             }
             .store(in: &cancellables)
     }
-    
+
     private func updateMarker(from event: CoTEvent) {
         if let index = markers.firstIndex(where: { $0.uid == event.uid }) {
             markers[index].update(from: event)
@@ -902,7 +910,7 @@ class PositionBroadcastService {
         let uid = "IOS-\(UIDevice.current.identifierForVendor?.uuidString ?? "Unknown")"
         let now = ISO8601DateFormatter().string(from: Date())
         let stale = ISO8601DateFormatter().string(from: Date().addingTimeInterval(60))
-        
+
         let xml = """
         <?xml version="1.0" encoding="UTF-8"?>
         <event version="2.0" uid="\(uid)" type="a-f-G-U-C" time="\(now)" start="\(now)" stale="\(stale)" how="m-g">
@@ -915,7 +923,7 @@ class PositionBroadcastService {
             </detail>
         </event>
         """
-        
+
         TAKService.shared.send(cotMessage: xml)
     }
 }
@@ -926,7 +934,7 @@ class PositionBroadcastService {
 ```swift
 class MyCoTObserver {
     private var cancellables = Set<AnyCancellable>()
-    
+
     func startObserving() {
         // Method 1: Combine publisher
         CoTEventHandler.shared.positionUpdatePublisher
@@ -935,7 +943,7 @@ class MyCoTObserver {
                 print("Red Team member updated: \(event.callsign)")
             }
             .store(in: &cancellables)
-        
+
         // Method 2: NotificationCenter
         NotificationCenter.default.addObserver(
             self,
@@ -944,7 +952,7 @@ class MyCoTObserver {
             object: nil
         )
     }
-    
+
     @objc private func handleChatMessage(_ notification: Notification) {
         if let message = notification.object as? ChatMessage {
             print("Chat received: \(message.messageText)")
@@ -996,20 +1004,26 @@ CoTEventHandler.shared.positionUpdatePublisher
 ## Performance Considerations
 
 ### 1. **Buffered Receiving**
+
 The receive buffer handles fragmented XML efficiently:
+
 ```swift
 private var receiveBuffer: String = ""
 private let bufferLock = NSLock()
 ```
 
 ### 2. **Regex Caching**
+
 Parsers could cache regex patterns (future optimization):
+
 ```swift
 private static let uidPattern = try! NSRegularExpression(pattern: "uid=\"([^\"]*)\"")
 ```
 
 ### 3. **Main Thread Dispatching**
+
 UI updates always dispatched to main thread:
+
 ```swift
 DispatchQueue.main.async {
     self.latestPositionUpdate = event
@@ -1017,7 +1031,9 @@ DispatchQueue.main.async {
 ```
 
 ### 4. **Selective Parsing**
+
 Only parse messages that match expected types:
+
 ```swift
 guard eventType.hasPrefix("a-") || eventType == "b-t-f" else {
     return .unknown(eventType)
@@ -1035,4 +1051,4 @@ guard eventType.hasPrefix("a-") || eventType == "b-t-f" else {
 
 ---
 
-*Last Updated: November 22, 2025*
+_Last Updated: November 22, 2025_

@@ -181,14 +181,14 @@ mapView.setMarkers("""
 
 ### MapLibreMapView Properties
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `styleUrl` | String | MapLibre style JSON URL |
-| `options` | JSON String | Map options (center, zoom, bearing, tilt) |
-| `markers` | JSON Array | Array of marker objects |
-| `onCameraChange` | Callback | Called when camera position changes |
-| `onMapClick` | Callback | Called when map is clicked |
-| `onMarkerTap` | Callback | Called when marker is tapped |
+| Property         | Type        | Description                               |
+| ---------------- | ----------- | ----------------------------------------- |
+| `styleUrl`       | String      | MapLibre style JSON URL                   |
+| `options`        | JSON String | Map options (center, zoom, bearing, tilt) |
+| `markers`        | JSON Array  | Array of marker objects                   |
+| `onCameraChange` | Callback    | Called when camera position changes       |
+| `onMapClick`     | Callback    | Called when map is clicked                |
+| `onMarkerTap`    | Callback    | Called when marker is tapped              |
 
 ### MapOptions Schema
 
@@ -228,6 +228,7 @@ MapLibre's MapView requires proper lifecycle management. The implementation hand
    - `onDetachedFromWindow()` → calls `mapView.onStop()`
 
 2. **Manual Lifecycle** (if needed):
+
    ```kotlin
    override fun onResume() {
        super.onResume()
@@ -278,10 +279,10 @@ private fun runOnUiThread(action: () -> Unit) {
 ### Camera Changes
 
 ```typescript
-onCameraChange: (position) => {
+onCameraChange: position => {
   console.log('New position:', position.center.lat, position.center.lon);
   console.log('Zoom:', position.zoom);
-}
+};
 ```
 
 ### Map Clicks
@@ -289,7 +290,7 @@ onCameraChange: (position) => {
 ```typescript
 onMapClick: (lat, lon) => {
   console.log('Clicked at:', lat, lon);
-}
+};
 ```
 
 ### Marker Taps
@@ -297,7 +298,7 @@ onMapClick: (lat, lon) => {
 ```typescript
 onMarkerTap: (markerId, lat, lon) => {
   console.log('Marker tapped:', markerId);
-}
+};
 ```
 
 ## Customization
@@ -307,7 +308,7 @@ onMarkerTap: (markerId, lat, lon) => {
 Use any MapLibre-compatible style JSON:
 
 ```typescript
-styleUrl: 'https://your-tile-server.com/style.json'
+styleUrl: 'https://your-tile-server.com/style.json';
 ```
 
 ### Custom Marker Icons

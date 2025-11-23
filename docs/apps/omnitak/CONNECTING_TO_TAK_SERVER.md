@@ -3,13 +3,15 @@
 ## Prerequisites
 
 TAK Server 5.5 (official from tak.gov) requires:
--  TLS 1.2 or 1.3 (supported by default)
--  Client certificate authentication (usually required)
--  Self-signed CA (OmniTAK accepts these)
+
+- TLS 1.2 or 1.3 (supported by default)
+- Client certificate authentication (usually required)
+- Self-signed CA (OmniTAK accepts these)
 
 ## Method 1: Auto-Discover (Easiest for Local Network)
 
 ### Step 1: Find Your Server
+
 ```swift
 // In your app, present QuickConnectView
 let quickConnect = QuickConnectView()
@@ -21,7 +23,9 @@ let quickConnect = QuickConnectView()
 This will scan ports: `8087, 8089, 8443, 8444, 8446`
 
 ### Step 2: Look for Your Server
+
 You should see something like:
+
 ```
  Found 2 server(s)
 ━━━━━━━━━━━━━━━━━━
@@ -30,7 +34,7 @@ You should see something like:
    [Connect]
 ```
 
- **Note**: Auto-discover won't work without a certificate if the server requires auth. You'll need to enroll first.
+**Note**: Auto-discover won't work without a certificate if the server requires auth. You'll need to enroll first.
 
 ## Method 2: Certificate Enrollment (Recommended)
 
@@ -39,6 +43,7 @@ TAK Server 5.5 typically requires client certificates. Here's how to get one:
 ### Step 1: Get Enrollment Information from Server Admin
 
 Ask your TAK Server administrator for:
+
 1. **Enrollment URL** (or QR code)
 2. **Certificate password**
 
@@ -55,6 +60,7 @@ If admin provides a QR code:
 ```
 
 The QR code format is:
+
 ```
 tak://enroll?server=192.168.1.100&port=8089&truststore=https://...&usercert=https://...
 ```
@@ -71,6 +77,7 @@ If admin provides URLs directly:
 ```
 
 **Fields:**
+
 - Server Host: `192.168.1.100`
 - Port: `8089`
 - Trust Store URL: `https://192.168.1.100:8446/Marti/api/tls/config/v2/truststore-root.p12`
@@ -91,6 +98,7 @@ If you already have `.p12` certificate files:
 ```
 
 **Fields:**
+
 - Certificate Name: `My TAK Cert`
 - Server URL: `https://192.168.1.100`
 - Username: `your-username`
@@ -105,10 +113,11 @@ If you already have `.p12` certificate files:
 ```
 
 **Server Details:**
+
 - Server Name: `TAK Server 5.5`
 - Host: `192.168.1.100`
 - Port: `8089`
-- Use TLS/SSL:  ON
+- Use TLS/SSL: ON
 - Certificate: Select the one you just imported
 
 ## Method 4: Quick Setup (Preset)
@@ -122,6 +131,7 @@ If you want a fast setup:
 ```
 
 **Modify the preset:**
+
 - Host: `192.168.1.100`
 - Port: `8089`
 - Certificate Password: (if you have cert)
@@ -130,16 +140,17 @@ If you want a fast setup:
 
 ### Default Ports
 
-| Port | Protocol | Purpose | Certificate Required |
-|------|----------|---------|---------------------|
-| 8087 | TCP | CoT (plain) | No |
-| 8089 | TLS | CoT (encrypted) | **Yes** |
-| 8443 | HTTPS | Web UI | No (browser) |
-| 8446 | HTTPS | API/Enrollment | Sometimes |
+| Port | Protocol | Purpose         | Certificate Required |
+| ---- | -------- | --------------- | -------------------- |
+| 8087 | TCP      | CoT (plain)     | No                   |
+| 8089 | TLS      | CoT (encrypted) | **Yes**              |
+| 8443 | HTTPS    | Web UI          | No (browser)         |
+| 8446 | HTTPS    | API/Enrollment  | Sometimes            |
 
 ### Typical Setup
 
 **Most common TAK Server 5.5 config:**
+
 ```
 Protocol: TLS
 Port: 8089
@@ -153,6 +164,7 @@ CA: Self-signed (TAK Server CA)
 ### Option 1: Ask Admin for QR Code
 
 Best option! Admin runs:
+
 ```bash
 # On TAK Server
 cd /opt/tak
@@ -196,6 +208,7 @@ Then import into OmniTAK using CertificateManagementView.
 ### "Connection Failed"
 
 **Check:**
+
 1. Server is running: `sudo systemctl status takserver`
 2. Firewall allows port 8089: `sudo ufw status`
 3. You're on the same network
@@ -204,6 +217,7 @@ Then import into OmniTAK using CertificateManagementView.
 ### "SSL Handshake Failed"
 
 **Solutions:**
+
 - Ensure TLS is enabled in OmniTAK (useTLS: true)
 - Check certificate is valid
 - Verify certificate password is correct
@@ -212,6 +226,7 @@ Then import into OmniTAK using CertificateManagementView.
 ### "Certificate Required"
 
 **Fix:**
+
 - You need to enroll and get a client certificate
 - TAK Server 5.5 requires certificates by default
 - Follow enrollment steps above
@@ -219,6 +234,7 @@ Then import into OmniTAK using CertificateManagementView.
 ### "Certificate Expired"
 
 **Fix:**
+
 ```bash
 # On TAK Server, check cert validity
 cd /opt/tak/certs
@@ -254,6 +270,7 @@ openssl s_client -connect 192.168.1.100:8089 \
 ### Step 3: Connect in OmniTAK
 
 Watch debug console for:
+
 ```
  Using TLS/SSL (TLS 1.2-1.3, legacy cipher suites enabled, accepting self-signed certs)
  Configuring client certificate: your-cert
@@ -266,10 +283,11 @@ Watch debug console for:
 ### Minimum Info Needed
 
 To connect to TAK Server 5.5, you need:
--  Server IP: `192.168.1.100` (example)
--  Port: `8089` (typical)
--  Client Certificate: `.p12` file
--  Certificate Password: `atakatak` (or custom)
+
+- Server IP: `192.168.1.100` (example)
+- Port: `8089` (typical)
+- Client Certificate: `.p12` file
+- Certificate Password: `atakatak` (or custom)
 
 ### Fastest Methods Ranked
 
@@ -299,6 +317,7 @@ To connect to TAK Server 5.5, you need:
 ### Get Server Info
 
 Ask your TAK Server admin for:
+
 ```
 Server IP: _______________
 Port: _______________
@@ -309,6 +328,7 @@ Certificate Password: _______________
 ### Check OmniTAK Logs
 
 In Xcode debug console, look for:
+
 ```
  Using explicit IPv4: 192.168.1.100
  Using TLS/SSL (TLS 1.2-1.3...)
@@ -320,16 +340,16 @@ In Xcode debug console, look for:
 
 ### Common Issues & Fixes
 
-| Issue | Fix |
-|-------|-----|
-| Can't find server | Check IP, check network |
-| SSL error | Enable TLS, check cert |
-| Certificate invalid | Re-enroll, check password |
-| Connection timeout | Check firewall, check server running |
-| Auth failed | Check username/password |
+| Issue               | Fix                                  |
+| ------------------- | ------------------------------------ |
+| Can't find server   | Check IP, check network              |
+| SSL error           | Enable TLS, check cert               |
+| Certificate invalid | Re-enroll, check password            |
+| Connection timeout  | Check firewall, check server running |
+| Auth failed         | Check username/password              |
 
 ---
 
-**You're ready to connect!** 
+**You're ready to connect!**
 
 TAK Server 5.5 is fully supported with TLS 1.2/1.3 and client certificate authentication.
