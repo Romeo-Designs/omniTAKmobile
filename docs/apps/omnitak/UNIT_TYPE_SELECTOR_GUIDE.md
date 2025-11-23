@@ -7,16 +7,19 @@ The enhanced Unit Type Selector allows you to choose your military unit type, si
 ## Features
 
 ### 🔍 Search
+
 - Type in the search bar to instantly filter unit types
 - Search works on unit names and codes
 - Example: Type "inf" to see Infantry, Mechanized Infantry
 
 ### ⭐ Favorites
+
 - Tap the star icon next to any unit type to mark it as a favorite
 - Toggle the star button in the toolbar to view only favorites
 - Perfect for quickly accessing your most-used unit types
 
 ### 🕐 Recent Selections
+
 - Your last 10 unit types appear at the top for quick reuse
 - Automatically managed - no manual maintenance needed
 - Great for switching between common roles
@@ -24,20 +27,24 @@ The enhanced Unit Type Selector allows you to choose your military unit type, si
 ### 📋 Organized Categories
 
 **Combat Units**
+
 - Infantry, Mechanized Infantry, Armor, Cavalry
 - Artillery, Air Defense, Engineer
 - Reconnaissance, Special Forces
 
 **Support Units**
+
 - Signal, Military Intelligence
 - Chemical/Biological, Military Police
 - Civil Affairs
 
 **Service Support**
+
 - Supply, Transportation
 - Maintenance, Medical
 
 **Other Units**
+
 - Headquarters, Aviation, etc.
 
 ## How to Use
@@ -57,17 +64,20 @@ Your position will immediately broadcast with the new unit type.
 ### Quick Access Methods
 
 #### Method 1: Recent Selections
+
 1. Open unit type selector
 2. Look at the "RECENT" section at top
 3. Tap your recently used unit type
 
 #### Method 2: Favorites
+
 1. Open unit type selector
 2. Tap the **star icon** in the toolbar (top-left)
 3. View only your favorited unit types
 4. Tap to select
 
 #### Method 3: Search
+
 1. Open unit type selector
 2. Type in the search bar
 3. See filtered results instantly
@@ -76,25 +86,30 @@ Your position will immediately broadcast with the new unit type.
 ### Managing Favorites
 
 **Add to Favorites:**
+
 - Tap the star icon next to any unit type
 - Star turns yellow when favorited
 
 **Remove from Favorites:**
+
 - Tap the filled yellow star icon
 - Star becomes empty outline
 
 **View All Favorites:**
+
 - Tap the star button in the toolbar
 - Toggle back to see all unit types
 
 ## Understanding Unit Type Codes
 
 Your unit type is represented by a CoT (Cursor on Target) code like:
+
 ```
 a-f-G-U-C-I
 ```
 
 Breakdown:
+
 - `a` = Atom (position/status)
 - `f` = Friendly
 - `G` = Ground
@@ -107,16 +122,19 @@ The app handles this complexity automatically - just choose your unit type from 
 ## Tips & Best Practices
 
 ### For Daily Operations
+
 1. **Favorite your primary role** for instant access
 2. **Use search** when you know what you want (e.g., "signal")
 3. **Check recent** before searching - it's probably there
 
 ### For Training Scenarios
+
 1. **Switch roles easily** via recent selections
 2. **Different scenarios** = different unit types
 3. **Preview** shows exactly how your marker will appear
 
 ### For Unit Leaders
+
 1. **Standardize** unit types within your team
 2. **Brief** team members on proper unit type selection
 3. **Verify** everyone's unit type before missions
@@ -124,22 +142,26 @@ The app handles this complexity automatically - just choose your unit type from 
 ## Common Unit Types
 
 ### Infantry Operations
+
 - **Infantry**: Standard foot-mobile infantry
 - **Mechanized Infantry**: Infantry with armored vehicles
 - **Reconnaissance**: Scout/recon elements
 
 ### Armor Operations
+
 - **Armor**: Main battle tanks
 - **Cavalry**: Scout/reconnaissance with armor
 - **Mechanized**: Combined arms with armor
 
 ### Support Elements
+
 - **Signal**: Communications
 - **Engineer**: Construction/demolition
 - **Medical**: MEDEVAC/combat medics
 - **Supply**: Logistics
 
 ### Command & Control
+
 - **Headquarters**: Command post
 - **Military Intelligence**: S-2/intelligence section
 - **Military Police**: Security/law enforcement
@@ -147,6 +169,7 @@ The app handles this complexity automatically - just choose your unit type from 
 ## Persistence
 
 All your preferences are automatically saved:
+
 - ✅ Current unit type
 - ✅ Favorite unit types
 - ✅ Recent selections (last 10)
@@ -174,6 +197,7 @@ A: Recent list only shows after you've used multiple unit types
 ## Integration with ATAK/WinTAK
 
 Your unit type selection is fully compatible with:
+
 - ATAK (Android Team Awareness Kit)
 - WinTAK (Windows TAK)
 - iTAK (iOS TAK)
@@ -188,6 +212,7 @@ Currently, the app supports all standard MIL-STD-2525B unit types. Custom unit t
 ## Feedback
 
 Found an issue or have a suggestion? Please report via:
+
 - GitHub Issues
 - In-app feedback
 - Email support

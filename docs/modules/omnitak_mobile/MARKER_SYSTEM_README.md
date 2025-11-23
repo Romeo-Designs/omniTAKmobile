@@ -13,6 +13,7 @@ The marker rendering system consists of four main components:
 Defines all TypeScript interfaces and types for the marker system.
 
 **Key Components:**
+
 - `MapMarker` - Core marker representation
 - `MarkerState` - Lifecycle states (Active, Stale, Removing)
 - `MarkerZoomLevel` - Adaptive rendering levels (Far, Medium, Close, VeryClose)
@@ -28,6 +29,7 @@ Defines all TypeScript interfaces and types for the marker system.
 Central manager for all marker lifecycle operations.
 
 **Features:**
+
 - Create, update, and remove markers
 - Automatic stale marker cleanup with configurable timers
 - Event subscription system (Created, Updated, Removed, Selected, Deselected)
@@ -36,6 +38,7 @@ Central manager for all marker lifecycle operations.
 - Maximum marker limit with smart removal
 
 **Configuration Options:**
+
 ```typescript
 {
   staleCheckInterval: 5000,      // ms between stale checks
@@ -45,6 +48,7 @@ Central manager for all marker lifecycle operations.
 ```
 
 **Key Methods:**
+
 - `processCoT(event)` - Process incoming CoT events
 - `getStats()` - Get marker statistics
 - `on(event, callback)` - Subscribe to marker events
@@ -58,18 +62,21 @@ Central manager for all marker lifecycle operations.
 Generates SVG symbols for different zoom levels.
 
 **Rendering Modes:**
+
 - **Far** (< 8): Simple colored dots
 - **Medium** (8-12): Basic icons with affiliation shapes
 - **Close** (12-15): Full military symbols (milsymbol integration)
 - **VeryClose** (> 15): Detailed symbols with metadata
 
 **Additional Features:**
+
 - Accuracy circle generation (GeoJSON polygons)
 - Heading arrow generation (GeoJSON lines)
 - Text labels with customizable styling
 - CoT type to SIDC conversion (MIL-STD-2525)
 
 **Configuration Options:**
+
 ```typescript
 {
   dotSize: 8,                    // Far zoom size
@@ -87,6 +94,7 @@ Generates SVG symbols for different zoom levels.
 ```
 
 **Key Methods:**
+
 - `renderSymbol(marker)` - Generate complete symbol with all layers
 - `cotTypeToSIDC(cotType)` - Convert CoT type to SIDC code
 - `updateConfig(config)` - Update rendering configuration
@@ -98,6 +106,7 @@ Generates SVG symbols for different zoom levels.
 Bridges MarkerManager with MapLibre GL for map rendering.
 
 **Features:**
+
 - GeoJSON source management (markers, accuracy, heading)
 - Layer setup (symbols, clusters, accuracy circles, labels)
 - Event handlers (click, hover, zoom)
@@ -105,6 +114,7 @@ Bridges MarkerManager with MapLibre GL for map rendering.
 - Clustering support for performance
 
 **Map Layers (bottom to top):**
+
 1. Accuracy circles (fill layer)
 2. Heading arrows (line layer)
 3. Cluster circles (circle layer)
@@ -113,6 +123,7 @@ Bridges MarkerManager with MapLibre GL for map rendering.
 6. Labels (symbol layer)
 
 **Configuration Options:**
+
 ```typescript
 {
   markersSourceId: 'markers',
@@ -127,6 +138,7 @@ Bridges MarkerManager with MapLibre GL for map rendering.
 ```
 
 **Key Methods:**
+
 - `update()` - Update all map sources with current markers
 - `flyToMarker(uid)` - Fly to specific marker
 - `fitBounds()` - Fit map to all markers
@@ -140,6 +152,7 @@ Bridges MarkerManager with MapLibre GL for map rendering.
 Main screen component integrated with the marker system.
 
 **Integration:**
+
 - Creates MarkerManager and SymbolRenderer instances
 - Subscribes to marker events for UI updates
 - Processes CoT messages through MarkerManager
@@ -147,6 +160,7 @@ Main screen component integrated with the marker system.
 - Logs marker details and rendered symbols
 
 **UI Updates:**
+
 - Marker count (total)
 - Active markers count (green)
 - Stale markers count (orange)
@@ -167,7 +181,7 @@ const markerManager = new MarkerManager();
 const symbolRenderer = new SymbolRenderer();
 
 // Subscribe to events
-markerManager.on(MarkerEvent.Created, (payload) => {
+markerManager.on(MarkerEvent.Created, payload => {
   console.log('Marker created:', payload.marker.uid);
 });
 
@@ -273,12 +287,14 @@ omnitak_mobile/
 ## Dependencies
 
 ### Current Dependencies
+
 - TypeScript (already in use)
 - Valdi framework (already in use)
 
 ### Future Dependencies (Not Yet Implemented)
 
 #### 1. **milsymbol** (Recommended)
+
 Military symbology rendering library implementing MIL-STD-2525.
 
 ```bash
@@ -309,6 +325,7 @@ private renderMilSymbol(marker: MapMarker, color: string): string {
 ```
 
 #### 2. **MapLibre GL Native** (Platform-Specific)
+
 Cross-platform map rendering for iOS and Android.
 
 - iOS: MapLibre Native iOS
@@ -319,18 +336,21 @@ Cross-platform map rendering for iOS and Android.
 ## Performance Considerations
 
 ### Memory Management
+
 - Maximum marker limit (default 10,000)
 - Automatic stale marker removal
 - Smart marker eviction when limit reached
 - Proper cleanup in `destroy()` methods
 
 ### Rendering Performance
+
 - Adaptive rendering based on zoom level
 - Clustering for dense marker areas
 - Lazy rendering with auto-update intervals
 - Pre-rendered SVG symbols cached in GeoJSON properties
 
 ### Update Frequency
+
 - Stale check: 5 seconds (configurable)
 - Map update: 1 second (configurable)
 - Auto-remove stale: 60 seconds after stale time
@@ -362,38 +382,41 @@ Map re-renders
 ## Configuration Examples
 
 ### High-Frequency Updates
+
 For fast-moving scenarios:
 
 ```typescript
 const markerManager = new MarkerManager({
-  staleCheckInterval: 2000,      // Check every 2s
-  autoRemoveStaleAfter: 30000,   // Remove after 30s
+  staleCheckInterval: 2000, // Check every 2s
+  autoRemoveStaleAfter: 30000, // Remove after 30s
   maxMarkers: 5000,
 });
 
 const integration = new MapLibreIntegration(map, markerManager, renderer, {
   autoUpdate: true,
-  updateInterval: 500,           // Update map every 500ms
+  updateInterval: 500, // Update map every 500ms
 });
 ```
 
 ### Low-Frequency Updates
+
 For bandwidth-constrained scenarios:
 
 ```typescript
 const markerManager = new MarkerManager({
-  staleCheckInterval: 10000,     // Check every 10s
-  autoRemoveStaleAfter: 120000,  // Remove after 2min
+  staleCheckInterval: 10000, // Check every 10s
+  autoRemoveStaleAfter: 120000, // Remove after 2min
   maxMarkers: 20000,
 });
 
 const integration = new MapLibreIntegration(map, markerManager, renderer, {
   autoUpdate: true,
-  updateInterval: 2000,          // Update map every 2s
+  updateInterval: 2000, // Update map every 2s
 });
 ```
 
 ### Detailed Symbols Only
+
 For close-up tactical views:
 
 ```typescript

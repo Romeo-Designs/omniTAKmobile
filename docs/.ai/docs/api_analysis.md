@@ -544,7 +544,6 @@ While specific HTTP client code is not shown in the excerpts, usage is consisten
 
 - Base URL: `https://<tak-server>:<marti-port>`
 - Endpoints used (mirroring those implemented server-side, plus additional TAK endpoints not implemented in `omnitak-server` yet, e.g., for data packages, mission packages, etc.):
-
   - `GET /Marti/api/version`
   - `GET /Marti/api/clientEndPoints`
   - `GET /Marti/api/tls/config`

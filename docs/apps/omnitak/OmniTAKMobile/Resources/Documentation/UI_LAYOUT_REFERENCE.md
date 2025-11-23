@@ -182,22 +182,26 @@
 ### Button Details
 
 **Left Section:**
+
 - Layers: Opens layer panel (left)
 - Filter: Opens filter panel (right)
 - Units: Opens unit list (right)
 
 **Center Section:**
+
 - GPS: Center on user location
 - Send: Broadcast position
 - +/-: Zoom in/out (stacked)
 
 **Right Section:**
+
 - Measure: Measurement tool (future)
 - Route: Route planning (future)
 
 ## Color Scheme
 
 ### Affiliations
+
 ```
 Friendly:       Cyan    (#00FFFF)
 Hostile:        Red     (#FF0000)
@@ -208,6 +212,7 @@ Suspect:        Red     (#FF0000)
 ```
 
 ### UI Elements
+
 ```
 Background:     Black   90-95% opacity
 Panel BG:       Black   95% opacity
@@ -222,12 +227,14 @@ Error:          Red     (#FF0000)
 ## Panel Behavior
 
 ### Panel Transitions
+
 ```
 Closed → Open:  Slide from edge (0.3s spring animation)
 Open → Closed:  Slide to edge (0.3s spring animation)
 ```
 
 ### Panel Interactions
+
 ```
 Open Layers  → Close Filter/Units
 Open Filter  → Close Layers/Units
@@ -237,6 +244,7 @@ Only one panel open at a time
 ```
 
 ### Responsive Layout
+
 ```
 Portrait:  Panels padding vertical = 120pt
 Landscape: Panels padding vertical = 80pt
@@ -245,6 +253,7 @@ Landscape: Panels padding vertical = 80pt
 ## Icon Reference
 
 ### Quick Filters
+
 ```
 All Units:      square.grid.2x2
 Friendly:       shield.fill
@@ -256,6 +265,7 @@ Air:            airplane
 ```
 
 ### Categories
+
 ```
 Ground:         car.fill
 Air:            airplane
@@ -268,6 +278,7 @@ Other:          mappin.circle.fill
 ```
 
 ### Sort Options
+
 ```
 Distance:       location.circle
 Age:            clock
@@ -277,6 +288,7 @@ Category:       square.grid.2x2
 ```
 
 ### UI Controls
+
 ```
 Search:         magnifyingglass
 Filter:         line.3.horizontal.decrease.circle.fill
@@ -291,6 +303,7 @@ Sort Desc:      arrow.down
 ## Interaction Patterns
 
 ### Filter Panel
+
 1. Open filter panel
 2. Type in search or select quick filter
 3. Toggle affiliations/categories
@@ -300,6 +313,7 @@ Sort Desc:      arrow.down
 7. Reset if needed
 
 ### Unit List
+
 1. Open unit list
 2. Scroll through groups
 3. Tap on unit
@@ -308,6 +322,7 @@ Sort Desc:      arrow.down
 6. Close detail sheet
 
 ### Map Integration
+
 1. Filtered units show on map
 2. Legacy overlay filters still work
 3. Marker colors match affiliations
@@ -316,17 +331,20 @@ Sort Desc:      arrow.down
 ## Accessibility
 
 ### Touch Targets
+
 - Minimum: 44x44 pt
 - Buttons: 56x56 pt (toolbar)
 - Toggles: Full row height
 - Sliders: Full width
 
 ### Contrast Ratios
+
 - Text on dark: 12:1 (white on black)
 - Highlights: 8:1 (cyan on black)
 - Icons: Clear and distinct
 
 ### Haptics
+
 - Button tap: Medium impact
 - Toggle: Light impact
 - Panel open/close: Medium impact
@@ -334,12 +352,14 @@ Sort Desc:      arrow.down
 ## Performance
 
 ### Rendering
+
 - Lazy loading in lists
 - Efficient Set operations
 - Cached calculations
 - 60 FPS animations
 
 ### Updates
+
 - Filter on change: Immediate
 - Distance calc: Every 5s
 - Age update: Every 5s
@@ -348,6 +368,7 @@ Sort Desc:      arrow.down
 ## Summary
 
 This UI layout provides:
+
 - Intuitive filter controls
 - Clear unit organization
 - Detailed unit information

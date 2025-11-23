@@ -1,6 +1,7 @@
 # Developer Guide: Getting Started
 
 ## Table of Contents
+
 - [Development Environment Setup](#development-environment-setup)
 - [Cloning the Repository](#cloning-the-repository)
 - [Project Structure](#project-structure)
@@ -19,22 +20,22 @@
 
 #### Required Software
 
-| Tool | Version | Purpose |
-|------|---------|---------|
-| **macOS** | 13.0+ (Ventura) | Development OS |
-| **Xcode** | 15.0+ | IDE and build tools |
-| **Swift** | 5.9+ | Programming language |
-| **iOS SDK** | 17.0+ | Target platform SDK |
-| **Git** | 2.30+ | Version control |
+| Tool        | Version         | Purpose              |
+| ----------- | --------------- | -------------------- |
+| **macOS**   | 13.0+ (Ventura) | Development OS       |
+| **Xcode**   | 15.0+           | IDE and build tools  |
+| **Swift**   | 5.9+            | Programming language |
+| **iOS SDK** | 17.0+           | Target platform SDK  |
+| **Git**     | 2.30+           | Version control      |
 
 #### Optional Tools
 
-| Tool | Purpose |
-|------|---------|
-| **Homebrew** | Package manager for scripts |
+| Tool          | Purpose                           |
+| ------------- | --------------------------------- |
+| **Homebrew**  | Package manager for scripts       |
 | **CocoaPods** | Dependency management (if needed) |
-| **SwiftLint** | Code style enforcement |
-| **Jazzy** | Documentation generation |
+| **SwiftLint** | Code style enforcement            |
+| **Jazzy**     | Documentation generation          |
 
 ### Installing Xcode
 
@@ -178,13 +179,13 @@ OmniTAKMobile/
 
 ### Key Files
 
-| File | Purpose |
-|------|---------|
-| `OmniTAKMobileApp.swift` | App entry point (`@main`) |
-| `ATAKMapView.swift` | Main coordinator view (2400+ lines) |
-| `TAKService.swift` | Core networking (1105 lines) |
-| `CoTMessageParser.swift` | CoT XML parsing (396 lines) |
-| `CoTEventHandler.swift` | Event routing (333 lines) |
+| File                     | Purpose                             |
+| ------------------------ | ----------------------------------- |
+| `OmniTAKMobileApp.swift` | App entry point (`@main`)           |
+| `ATAKMapView.swift`      | Main coordinator view (2400+ lines) |
+| `TAKService.swift`       | Core networking (1105 lines)        |
+| `CoTMessageParser.swift` | CoT XML parsing (396 lines)         |
+| `CoTEventHandler.swift`  | Event routing (333 lines)           |
 
 ---
 
@@ -193,6 +194,7 @@ OmniTAKMobile/
 ### Method 1: Xcode GUI
 
 1. **Open project:**
+
    ```bash
    open OmniTAKMobile.xcodeproj
    ```
@@ -228,10 +230,10 @@ xcodebuild -project OmniTAKMobile.xcodeproj \
 
 ### Build Configurations
 
-| Configuration | Purpose | Optimizations |
-|--------------|---------|---------------|
-| **Debug** | Development | None, debug symbols included |
-| **Release** | Production | Full optimization, stripped |
+| Configuration | Purpose     | Optimizations                |
+| ------------- | ----------- | ---------------------------- |
+| **Debug**     | Development | None, debug symbols included |
+| **Release**   | Production  | Full optimization, stripped  |
 
 ### Build Scripts
 
@@ -339,12 +341,12 @@ git push origin feature/my-new-feature
 
 ### Branch Naming
 
-| Branch Type | Pattern | Example |
-|-------------|---------|---------|
-| **Feature** | `feature/description` | `feature/chat-improvements` |
-| **Bug Fix** | `fix/issue-number` | `fix/issue-123` |
-| **Hotfix** | `hotfix/critical-issue` | `hotfix/crash-on-launch` |
-| **Docs** | `docs/topic` | `docs/api-reference` |
+| Branch Type | Pattern                 | Example                     |
+| ----------- | ----------------------- | --------------------------- |
+| **Feature** | `feature/description`   | `feature/chat-improvements` |
+| **Bug Fix** | `fix/issue-number`      | `fix/issue-123`             |
+| **Hotfix**  | `hotfix/critical-issue` | `hotfix/crash-on-launch`    |
+| **Docs**    | `docs/topic`            | `docs/api-reference`        |
 
 ### Commit Messages
 
@@ -402,9 +404,9 @@ class CoTMessageParserTests: XCTestCase {
         ...
         </event>
         """
-        
+
         let result = CoTMessageParser.parse(xml: xml)
-        
+
         XCTAssertNotNil(result)
         if case .positionUpdate(let event) = result {
             XCTAssertEqual(event.uid, "TEST-123")
@@ -424,10 +426,10 @@ class OmniTAKUITests: XCTestCase {
     func testChatFlow() {
         let app = XCUIApplication()
         app.launch()
-        
+
         // Tap chat button
         app.buttons["Chat"].tap()
-        
+
         // Verify chat view appears
         XCTAssertTrue(app.staticTexts["Conversations"].exists)
     }
@@ -495,6 +497,7 @@ Available tools:
 **Error:** `No signing certificate found`
 
 **Solution:**
+
 1. Xcode > Preferences > Accounts
 2. Add Apple ID if not present
 3. Download manual profiles if needed
@@ -505,6 +508,7 @@ Available tools:
 **Error:** `Command CompileSwift failed with a nonzero exit code`
 
 **Solution:**
+
 1. Clean build folder: `⌘ + Shift + K`
 2. Delete derived data:
    ```bash
@@ -516,6 +520,7 @@ Available tools:
 ### Issue: Simulator Not Launching
 
 **Solution:**
+
 ```bash
 # Reset simulator
 xcrun simctl erase all
@@ -529,6 +534,7 @@ sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService
 **Error:** `Module not found`
 
 **Solution:**
+
 - Verify all source files are in Xcode project
 - Check File Inspector > Target Membership
 - Clean and rebuild
@@ -536,6 +542,7 @@ sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService
 ### Issue: Device Not Recognized
 
 **Solution:**
+
 1. Unplug and replug device
 2. Restart Xcode
 3. Trust computer on device
@@ -575,4 +582,4 @@ sudo killall -9 com.apple.CoreSimulator.CoreSimulatorService
 
 ---
 
-*Last Updated: November 22, 2025*
+_Last Updated: November 22, 2025_

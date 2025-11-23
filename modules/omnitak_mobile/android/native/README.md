@@ -28,6 +28,7 @@ android/native/
 ### OmniTAKNativeBridge.kt
 
 Kotlin bridge that:
+
 - Declares JNI native methods
 - Manages callbacks from native to Kotlin
 - Provides coroutine-based async API
@@ -35,6 +36,7 @@ Kotlin bridge that:
 - Implements singleton pattern for callback management
 
 Key features:
+
 - Thread-safe callback storage
 - Automatic JNI library loading
 - Coroutine support for async operations
@@ -43,6 +45,7 @@ Key features:
 ### omnitak_jni.cpp
 
 JNI implementation that:
+
 - Bridges between Kotlin/Java and Rust C FFI
 - Converts JNI strings to C strings and vice versa
 - Manages callbacks from Rust background threads
@@ -50,6 +53,7 @@ JNI implementation that:
 - Maintains global references for callback objects
 
 Key features:
+
 - Thread-safe callback map with mutex protection
 - Automatic JVM thread attachment
 - Comprehensive Android logging
@@ -58,6 +62,7 @@ Key features:
 ### CMakeLists.txt
 
 CMake configuration that:
+
 - Builds JNI bridge as shared library
 - Links with pre-built Rust static libraries
 - Supports all Android ABIs
@@ -90,6 +95,7 @@ The native library is built automatically by Gradle when you build the Android a
 ```
 
 This will:
+
 1. Run CMake to configure the build
 2. Compile `omnitak_jni.cpp`
 3. Link with Rust static libraries
@@ -265,11 +271,13 @@ D/OmniTAKNative: CoT received on connection 1
 ### Library Not Loaded
 
 **Error:**
+
 ```
 java.lang.UnsatisfiedLinkError: couldn't find DSO to load: libomnitak_mobile.so
 ```
 
 **Solutions:**
+
 1. Check CMakeLists.txt path in build.gradle
 2. Verify Rust libraries exist in `lib/${ABI}/`
 3. Clean and rebuild: `./gradlew clean assembleDebug`
@@ -278,11 +286,13 @@ java.lang.UnsatisfiedLinkError: couldn't find DSO to load: libomnitak_mobile.so
 ### Method Not Found
 
 **Error:**
+
 ```
 java.lang.UnsatisfiedLinkError: No implementation found for int nativeInit()
 ```
 
 **Solutions:**
+
 1. Verify JNI function signature matches Kotlin declaration
 2. Check package name in JNI function name:
    ```cpp
@@ -293,11 +303,13 @@ java.lang.UnsatisfiedLinkError: No implementation found for int nativeInit()
 ### Callback Crashes
 
 **Error:**
+
 ```
 A/libc: Fatal signal 11 (SIGSEGV), code 1
 ```
 
 **Solutions:**
+
 1. Check JVM thread attachment
 2. Verify global reference is valid
 3. Check for JNI exceptions: `env->ExceptionCheck()`
@@ -306,11 +318,13 @@ A/libc: Fatal signal 11 (SIGSEGV), code 1
 ### Missing Rust Library
 
 **Warning:**
+
 ```
 CMake Warning: Rust library directory not found
 ```
 
 **Solutions:**
+
 1. Build Rust libraries: see [BUILD_GUIDE.md](../../BUILD_GUIDE.md)
 2. Copy to correct location: `lib/${ABI}/libomnitak_mobile.a`
 3. Verify ABI matches: arm64-v8a, armeabi-v7a, x86_64, x86
@@ -320,6 +334,7 @@ CMake Warning: Rust library directory not found
 ### Library Size
 
 Typical sizes per ABI:
+
 - arm64-v8a: ~2-3 MB
 - armeabi-v7a: ~2-3 MB
 - x86_64: ~3-4 MB
@@ -330,6 +345,7 @@ Total: ~10-15 MB for all ABIs
 ### Optimization
 
 For release builds, CMake applies:
+
 - `-Wl,--gc-sections`: Remove unused sections
 - `-Wl,--strip-all`: Strip debug symbols
 - Link-time optimization (LTO) via Rust

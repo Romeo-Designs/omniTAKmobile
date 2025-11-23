@@ -276,16 +276,19 @@ const testMarker: MapMarker = {
 ### Issue: Map not displaying
 
 **Solution 1**: Check internet connection
+
 ```bash
 adb shell ping -c 3 google.com
 ```
 
 **Solution 2**: Verify style URL is accessible
+
 ```bash
 curl https://demotiles.maplibre.org/style.json
 ```
 
 **Solution 3**: Check logcat for errors
+
 ```bash
 adb logcat | grep -i "error"
 ```
@@ -308,7 +311,7 @@ repositories {
 
 ```typescript
 // TypeScript
-androidClass='com.engindearing.omnitak.maplibre.MapLibreMapView'
+androidClass = 'com.engindearing.omnitak.maplibre.MapLibreMapView';
 ```
 
 ```kotlin
@@ -346,26 +349,29 @@ override fun onPause() {
 ### Custom Tile Server
 
 ```typescript
-styleUrl: 'https://your-tile-server.com/style.json'
+styleUrl: 'https://your-tile-server.com/style.json';
 ```
 
 ### Offline Maps
 
 1. Download map region:
+
 ```kotlin
 val offlineManager = OfflineManager.getInstance(context)
 // Configure offline region
 ```
 
 2. Use offline style:
+
 ```typescript
-styleUrl: 'asset://offline-style.json'
+styleUrl: 'asset://offline-style.json';
 ```
 
 ### Custom Marker Icons
 
 1. Add icons to MapLibre style JSON
 2. Reference in marker:
+
 ```typescript
 {
   id: 'marker1',

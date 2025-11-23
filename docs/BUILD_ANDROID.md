@@ -16,6 +16,7 @@ This guide covers two methods for building the Android APK.
    - Start Docker Desktop
 
 2. **Build the Android APK**
+
    ```bash
    ./build-android-docker.sh
    ```
@@ -32,18 +33,21 @@ This guide covers two methods for building the Android APK.
 ### Troubleshooting Docker
 
 **Docker not running**
+
 ```bash
 # Start Docker Desktop from Applications
 open -a Docker
 ```
 
 **Out of disk space**
+
 ```bash
 # Clean up Docker
 docker system prune -a
 ```
 
 **Build failed**
+
 ```bash
 # Clean and rebuild
 docker-compose down -v
@@ -55,6 +59,7 @@ docker-compose down -v
 ### Setup GitLab CI/CD
 
 1. **Push to GitLab**
+
    ```bash
    cd ~/omniTAK-mobile
 
@@ -105,10 +110,10 @@ docker exec -it gitlab-runner gitlab-runner register
 
 ## Comparison
 
-| Method | Build Time (First) | Build Time (Cached) | Setup Difficulty |
-|--------|-------------------|---------------------|------------------|
-| **Docker** | ~30 min | ~5 min | Easy (install Docker) |
-| **CI/CD** | ~25 min | ~5 min | Easy (git push) |
+| Method     | Build Time (First) | Build Time (Cached) | Setup Difficulty      |
+| ---------- | ------------------ | ------------------- | --------------------- |
+| **Docker** | ~30 min            | ~5 min              | Easy (install Docker) |
+| **CI/CD**  | ~25 min            | ~5 min              | Easy (git push)       |
 
 ## iOS Building (Works Natively on macOS)
 
@@ -142,12 +147,14 @@ ls -lh build-output/  # Docker output
 ## Troubleshooting
 
 ### "Bazel cache too large"
+
 ```bash
 # Clean Bazel cache
 docker-compose run --rm android-builder bazel clean --expunge
 ```
 
 ### "Rust compilation failed"
+
 ```bash
 # Rebuild from scratch
 docker-compose down -v
@@ -156,6 +163,7 @@ rm -rf crates/target
 ```
 
 ### "APK not found after build"
+
 ```bash
 # Check Bazel output
 docker-compose run --rm android-builder ls -la bazel-bin/apps/omnitak_android/

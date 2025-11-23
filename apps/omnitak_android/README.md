@@ -56,6 +56,7 @@ apps/omnitak_android/
 ### Required Software
 
 1. **Bazel 7.2.1+**
+
    ```bash
    # Install Bazel
    brew install bazel  # macOS
@@ -69,6 +70,7 @@ apps/omnitak_android/
    - Build Tools 34.0.0+
 
 3. **Rust Toolchain** (for building native libraries)
+
    ```bash
    # Install Rust
    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -119,10 +121,12 @@ cd omni-BASE/modules/omnitak_mobile
 ```
 
 This script will:
+
 - Build Rust libraries for all Android architectures
 - Copy them to `docs/modules/omnitak_mobile/android/native/lib/`
 
 **Output:**
+
 ```
 android/native/lib/
 ├── arm64-v8a/libomnitak_mobile.a       # 64-bit ARM
@@ -245,6 +249,7 @@ Edit theme colors in `app_assets/android/values/colors.xml`:
 Replace placeholder icons with branded icons. See `ICON_ASSETS_README.md` for details.
 
 Required sizes:
+
 - mdpi: 48×48 px
 - hdpi: 72×72 px
 - xhdpi: 96×96 px
@@ -294,6 +299,7 @@ Core TAK protocol implementation:
 **Error: `libomnitak_mobile.a not found`**
 
 Solution: Build Rust libraries first
+
 ```bash
 cd modules/omnitak_mobile
 ./build_android.sh
@@ -302,6 +308,7 @@ cd modules/omnitak_mobile
 **Error: `ANDROID_NDK_HOME not set`**
 
 Solution:
+
 ```bash
 export ANDROID_NDK_HOME=$HOME/Library/Android/sdk/ndk/25.1.8937393
 ```
@@ -309,6 +316,7 @@ export ANDROID_NDK_HOME=$HOME/Library/Android/sdk/ndk/25.1.8937393
 **Error: `Bazel version mismatch`**
 
 Solution:
+
 ```bash
 # Check required version
 cat .bazelversion  # Should be 7.2.1
@@ -322,11 +330,13 @@ bazel version
 **App crashes on launch**
 
 Check logs:
+
 ```bash
 adb logcat -s AndroidRuntime:E OmniTAK:V
 ```
 
 Common causes:
+
 - Missing native library for device ABI
 - JNI signature mismatch
 - Rust panic (check logs for "RUST PANIC")
@@ -334,6 +344,7 @@ Common causes:
 **Cannot connect to TAK server**
 
 Check:
+
 - Network permissions in AndroidManifest.xml
 - Server IP/port/protocol configuration
 - TLS certificate validity
@@ -342,6 +353,7 @@ Check:
 **Map not loading**
 
 Verify:
+
 - MapLibre native library included
 - Internet permission granted
 - MapLibre style URL is valid
@@ -351,10 +363,12 @@ Verify:
 ### App Size
 
 Typical APK size with all ABIs:
+
 - Debug: ~25-30 MB
 - Release: ~15-20 MB
 
 To reduce size, build for specific ABIs only:
+
 ```bash
 bazel build //apps/omnitak_android --fat_apk_cpu=arm64-v8a
 ```
@@ -362,6 +376,7 @@ bazel build //apps/omnitak_android --fat_apk_cpu=arm64-v8a
 ### Memory Usage
 
 Typical memory footprint:
+
 - Base app: ~80 MB
 - With map loaded: ~150-200 MB
 - Per TAK connection: ~5-10 MB
@@ -394,6 +409,7 @@ See main repository LICENSE file.
 ## Support
 
 For issues and questions:
+
 - Check the main README.md
 - Review BUILD_STATUS.md for known issues
 - File issues in the GitHub repository

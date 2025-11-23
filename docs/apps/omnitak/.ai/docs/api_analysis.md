@@ -2,9 +2,9 @@
 
 This project is an iOS SwiftUI mobile client, not a traditional HTTP server. It **does not expose REST/GraphQL endpoints**; instead it:
 
-* Opens persistent **TCP/UDP/TLS connections** to TAK servers (Cursor-on-Target message exchange).
-* Consumes several **external HTTP APIs**, notably ArcGIS Portal/Online and elevation services.
-* Exposes a rich **internal service API** (Swift classes) used by views and managers.
+- Opens persistent **TCP/UDP/TLS connections** to TAK servers (Cursor-on-Target message exchange).
+- Consumes several **external HTTP APIs**, notably ArcGIS Portal/Online and elevation services.
+- Exposes a rich **internal service API** (Swift classes) used by views and managers.
 
 Below, “APIs Served” focuses on the logical/protocol-level interfaces this app presents to TAK and other peers, plus the Swift services developers will integrate with inside the app. “External Dependencies” focuses on concrete HTTP services used.
 
@@ -46,6 +46,7 @@ There is **no HTTP server** or web framework; all “endpoints” below are prot
 
 **Component:** `TAKService` + `DirectTCPSender`  
 **Files:**
+
 - `OmniTAKMobile/Services/TAKService.swift`
 - `OmniTAKMobile/Services/TAKService.swift` (top portion: `DirectTCPSender` as shown)
 
@@ -62,6 +63,7 @@ The app behaves like a TAK client:
   - **Application Protocol:** Cursor-on-Target (CoT) XML messages, newline-delimited.
 
 The client:
+
 - Connects to a configured TAK server.
 - Sends CoT messages representing position (PLI), chat, digital pointer, teams, etc.
 - Receives CoT messages from the server, parses via `CoTMessageParser`, and dispatches to managers/services.
@@ -108,7 +110,7 @@ Once connected, `DirectTCPSender`:
 **Request**
 
 - **Transport:** NWConnection to TAK endpoint.
-- **Application Data (Outbound):**  
+- **Application Data (Outbound):**
   - Messages are raw XML strings terminated with `\n`.
   - Example (simplified PLI CoT):
 
@@ -133,7 +135,7 @@ Once connected, `DirectTCPSender`:
 
 **Response**
 
-- **Inbound Data:**  
+- **Inbound Data:**
   - Raw CoT XML messages from the server, potentially fragmented at TCP level.
   - Messages are reassembled, validated, and passed to `onMessageReceived`.
 
@@ -395,20 +397,19 @@ For external integrators: TAK server itself may enforce rate limits on CoT messa
 ##### Endpoints Used
 
 1. **Generate Token**
-
    - **Method/Path:** `POST {portalURL}/sharing/rest/generateToken`
    - **Request:**
      - Headers:
        - `Content-Type: application/x-www-form-urlencoded`
      - Body (form-encoded):
 
-       | Field      | Description                             |
-       |-----------|-----------------------------------------|
-       | `username`| ArcGIS username                         |
-       | `password`| ArcGIS password                         |
-       | `referer` | Arbitrary string, e.g., `OmniTAK-iOS`   |
-       | `expiration` | Minutes (e.g., `10080` = 7 days)     |
-       | `f`       | Response format, `"json"`               |
+       | Field        | Description                           |
+       | ------------ | ------------------------------------- |
+       | `username`   | ArcGIS username                       |
+       | `password`   | ArcGIS password                       |
+       | `referer`    | Arbitrary string, e.g., `OmniTAK-iOS` |
+       | `expiration` | Minutes (e.g., `10080` = 7 days)      |
+       | `f`          | Response format, `"json"`             |
 
    - **Response (Success):**
 
@@ -438,20 +439,19 @@ For external integrators: TAK server itself may enforce rate limits on CoT messa
      - `ArcGISError.parseError` if token is missing.
 
 2. **Search Portal Content**
-
    - **Method/Path:** `GET {credentials.portalURL}/sharing/rest/search`
    - **Request:**
      - Query parameters:
 
-       | Param      | Description                                  |
-       |-----------|----------------------------------------------|
-       | `q`       | Search query; may include `type:"<type>"`   |
+       | Param       | Description                               |
+       | ----------- | ----------------------------------------- |
+       | `q`         | Search query; may include `type:"<type>"` |
        | `sortField` | Field to sort by, e.g., `modified`        |
        | `sortOrder` | `asc` or `desc`                           |
-       | `start`   | Start index (page offset)                   |
-       | `num`     | Page size (here `pageSize = 25`)            |
-       | `token`   | ArcGIS token                                |
-       | `f`       | `json`                                      |
+       | `start`     | Start index (page offset)                 |
+       | `num`       | Page size (here `pageSize = 25`)          |
+       | `token`     | ArcGIS token                              |
+       | `f`         | `json`                                    |
 
    - **Response (Success):**
      - Parsed into `ArcGISSearchResponse` (includes `results`, `total`, `start`, etc.).
@@ -481,7 +481,6 @@ For external integrators: TAK server itself may enforce rate limits on CoT messa
 ##### Error Handling & Resilience
 
 - Thrown errors (to be caught by caller):
-
   - `ArcGISError.networkError(message)` – URL invalid, non-200 HTTP, or `URLSession` problems.
   - `ArcGISError.invalidCredentials` – invalid username/password.
   - `ArcGISError.portalNotConfigured` – using search without having called authenticate.
@@ -574,12 +573,11 @@ For exact method/property contracts, see:
 ### Integration Patterns
 
 1. **TAK-centric CoT Pattern**
-
    - All tactical interactions (chat, position, geofences, teams, digital pointer, emergency beacon) are eventually represented as CoT XML.
    - Flow:
 
      ```
-     UI View -> Manager (e.g., ChatManager, GeofenceManager) 
+     UI View -> Manager (e.g., ChatManager, GeofenceManager)
              -> Domain Service (ChatService, PositionBroadcastService, etc.)
              -> TAKService
              -> DirectTCPSender (NWConnection)
@@ -596,7 +594,6 @@ For exact method/property contracts, see:
      ```
 
 2. **External REST Integration Pattern**
-
    - ArcGIS and Elevation:
 
      ```
@@ -611,7 +608,6 @@ For exact method/property contracts, see:
    - Errors bubble back as Swift `Error`s; views observe `@Published lastError` or use `do/try/catch`.
 
 3. **Singleton Services & Observable State**
-
    - Most services are singletons:
 
      ```swift
@@ -625,7 +621,6 @@ For exact method/property contracts, see:
    - Views access via `@StateObject` or `@ObservedObject` to automatically update when network results arrive.
 
 4. **Configuration & Secrets**
-
    - **ArcGIS credentials:** stored in `UserDefaults` (`userDefaultsKey = "com.omnitak.arcgis.credentials"`).
    - **Certificates:** stored via:
      - `CertificateManager` (Keychain-based).
@@ -672,10 +667,10 @@ Located under `./docs`:
 
 ### Documentation Quality Evaluation
 
-- **Coverage:**  
-  - Services and managers are well-documented in `docs/API/`.  
+- **Coverage:**
+  - Services and managers are well-documented in `docs/API/`.
   - Feature-level docs give concrete integration patterns and code examples.
-- **Gaps:**  
+- **Gaps:**
   - No formal OpenAPI/Swagger or gRPC proto specs (appropriate since the app is a client, not a server).
   - External elevation service details (base URL, exact contract) are not fully captured in the visible docs; refer directly to `ElevationAPIClient.swift` and deployment config.
   - Some legacy / backup Swift files are present; they should not be considered authoritative for new development (e.g., `*.backup` files).
