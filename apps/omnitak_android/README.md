@@ -120,7 +120,7 @@ cd omni-BASE/modules/omnitak_mobile
 
 This script will:
 - Build Rust libraries for all Android architectures
-- Copy them to `modules/omnitak_mobile/android/native/lib/`
+- Copy them to `docs/modules/omnitak_mobile/android/native/lib/`
 
 **Output:**
 ```
@@ -257,7 +257,7 @@ Required sizes:
 
 The main application logic is written in TypeScript and shared with iOS:
 
-- **Location**: `modules/omnitak_mobile/src/`
+- **Location**: `docs/modules/omnitak_mobile/src/`
 - **Entry Point**: `src/valdi/omnitak/App.tsx`
 - **Features**: Map rendering, CoT parsing, UI components, state management
 
@@ -265,7 +265,7 @@ The main application logic is written in TypeScript and shared with iOS:
 
 Kotlin bridge between TypeScript and Rust:
 
-- **Location**: `modules/omnitak_mobile/android/native/OmniTAKNativeBridge.kt`
+- **Location**: `docs/modules/omnitak_mobile/android/native/OmniTAKNativeBridge.kt`
 - **Functions**:
   - `connect()` - Establish TAK server connection
   - `disconnect()` - Close connection
@@ -276,7 +276,7 @@ Kotlin bridge between TypeScript and Rust:
 
 C++ JNI bindings for Kotlin ↔ Rust communication:
 
-- **Location**: `modules/omnitak_mobile/android/native/omnitak_jni.cpp`
+- **Location**: `docs/modules/omnitak_mobile/android/native/omnitak_jni.cpp`
 - **Build**: CMakeLists.txt
 
 ### Rust Core (FFI)
@@ -382,10 +382,10 @@ Before releasing to production:
 
 ## Related Documentation
 
-- [../modules/omnitak_mobile/README.md](../../modules/omnitak_mobile/README.md) - Module overview
-- [../modules/omnitak_mobile/BUILD_GUIDE.md](../../modules/omnitak_mobile/BUILD_GUIDE.md) - Detailed build instructions
-- [../modules/omnitak_mobile/INTEGRATION.md](../../modules/omnitak_mobile/INTEGRATION.md) - Integration guide
-- [../modules/omnitak_mobile/android/README.md](../../modules/omnitak_mobile/android/README.md) - Android MapLibre guide
+- [../docs/modules/omnitak_mobile/README.md](../../docs/modules/omnitak_mobile/README.md) - Module overview
+- [../docs/modules/omnitak_mobile/BUILD_GUIDE.md](../../docs/modules/omnitak_mobile/BUILD_GUIDE.md) - Detailed build instructions
+- [../docs/modules/omnitak_mobile/INTEGRATION.md](../../docs/modules/omnitak_mobile/INTEGRATION.md) - Integration guide
+- [../docs/modules/omnitak_mobile/android/README.md](../../docs/modules/omnitak_mobile/android/README.md) - Android MapLibre guide
 
 ## License
 

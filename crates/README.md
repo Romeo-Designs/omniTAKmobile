@@ -101,7 +101,7 @@ This will:
 1. Build for all iOS architectures (arm64 device, arm64 + x86_64 simulator)
 2. Create a universal simulator binary
 3. Package into an XCFramework
-4. Copy to `modules/omnitak_mobile/ios/native/`
+4. Copy to `docs/modules/omnitak_mobile/ios/native/`
 
 ### Build for Android
 
@@ -232,7 +232,7 @@ See `Cargo.toml` for complete dependency list.
 
 ## Example Usage
 
-See `../modules/omnitak_mobile/ios/native/README.md` for Swift integration examples.
+See `../docs/modules/omnitak_mobile/ios/native/README.md` for Swift integration examples.
 
 ## Troubleshooting
 
@@ -285,4 +285,4 @@ When adding new features:
 
 ## License
 
-See LICENSE.md in repository root.
+See docs/LICENSE.md in repository root.

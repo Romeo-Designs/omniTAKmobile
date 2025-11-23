@@ -353,9 +353,9 @@ bazel clean --expunge
 ## Related Documentation
 
 - [iOS Build Guide](IOS_BUILD_GUIDE.md) - Comprehensive build instructions
-- [OmniTAK Mobile README](../../modules/omnitak_mobile/README.md) - Module overview
-- [MapLibre Integration](../../modules/omnitak_mobile/ios/maplibre/INTEGRATION.md) - MapLibre details
-- [Native Bridge README](../../modules/omnitak_mobile/ios/native/README.md) - FFI documentation
+- [OmniTAK Mobile README](../../docs/modules/omnitak_mobile/README.md) - Module overview
+- [MapLibre Integration](../../docs/modules/omnitak_mobile/ios/maplibre/INTEGRATION.md) - MapLibre details
+- [Native Bridge README](../../docs/modules/omnitak_mobile/ios/native/README.md) - FFI documentation
 
 ## Performance
 
@@ -419,7 +419,7 @@ When contributing to the iOS app:
 
 ## License
 
-See [LICENSE.md](../../LICENSE.md) in the project root.
+See [docs/LICENSE.md](../../docs/LICENSE.md) in the project root.
 
 ## Support
 

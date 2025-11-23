@@ -43,7 +43,7 @@ This module provides a native Android MapLibre integration that can be used from
 ## Files Structure
 
 ```
-modules/omnitak_mobile/
+docs/modules/omnitak_mobile/
 ├── android/
 │   ├── maplibre/
 │   │   ├── MapLibreMapView.kt              # Main view implementation

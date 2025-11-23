@@ -96,7 +96,7 @@ xcodebuild -create-xcframework \
 
 # Copy to module
 cp -R target/OmniTAKMobile.xcframework \
-  ../omni-BASE/modules/omnitak_mobile/ios/native/
+  ../omni-BASE/docs/modules/omnitak_mobile/ios/native/
 ```
 
 See [BUILD_GUIDE.md](../../BUILD_GUIDE.md) for detailed instructions.
@@ -108,7 +108,7 @@ See [BUILD_GUIDE.md](../../BUILD_GUIDE.md) for detailed instructions.
 1. **Add Framework:**
    - In Xcode Project Navigator, right-click your project
    - Select "Add Files to [Project]..."
-   - Navigate to `modules/omnitak_mobile/ios/native/`
+   - Navigate to `docs/modules/omnitak_mobile/ios/native/`
    - Select `OmniTAKMobile.xcframework`
    - **Important:** Uncheck "Copy items if needed"
    - Click "Add"

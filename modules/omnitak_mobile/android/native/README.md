@@ -130,7 +130,7 @@ android {
 
     externalNativeBuild {
         cmake {
-            path "path/to/modules/omnitak_mobile/android/native/CMakeLists.txt"
+            path "path/to/docs/modules/omnitak_mobile/android/native/CMakeLists.txt"
             version "3.18.1"
         }
     }
