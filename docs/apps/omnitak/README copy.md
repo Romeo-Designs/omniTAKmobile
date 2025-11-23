@@ -32,6 +32,7 @@ Full-featured native iOS tactical awareness app with ATAK-style interface, CoT m
 </table>
 
 **Key Features Shown:**
+
 - Portrait-optimized UI with compact translucent status bar
 - Satellite mapping with high-resolution imagery
 - Bottom toolbar for quick access to essential tools
@@ -68,6 +69,7 @@ If your macOS version is less than 12.0, you'll need to upgrade your Mac first.
 ### 1. Install Xcode (Required - approximately 15 minutes)
 
 **Option A: Mac App Store (Easiest)**
+
 1. Open **App Store** on your Mac
 2. Search for **"Xcode"**
 3. Click **"Get"** or **"Install"** (it's free)
@@ -77,11 +79,13 @@ If your macOS version is less than 12.0, you'll need to upgrade your Mac first.
 7. Accept the license agreement
 
 **Option B: Direct Download**
+
 1. Visit [developer.apple.com/xcode](https://developer.apple.com/xcode/)
 2. Download the latest Xcode
 3. Drag Xcode to your Applications folder
 
 **Verify Xcode Installation:**
+
 ```bash
 # Check Xcode version
 xcodebuild -version
@@ -102,11 +106,13 @@ xcode-select --install
 ```
 
 A popup will appear:
+
 1. Click **"Install"**
 2. Click **"Agree"** to license
 3. Wait 3-5 minutes for installation
 
 **Verify Installation:**
+
 ```bash
 # Check if tools are installed
 xcode-select -p
@@ -136,11 +142,13 @@ If command not found: Install from [git-scm.com](https://git-scm.com/download/ma
 You need an Apple ID to run apps on devices (even your own iPhone).
 
 If you don't have one:
+
 1. Go to [appleid.apple.com](https://appleid.apple.com)
 2. Click **"Create Your Apple ID"**
 3. Follow the prompts (it's free)
 
 **Add Apple ID to Xcode:**
+
 1. Open **Xcode**
 2. Go to **Xcode** menu → **Settings** (or **Preferences** in older versions)
 3. Click **"Accounts"** tab
@@ -174,6 +182,7 @@ ls -la
 ```
 
 **Expected output should include:**
+
 ```
 OmniTAKMobile.xcodeproj      <- This is the Xcode project file
 OmniTAKMobile/               <- This folder contains all the code
@@ -245,6 +254,7 @@ xcodebuild -scheme OmniTAKMobile \
 #### What You Should See
 
 After the app launches in the simulator:
+
 - An iOS device window appears (looks like a real iPhone)
 - A satellite map view (centered on Washington DC by default)
 - Status bar at top showing "OmniTAK" and connection status
@@ -252,6 +262,7 @@ After the app launches in the simulator:
 - "DISC" (disconnected) indicator - this is normal (no server configured yet)
 
 **Simulator Limitations:**
+
 - GPS location is simulated (doesn't use real location)
 - Can't connect to real TAK servers without network configuration
 - All UI features work properly
@@ -293,11 +304,13 @@ Want to test on your actual iPhone? Follow these steps.
    - Replace `yourname` with your actual name or any unique text
 
 **Success looks like:**
+
 - No red errors in the Signing section
 - You see "Signing Certificate: Apple Development: your@email.com"
 - Bundle Identifier is unique
 
 **Common errors:**
+
 - "Failed to create provisioning profile" → Your Apple ID isn't added to Xcode (see Prerequisites Step 4)
 - "Bundle identifier already in use" → Change the bundle ID to something unique
 
@@ -321,6 +334,7 @@ Want to test on your actual iPhone? Follow these steps.
    - After restart, tap **"Turn On"** to confirm
 
 **Verify device is connected:**
+
 ```bash
 # In Terminal, run:
 xcrun xctrace list devices
@@ -376,6 +390,7 @@ The app will install but won't open yet. You need to trust it first.
 - "DISC" indicator (normal - no server configured yet)
 
 **Device Benefits:**
+
 - Real GPS location tracking
 - Full performance (faster than simulator)
 - Test all sensors (compass, accelerometer)
@@ -410,6 +425,7 @@ The app will install but won't open yet. You need to trust it first.
 ## App Features
 
 ### Map & Navigation
+
 - **Multi-layer maps**: Satellite, Hybrid, Standard
 - **MGRS Grid overlay** with configurable density
 - **GPS tracking** with bearing and accuracy
@@ -417,6 +433,7 @@ The app will install but won't open yet. You need to trust it first.
 - **Zoom controls** and gesture navigation
 
 ### TAK Server Integration
+
 - **Multi-server support**: Connect to multiple TAK servers
 - **CoT messaging**: Send/receive Cursor-on-Target messages
 - **Position broadcasting**: Automatic self-SA updates
@@ -424,6 +441,7 @@ The app will install but won't open yet. You need to trust it first.
 - **Federation support**: Multi-server message routing
 
 ### Drawing & Annotations
+
 - **Drawing tools**: Lines, polygons, circles, markers
 - **Color customization**: Choose colors for each drawing
 - **Persistent storage**: Drawings saved locally
@@ -431,12 +449,14 @@ The app will install but won't open yet. You need to trust it first.
 - **Edit/delete**: Manage drawings with radial menu
 
 ### Communications
+
 - **Chat system**: Send messages to teams/individuals
 - **Team management**: Create and manage tactical teams
 - **Contact list**: View connected units
 - **Emergency beacon**: Send 911/SOS alerts
 
 ### Tactical Tools
+
 - **Geofencing**: Create zones with entry/exit alerts
 - **Route planning**: Plan and navigate routes
 - **Range & Bearing**: Measure distances and bearings
@@ -444,6 +464,7 @@ The app will install but won't open yet. You need to trust it first.
 - **Line of Sight**: Calculate visibility between points
 
 ### Advanced Features
+
 - **Waypoint navigation**: Create and navigate to waypoints
 - **Track recording**: Record movement breadcrumbs
 - **Mission packages**: Share data packages
@@ -463,6 +484,7 @@ Having issues? Find your problem below and follow the steps to fix it.
 **Problem:** Xcode is using the wrong Swift version or toolchain.
 
 **Solution:**
+
 1. Quit Xcode completely (`⌘ + Q`)
 2. Open Terminal and run:
    ```bash
@@ -478,6 +500,7 @@ Having issues? Find your problem below and follow the steps to fix it.
 **Problem:** You haven't configured your Apple ID or bundle identifier.
 
 **Solution (Step-by-step):**
+
 1. Open Xcode → **Xcode menu** → **Settings** → **Accounts**
 2. If your Apple ID isn't listed:
    - Click **"+"** button
@@ -500,6 +523,7 @@ Having issues? Find your problem below and follow the steps to fix it.
 **Problem:** macOS security blocking build files.
 
 **Solution:**
+
 1. Open **System Settings** (or System Preferences)
 2. Go to **Privacy & Security**
 3. Scroll down to **Developer Tools**
@@ -513,15 +537,18 @@ Having issues? Find your problem below and follow the steps to fix it.
 **Problem:** Xcode indexes or derived data corruption.
 
 **Solution (try in order):**
+
 1. **Clean Build Folder:**
    - Xcode menu → **Product** → **Clean Build Folder** (`Shift + ⌘ + K`)
    - Wait for it to finish
    - Try building again
 
 2. **Clear Derived Data:**
+
    ```bash
    rm -rf ~/Library/Developer/Xcode/DerivedData/*
    ```
+
    - Reopen Xcode
    - Rebuild (first build will take longer)
 
@@ -537,6 +564,7 @@ Having issues? Find your problem below and follow the steps to fix it.
 **Problem:** Old version of app still installed or device storage full.
 
 **Solution:**
+
 1. **Delete old app from device:**
    - On iPhone: Long-press app icon → **Remove App** → **Delete App**
    - On Simulator: Long-press app icon → **Delete App**
@@ -558,6 +586,7 @@ Having issues? Find your problem below and follow the steps to fix it.
 **Problem:** Device not recognized by Xcode.
 
 **Solution (try each step):**
+
 1. **Unplug and replug cable** (try different USB port)
 2. **Unlock iPhone** (device must be unlocked)
 3. **Trust computer:**
@@ -577,6 +606,7 @@ Having issues? Find your problem below and follow the steps to fix it.
 **Problem:** Developer Mode is not enabled on your device.
 
 **Solution:**
+
 1. On your iPhone: **Settings** → **Privacy & Security** → **Developer Mode**
 2. Toggle **ON**
 3. Tap **"Restart"**
@@ -590,6 +620,7 @@ Having issues? Find your problem below and follow the steps to fix it.
 **Problem:** You haven't trusted your developer certificate.
 
 **Solution:**
+
 1. On iPhone: **Settings** → **General** → **VPN & Device Management**
 2. Under **DEVELOPER APP**, tap your Apple ID
 3. Tap **"Trust [Your Apple ID]"**
@@ -606,6 +637,7 @@ Having issues? Find your problem below and follow the steps to fix it.
 **Problem:** Simulator using too many resources.
 
 **Solution:**
+
 1. **Use smaller device:** iPhone SE instead of iPhone 16 Pro Max
 2. **Close other apps** on your Mac
 3. **Reduce graphics quality:**
@@ -620,6 +652,7 @@ Having issues? Find your problem below and follow the steps to fix it.
 **Problem:** Simulator crashed or didn't load properly.
 
 **Solution:**
+
 1. **Simulator menu** → **Device** → **Erase All Content and Settings**
 2. Confirm erasure
 3. Rebuild and run app
@@ -634,6 +667,7 @@ Having issues? Find your problem below and follow the steps to fix it.
 **Problem:** Could be several things.
 
 **Solution (try in order):**
+
 1. **Check Xcode Console for crash log:**
    - Look at bottom panel in Xcode after crash
    - Search for "Error" or "Fatal"
@@ -656,6 +690,7 @@ Having issues? Find your problem below and follow the steps to fix it.
 This is normal. Simulators use a fake location by default.
 
 **Set custom location:**
+
 1. Simulator menu → **Features** → **Location** → **Custom Location**
 2. Enter coordinates (e.g., Washington DC: 38.8977, -77.0365)
 3. App will show this location
@@ -669,6 +704,7 @@ This is normal. Simulators use a fake location by default.
 **Problem:** Network issue or map tiles not loading.
 
 **Solution:**
+
 1. **Check internet connection**
 2. **Change map type:**
    - Long-press on map → **Layers** → Try "Satellite" or "Hybrid"
@@ -681,6 +717,7 @@ This is normal. Simulators use a fake location by default.
 If none of the above helped:
 
 1. **Check Xcode version:**
+
    ```bash
    xcodebuild -version
    # Should be 15.0 or higher
@@ -835,6 +872,7 @@ xcodebuild test \
 ### Debugging
 
 **Enable verbose logging:**
+
 ```swift
 // In AppDelegate or main app file
 #if DEBUG
@@ -845,12 +883,14 @@ TAKService.debugMode = true
 ```
 
 **View device logs in Xcode:**
+
 1. Window → Devices and Simulators
 2. Select your device
 3. Click "Open Console" button
 4. Filter by "OmniTAKMobile"
 
 **Network debugging:**
+
 ```bash
 # Monitor network traffic (requires physical device)
 rvictl -s <device-udid>
@@ -881,12 +921,14 @@ sudo tcpdump -i rvi0 -n -s 0 -w omnitak.pcap
 ## Support
 
 For issues, questions, or contributions:
+
 - **Issues**: [GitHub Issues](https://github.com/engindearing-projects/omniTAK-mobile/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/engindearing-projects/omniTAK-mobile/discussions)
 
 ## Credits
 
 Built with:
+
 - **Swift** and **SwiftUI**
 - **MapKit** for mapping
 - **Rust** core library for TAK protocol

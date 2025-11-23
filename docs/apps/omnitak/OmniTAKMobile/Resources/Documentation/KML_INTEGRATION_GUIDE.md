@@ -7,6 +7,7 @@ This guide explains how to integrate the KML/KMZ import functionality into OmniT
 ## Files Created
 
 ### 1. KMLParser.swift
+
 - **Purpose**: Parse KML XML structure using XMLParser
 - **Supported Elements**:
   - `<Document>` - Main container with name, description, styles
@@ -21,6 +22,7 @@ This guide explains how to integrate the KML/KMZ import functionality into OmniT
 - **Color Conversion**: Converts KML AABBGGRR to UIColor
 
 ### 2. KMZHandler.swift
+
 - **Purpose**: Extract KML data from KMZ (ZIP) archives
 - **Features**:
   - Uses custom ZIP archive reader (no external dependencies)
@@ -29,6 +31,7 @@ This guide explains how to integrate the KML/KMZ import functionality into OmniT
   - Saves extracted resources to documents directory
 
 ### 3. KMLOverlayManager.swift
+
 - **Purpose**: Manage KML overlays and coordinate with MapKit
 - **Features**:
   - Converts KML geometries to MapKit overlays:
@@ -41,6 +44,7 @@ This guide explains how to integrate the KML/KMZ import functionality into OmniT
   - Provides rendering helpers for MapKit delegate
 
 ### 4. KMLImportView.swift
+
 - **Purpose**: SwiftUI user interface for KML management
 - **Features**:
   - Document picker using UIDocumentPickerViewController
@@ -51,6 +55,7 @@ This guide explains how to integrate the KML/KMZ import functionality into OmniT
   - Error display for failed imports
 
 ### 5. KMLMapIntegration.swift
+
 - **Purpose**: Integration layer between KML and existing map
 - **Features**:
   - KMLTacticalMapView - Extended map with KML support
@@ -194,12 +199,14 @@ Documents/
 ## Supported KML Features
 
 ### Geometry Types
+
 - **Point**: Single locations displayed as markers
 - **LineString**: Connected paths displayed as polylines
 - **Polygon**: Closed areas with optional interior holes
 - **MultiGeometry**: Nested combinations of the above
 
 ### Style Properties
+
 - Line color (AABBGGRR format converted to RGBA)
 - Line width
 - Polygon fill color and opacity
@@ -207,6 +214,7 @@ Documents/
 - Icon URLs (stored for future custom icon support)
 
 ### Document Structure
+
 - Document name and description
 - Folders for organization
 - Style definitions (referenced by styleUrl)

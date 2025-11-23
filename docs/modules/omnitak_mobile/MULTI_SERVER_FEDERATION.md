@@ -82,18 +82,18 @@ OmniTAK now supports simultaneous connections to multiple TAK servers with intel
 
 Each server connection can be configured to selectively receive and send specific data types:
 
-| Data Type  | CoT Type Prefix | Description                    |
-|------------|-----------------|--------------------------------|
-| `friendly` | `a-f-*`        | Friendly forces (blue team)    |
-| `hostile`  | `a-h-*`        | Hostile forces (red team)      |
-| `unknown`  | `a-u-*`        | Unknown/unidentified forces    |
-| `neutral`  | `a-n-*`        | Neutral entities               |
-| `sensor`   | `b-*`          | Sensor data and readings       |
-| `geofence` | `u-d-f`        | Geofences and boundaries       |
-| `route`    | `b-m-p-c`      | Route planning data            |
-| `casevac`  | `b-r-f-h-c`    | CASEVAC/MEDEVAC requests       |
-| `target`   | `u-d-c-c`      | Target designations            |
-| `all`      | `*`            | All data types                 |
+| Data Type  | CoT Type Prefix | Description                 |
+| ---------- | --------------- | --------------------------- |
+| `friendly` | `a-f-*`         | Friendly forces (blue team) |
+| `hostile`  | `a-h-*`         | Hostile forces (red team)   |
+| `unknown`  | `a-u-*`         | Unknown/unidentified forces |
+| `neutral`  | `a-n-*`         | Neutral entities            |
+| `sensor`   | `b-*`           | Sensor data and readings    |
+| `geofence` | `u-d-f`         | Geofences and boundaries    |
+| `route`    | `b-m-p-c`       | Route planning data         |
+| `casevac`  | `b-r-f-h-c`     | CASEVAC/MEDEVAC requests    |
+| `target`   | `u-d-c-c`       | Target designations         |
+| `all`      | `*`             | All data types              |
 
 ### Policy Configuration
 
@@ -138,38 +138,49 @@ interface DataSharingPolicy {
 
 ```typescript
 // Add primary tactical network
-federation.addServer('primary', 'Primary TAK', {
-  host: '192.168.1.10',
-  port: 8087,
-  protocol: 'TCP',
-  useTls: true,
-}, {
-  receiveTypes: ['all'],
-  sendTypes: ['friendly'],
-  blueTeamOnly: true,
-  autoShare: true,
-  bidirectional: true,
-});
+federation.addServer(
+  'primary',
+  'Primary TAK',
+  {
+    host: '192.168.1.10',
+    port: 8087,
+    protocol: 'TCP',
+    useTls: true,
+  },
+  {
+    receiveTypes: ['all'],
+    sendTypes: ['friendly'],
+    blueTeamOnly: true,
+    autoShare: true,
+    bidirectional: true,
+  },
+);
 
 // Add secondary network (read-only monitoring)
-federation.addServer('secondary', 'Secondary Network', {
-  host: '192.168.2.10',
-  port: 8087,
-  protocol: 'TCP',
-  useTls: true,
-}, {
-  receiveTypes: ['all'],
-  sendTypes: [],              // Don't send anything
-  blueTeamOnly: false,
-  autoShare: false,           // Don't share to others
-  bidirectional: false,       // One-way receive
-});
+federation.addServer(
+  'secondary',
+  'Secondary Network',
+  {
+    host: '192.168.2.10',
+    port: 8087,
+    protocol: 'TCP',
+    useTls: true,
+  },
+  {
+    receiveTypes: ['all'],
+    sendTypes: [], // Don't send anything
+    blueTeamOnly: false,
+    autoShare: false, // Don't share to others
+    bidirectional: false, // One-way receive
+  },
+);
 
 // Connect to both
 await federation.connectAll();
 ```
 
 **Result**:
+
 - Friendly positions from Primary are shared to Secondary (if policy allows)
 - All data from Secondary is received but not shared elsewhere
 - Blue team mode ensures no hostile data leaks
@@ -180,37 +191,48 @@ await federation.connectAll();
 
 ```typescript
 // Sensor network (receive sensor data only)
-federation.addServer('sensors', 'Sensor Network', {
-  host: 'sensors.mil',
-  port: 8089,
-  protocol: 'TLS',
-  useTls: true,
-}, {
-  receiveTypes: ['sensor', 'target'],
-  sendTypes: [],              // Don't send back
-  blueTeamOnly: false,
-  autoShare: false,
-  bidirectional: false,
-});
+federation.addServer(
+  'sensors',
+  'Sensor Network',
+  {
+    host: 'sensors.mil',
+    port: 8089,
+    protocol: 'TLS',
+    useTls: true,
+  },
+  {
+    receiveTypes: ['sensor', 'target'],
+    sendTypes: [], // Don't send back
+    blueTeamOnly: false,
+    autoShare: false,
+    bidirectional: false,
+  },
+);
 
 // Operational network (full data sharing)
-federation.addServer('operations', 'Operations Center', {
-  host: 'ops.mil',
-  port: 8089,
-  protocol: 'TLS',
-  useTls: true,
-}, {
-  receiveTypes: ['all'],
-  sendTypes: ['all'],
-  blueTeamOnly: false,
-  autoShare: true,
-  bidirectional: true,
-});
+federation.addServer(
+  'operations',
+  'Operations Center',
+  {
+    host: 'ops.mil',
+    port: 8089,
+    protocol: 'TLS',
+    useTls: true,
+  },
+  {
+    receiveTypes: ['all'],
+    sendTypes: ['all'],
+    blueTeamOnly: false,
+    autoShare: true,
+    bidirectional: true,
+  },
+);
 
 await federation.connectAll();
 ```
 
 **Result**:
+
 - Sensor data flows from Sensor Network → Operations
 - Operations shares data with other connected servers
 - Fusion center aggregates all data sources
@@ -221,37 +243,48 @@ await federation.connectAll();
 
 ```typescript
 // US Forces
-federation.addServer('us', 'US TAK Network', {
-  host: 'us.tak.mil',
-  port: 8089,
-  protocol: 'TLS',
-  useTls: true,
-}, {
-  receiveTypes: ['friendly', 'hostile', 'target'],
-  sendTypes: ['friendly'],
-  blueTeamOnly: true,
-  autoShare: true,
-  bidirectional: true,
-});
+federation.addServer(
+  'us',
+  'US TAK Network',
+  {
+    host: 'us.tak.mil',
+    port: 8089,
+    protocol: 'TLS',
+    useTls: true,
+  },
+  {
+    receiveTypes: ['friendly', 'hostile', 'target'],
+    sendTypes: ['friendly'],
+    blueTeamOnly: true,
+    autoShare: true,
+    bidirectional: true,
+  },
+);
 
 // Coalition Partner
-federation.addServer('coalition', 'Coalition Network', {
-  host: 'coalition.tak.net',
-  port: 8089,
-  protocol: 'TLS',
-  useTls: true,
-}, {
-  receiveTypes: ['friendly'],    // Only receive friendly
-  sendTypes: ['friendly'],        // Only send friendly
-  blueTeamOnly: true,
-  autoShare: false,              // Don't auto-share their data
-  bidirectional: true,
-});
+federation.addServer(
+  'coalition',
+  'Coalition Network',
+  {
+    host: 'coalition.tak.net',
+    port: 8089,
+    protocol: 'TLS',
+    useTls: true,
+  },
+  {
+    receiveTypes: ['friendly'], // Only receive friendly
+    sendTypes: ['friendly'], // Only send friendly
+    blueTeamOnly: true,
+    autoShare: false, // Don't auto-share their data
+    bidirectional: true,
+  },
+);
 
 await federation.connectAll();
 ```
 
 **Result**:
+
 - US and Coalition share friendly positions with each other
 - US hostile/target data is NOT shared with Coalition
 - Coalition data stays isolated (not auto-shared to US)
@@ -343,6 +376,7 @@ let connectedCount = federation.getConnectedCount()
 Location: `/docs/modules/omnitak_mobile/src/valdi/omnitak/screens/FederatedServerScreen.tsx`
 
 **Features:**
+
 - Visual server connection management
 - LED status indicators per server
 - Quick actions: Connect All, Disconnect All
@@ -352,6 +386,7 @@ Location: `/docs/modules/omnitak_mobile/src/valdi/omnitak/screens/FederatedServe
 - Data type filtering
 
 **UI Elements:**
+
 - Server cards with expandable details
 - Connection status LEDs (Green=Connected, Orange=Connecting, Red=Error, Gray=Disconnected)
 - Policy editor with toggle switches
@@ -363,6 +398,7 @@ Location: `/docs/modules/omnitak_mobile/src/valdi/omnitak/screens/FederatedServe
 ### Blue Team Mode
 
 When `blueTeamOnly` is enabled:
+
 - Only friendly (`a-f-*`) data is sent to the server
 - Prevents accidental leakage of hostile or unknown force positions
 - Recommended for coalition operations and untrusted networks
@@ -370,6 +406,7 @@ When `blueTeamOnly` is enabled:
 ### Policy Enforcement
 
 Policies are enforced at multiple levels:
+
 1. **Receive Filter**: Before adding to federation cache
 2. **Send Filter**: Before transmitting to each server
 3. **Blue Team Check**: Additional filter on sends if enabled
@@ -378,6 +415,7 @@ Policies are enforced at multiple levels:
 ### Certificate Pinning
 
 For TLS connections, support certificate pinning:
+
 ```typescript
 const certId = await takService.importCertificate(certPem, keyPem, caPem);
 
@@ -390,6 +428,7 @@ config.useTls = true;
 ### Deduplication
 
 Events are deduplicated by UID to prevent:
+
 - Duplicate markers on the map
 - Redundant data processing
 - Network bandwidth waste
@@ -411,6 +450,7 @@ Events are deduplicated by UID to prevent:
 ### Problem: Events not being shared
 
 **Check:**
+
 1. Is `autoShare` enabled in policy?
 2. Is the target server connected?
 3. Does the data type match `sendTypes`?
@@ -420,6 +460,7 @@ Events are deduplicated by UID to prevent:
 ### Problem: Duplicate markers
 
 **This should not happen** due to deduplication, but if it does:
+
 1. Check that UIDs are unique per entity
 2. Verify deduplication logic is working
 3. Clear event cache: `multiServerFederation.clearCache()`
@@ -427,6 +468,7 @@ Events are deduplicated by UID to prevent:
 ### Problem: Connection failures
 
 **Check:**
+
 1. Network connectivity to server
 2. Firewall rules for ports
 3. TLS certificate validity (if using TLS)

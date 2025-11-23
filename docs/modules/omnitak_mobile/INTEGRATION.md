@@ -91,6 +91,7 @@ export class TakService {
 ```
 
 **Key Features:**
+
 - Promise-based async API
 - Type-safe configuration objects
 - Event-based CoT message handling
@@ -102,6 +103,7 @@ export class TakService {
 The Swift bridge wraps the C FFI from the Rust XCFramework:
 
 **Key Features:**
+
 - Singleton pattern for callback management
 - Thread-safe callback storage
 - C string conversion utilities
@@ -110,11 +112,13 @@ The Swift bridge wraps the C FFI from the Rust XCFramework:
 - Proper memory management
 
 **Callback Flow:**
+
 ```
 Rust Thread → C Callback → Swift Callback → Main Queue → TypeScript
 ```
 
 **Thread Safety:**
+
 - All callbacks are dispatched to the main queue
 - Certificate storage uses thread-safe dictionary
 - Initialization uses NSLock
@@ -126,6 +130,7 @@ The Android bridge consists of two components:
 #### 1. Kotlin Bridge (`OmniTAKNativeBridge.kt`)
 
 **Key Features:**
+
 - Singleton pattern with thread safety
 - Coroutine-based async API
 - JNI native method declarations
@@ -135,6 +140,7 @@ The Android bridge consists of two components:
 #### 2. JNI Layer (`omnitak_jni.cpp`)
 
 **Key Features:**
+
 - String conversion between JNI and C
 - Callback bridging from C → JNI → Kotlin
 - Thread attachment for callbacks from native threads
@@ -142,11 +148,13 @@ The Android bridge consists of two components:
 - Comprehensive error logging
 
 **Callback Flow:**
+
 ```
 Rust Thread → C Callback → JNI Attach → Kotlin Method → Main Dispatcher → TypeScript
 ```
 
 **Thread Safety:**
+
 - Global callback map protected by mutex
 - Automatic JVM thread attachment/detachment
 - Global references for callback objects
@@ -158,6 +166,7 @@ Rust Thread → C Callback → JNI Attach → Kotlin Method → Main Dispatcher 
 The iOS integration uses an XCFramework that contains the compiled Rust library for all iOS architectures:
 
 **XCFramework Structure:**
+
 ```
 OmniTAKMobile.xcframework/
 ├── ios-arm64/                   # iPhone/iPad (device)
@@ -168,12 +177,14 @@ OmniTAKMobile.xcframework/
 ```
 
 **Xcode Integration:**
+
 1. Add `OmniTAKMobile.xcframework` to project frameworks
 2. Add `OmniTAKNativeBridge.swift` to project sources
 3. Set "Always Embed Swift Standard Libraries" to YES
 4. Ensure framework is embedded in app bundle
 
 **Build Settings:**
+
 - Deployment Target: iOS 13.0+
 - Swift Version: 5.0+
 - Embed Framework: Yes
@@ -183,6 +194,7 @@ OmniTAKMobile.xcframework/
 The Android integration uses CMake to build the JNI bridge and link with Rust static libraries:
 
 **Directory Structure:**
+
 ```
 android/native/
 ├── CMakeLists.txt           # Build configuration
@@ -216,6 +228,7 @@ android {
 ```
 
 **Build Process:**
+
 1. CMake builds `omnitak_jni.cpp` into `libomnitak_mobile.so`
 2. Links with pre-built Rust static library
 3. Outputs shared library for each ABI
@@ -371,16 +384,19 @@ private fun onCotReceived(connectionId: Long, cotXml: String) {
 ### iOS Memory Management
 
 **C Strings:**
+
 - Swift strings converted to C strings using `withCString`
 - C strings from Rust converted using `String(cString:)`
 - No manual deallocation needed for static strings from Rust
 
 **Callbacks:**
+
 - Swift closures stored in dictionary with connection ID key
 - Removed on disconnect
 - Bridge singleton manages lifetime
 
 **Certificates:**
+
 - Stored in Swift dictionary
 - Strings copied, not referenced
 - Cleaned up with certificate ID
@@ -388,16 +404,19 @@ private fun onCotReceived(connectionId: Long, cotXml: String) {
 ### Android Memory Management
 
 **JNI References:**
+
 - Global references created for callback objects
 - Deleted when callback unregistered
 - Map stores global refs with mutex protection
 
 **Strings:**
+
 - JNI strings converted to C++ std::string
 - C strings converted to JNI strings
 - Proper UTF release with `ReleaseStringUTFChars`
 
 **Thread Lifecycle:**
+
 - Threads attached to JVM when needed
 - Detached after callback completes
 - JavaVM pointer cached globally
@@ -407,6 +426,7 @@ private fun onCotReceived(connectionId: Long, cotXml: String) {
 ### Error Codes
 
 From C FFI (`omnitak_mobile.h`):
+
 ```c
 #define OMNITAK_SUCCESS  0
 #define OMNITAK_ERROR   -1
@@ -457,6 +477,7 @@ if (result == 0) {
 ### Unit Tests
 
 **TypeScript:**
+
 ```typescript
 // Mock the native module
 const mockNative: OmniTAKNativeModule = {
@@ -470,6 +491,7 @@ service.initialize(mockNative);
 ```
 
 **iOS:**
+
 ```swift
 // Create test instance
 let bridge = OmniTAKNativeBridge()
@@ -481,6 +503,7 @@ bridge.connect(config: testConfig) { connectionId in
 ```
 
 **Android:**
+
 ```kotlin
 // Test with instrumentation
 @Test
@@ -519,18 +542,23 @@ fun testConnect() = runBlocking {
 ### iOS Issues
 
 **XCFramework not found:**
+
 ```
 Error: Framework not found OmniTAKMobile
 ```
+
 **Solution:** Ensure XCFramework is in `ios/native/` and added to Xcode project
 
 **Swift bridge not compiled:**
+
 ```
 Error: Use of unresolved identifier 'OmniTAKNativeBridge'
 ```
+
 **Solution:** Add `OmniTAKNativeBridge.swift` to Xcode project sources
 
 **Callback not firing:**
+
 - Check that callback is registered before messages arrive
 - Verify main queue is not blocked
 - Check Rust library is receiving messages
@@ -538,24 +566,31 @@ Error: Use of unresolved identifier 'OmniTAKNativeBridge'
 ### Android Issues
 
 **Native library not loaded:**
+
 ```
 java.lang.UnsatisfiedLinkError: couldn't find DSO to load: libomnitak_mobile.so
 ```
+
 **Solution:**
+
 - Verify CMakeLists.txt path in build.gradle
 - Check Rust libraries are in `lib/${ABI}/` directories
 - Rebuild native code
 
 **JNI method not found:**
+
 ```
 java.lang.UnsatisfiedLinkError: No implementation found for int nativeInit()
 ```
+
 **Solution:**
+
 - Check JNI function signatures match Kotlin declarations
 - Verify package name in JNI function names
 - Clean and rebuild
 
 **Callback crashes:**
+
 - Check thread attachment to JVM
 - Verify global references are valid
 - Check for exceptions in JNI
@@ -563,16 +598,19 @@ java.lang.UnsatisfiedLinkError: No implementation found for int nativeInit()
 ### General Issues
 
 **Callback thread safety:**
+
 - Always dispatch callbacks to main thread/queue
 - Use thread-safe collections for callback storage
 - Protect shared state with locks/mutexes
 
 **Memory leaks:**
+
 - Verify callbacks are unregistered on disconnect
 - Check global references are deleted (Android)
 - Monitor memory usage with profilers
 
 **Performance:**
+
 - Avoid blocking main thread in callbacks
 - Process CoT messages on background threads
 - Use connection pooling for multiple servers
@@ -605,21 +643,23 @@ java.lang.UnsatisfiedLinkError: No implementation found for int nativeInit()
 ### Connection Pooling
 
 For multiple TAK servers:
+
 ```typescript
 const connections = await Promise.all([
   takService.connect(server1Config),
   takService.connect(server2Config),
-  takService.connect(server3Config)
+  takService.connect(server3Config),
 ]);
 ```
 
 ### Message Batching
 
 For high-frequency CoT updates:
+
 ```typescript
 const batch: string[] = [];
 
-onCotReceived((xml) => {
+onCotReceived(xml => {
   batch.push(xml);
 
   if (batch.length >= 100) {
@@ -652,15 +692,15 @@ onCotReceived((xml) => {
 
 ## Version Compatibility
 
-| Component | Minimum Version |
-|-----------|----------------|
-| iOS | 13.0 |
-| Android | API 21 (Lollipop) |
-| Swift | 5.0 |
-| Kotlin | 1.7 |
-| CMake | 3.18.1 |
-| NDK | r21+ |
-| Rust | 1.70+ |
+| Component | Minimum Version   |
+| --------- | ----------------- |
+| iOS       | 13.0              |
+| Android   | API 21 (Lollipop) |
+| Swift     | 5.0               |
+| Kotlin    | 1.7               |
+| CMake     | 3.18.1            |
+| NDK       | r21+              |
+| Rust      | 1.70+             |
 
 ## Resources
 
@@ -672,6 +712,7 @@ onCotReceived((xml) => {
 ## Support
 
 For issues or questions:
+
 1. Check this integration guide
 2. Review troubleshooting section
 3. Check logs (Xcode Console / Android Logcat)

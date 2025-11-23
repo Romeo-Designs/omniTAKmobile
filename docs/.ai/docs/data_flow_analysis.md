@@ -235,7 +235,7 @@ This section follows the concrete path data takes between:
 1. **PositionBroadcastService** combines:
    - Current `CLLocation` (from iOS LocationManager dependency)
    - User metadata (`userCallsign`, `userUID`, `teamColor`, `teamRole`, `userUnitType`, `updateInterval`, `staleTime`)
-   into a domain representation for self position.
+     into a domain representation for self position.
 
 2. It calls a CoT generator – e.g. `MarkerCoTGenerator` or a dedicated PLI generator in `CoT/Generators/`:
    - Input: domain values (UID, type, coordinate, times, callsign, team, role)

@@ -9,12 +9,14 @@ This document describes the comprehensive ATAK-style menu system implemented for
 Based on extensive research of ATAK's interface design:
 
 ### ATAK Menu Structure
+
 - **Navigation Drawer**: Side menu with Settings, Network Connections, Plugins, Tools, and About
 - **Top Toolbar**: Title bar with hamburger menu, connection status, and overflow menu (⋮)
 - **Map Controls**: North arrow/compass, orientation toggle, zoom controls, center on self, lock to self
 - **Specialized Tools**: Measure tool, drawing tools, marker management
 
 ### Key Features from ATAK
+
 1. **Toolbar**: 15 customizable positions for plugins/tools
 2. **Settings**: Organized into sections (General, Display, Network, Location)
 3. **Network Connections**: Server management with connection status widgets
@@ -51,6 +53,7 @@ All files are located in `/home/user/omni-BASE/docs/modules/omnitak_mobile/src/v
 ### 1. NavigationDrawer Component
 
 **Features:**
+
 - User profile header with callsign and connection status
 - Menu items: Map, Settings, Network Connections, Plugins, Tools, About
 - Active item highlighting with yellow accent (#FFFC00)
@@ -58,6 +61,7 @@ All files are located in `/home/user/omni-BASE/docs/modules/omnitak_mobile/src/v
 - ATAK-style dark theme (#1E1E1E background)
 
 **Key Methods:**
+
 - `handleNavigate(screen)`: Navigate to different screens
 - `handleOverlayClick()`: Close drawer when clicking outside
 - `getConnectionColor/Text()`: Dynamic connection status display
@@ -65,6 +69,7 @@ All files are located in `/home/user/omni-BASE/docs/modules/omnitak_mobile/src/v
 ### 2. EnhancedMapScreen Component
 
 **Features:**
+
 - **Top Toolbar**: Hamburger menu, iTAK title, connection status, overflow menu
 - **Info Bar**: Marker count, last update time, measure distance
 - **North Arrow/Compass**: Rotates to show north, toggles north-up mode
@@ -81,6 +86,7 @@ All files are located in `/home/user/omni-BASE/docs/modules/omnitak_mobile/src/v
   - Search ()
 
 **Measure Tool Implementation:**
+
 - Click "Measure" button to activate
 - Tap map to add measurement points
 - Real-time distance calculation using Haversine formula
@@ -89,6 +95,7 @@ All files are located in `/home/user/omni-BASE/docs/modules/omnitak_mobile/src/v
 - Distance displayed in meters
 
 **Key Methods:**
+
 - `handleMeasureTool()`: Toggle measure mode
 - `addMeasurePoint()`: Add point to measurement
 - `calculateTotalDistance()`: Calculate total distance between points
@@ -101,6 +108,7 @@ All files are located in `/home/user/omni-BASE/docs/modules/omnitak_mobile/src/v
 ### 3. SettingsScreen Component
 
 **Features:**
+
 - Organized settings sections (General, Display, Network, Location)
 - Toggle switches for boolean settings
 - Option selectors for value settings
@@ -109,6 +117,7 @@ All files are located in `/home/user/omni-BASE/docs/modules/omnitak_mobile/src/v
 - ATAK-style dark theme
 
 **Default Settings:**
+
 - Callsign: R-06
 - UID: iTAK-001
 - Dark Mode: ON
@@ -118,12 +127,14 @@ All files are located in `/home/user/omni-BASE/docs/modules/omnitak_mobile/src/v
 - Share Location: ON
 
 **Key Methods:**
+
 - `handleToggle()`: Toggle boolean settings
 - `handleBack()`: Return to map
 
 ### 4. ServerManagementScreen Component
 
 **Features:**
+
 - Server list with connection status (connected/disconnected/connecting/error)
 - Add server dialog with form inputs
 - Connection controls (Connect/Disconnect buttons)
@@ -133,10 +144,12 @@ All files are located in `/home/user/omni-BASE/docs/modules/omnitak_mobile/src/v
 - Empty state messaging
 
 **Default Servers:**
+
 - TAK Server (Local): 192.168.1.100:8087 (TCP)
 - TAK Server (Cloud): tak.example.com:8089 (SSL)
 
 **Key Methods:**
+
 - `handleConnect/Disconnect()`: Server connection management
 - `handleAddServer()`: Add new server configuration
 - `handleEditServer()`: Modify existing server
@@ -145,21 +158,24 @@ All files are located in `/home/user/omni-BASE/docs/modules/omnitak_mobile/src/v
 ### 5. PluginManagementScreen Component
 
 **Features:**
+
 - Tabbed interface (Installed / Available)
 - Plugin cards with metadata (version, author, category)
 - Enable/Disable toggle for installed plugins
 - Install/Uninstall actions
 - Plugin settings access
-- Category icons ( mapping,  tools,  communication,  sensors)
+- Category icons ( mapping, tools, communication, sensors)
 - Active status badges
 
 **Default Plugins:**
+
 - Weather Overlay (installed, enabled)
 - Route Planning (installed, disabled)
 - Voice Chat (available)
 - Sensor Integration (available)
 
 **Key Methods:**
+
 - `handleEnablePlugin()`: Enable installed plugin
 - `handleDisablePlugin()`: Disable installed plugin
 - `handleInstallPlugin()`: Install from available plugins
@@ -169,6 +185,7 @@ All files are located in `/home/user/omni-BASE/docs/modules/omnitak_mobile/src/v
 ### 6. AppController Component
 
 **Features:**
+
 - Centralized navigation management
 - State management for all screens
 - Data initialization for settings, servers, and plugins
@@ -177,6 +194,7 @@ All files are located in `/home/user/omni-BASE/docs/modules/omnitak_mobile/src/v
 - Connection status tracking
 
 **Navigation Flow:**
+
 ```
 Map Screen ←→ Drawer Menu
     ↓
@@ -204,7 +222,7 @@ Following ATAK's tactical color scheme:
 
 ## Button Functionality Status
 
-###  Fully Functional
+### Fully Functional
 
 1. **Measure Tool** - Distance measurement with point plotting
    - Activates measurement mode
@@ -235,29 +253,29 @@ Following ATAK's tactical color scheme:
    - Adds marker at current map center
    - Assigns unique ID and timestamp
 
-###  Partially Implemented
+### Partially Implemented
 
 8. **Navigation Drawer** - All menu items functional
-   -  Map navigation
-   -  Settings navigation
-   -  Server management navigation
-   -  Plugin management navigation
-   -  Tools (placeholder screen)
-   -  About (placeholder screen)
+   - Map navigation
+   - Settings navigation
+   - Server management navigation
+   - Plugin management navigation
+   - Tools (placeholder screen)
+   - About (placeholder screen)
 
 9. **Server Management** - Core features working
-   -  List servers
-   -  Add server dialog
-   -  Connection status display
-   -  Actual TAK server connection (requires backend integration)
+   - List servers
+   - Add server dialog
+   - Connection status display
+   - Actual TAK server connection (requires backend integration)
 
 10. **Plugin System** - UI complete
-    -  List plugins
-    -  Install/uninstall UI
-    -  Enable/disable UI
-    -  Actual plugin loading (requires plugin architecture)
+    - List plugins
+    - Install/uninstall UI
+    - Enable/disable UI
+    - Actual plugin loading (requires plugin architecture)
 
-###  Planned (Placeholders)
+### Planned (Placeholders)
 
 11. **Draw Tool** - Sketching on map
 12. **Search** - Search for locations/markers
@@ -268,12 +286,14 @@ Following ATAK's tactical color scheme:
 The implementation includes orientation-aware design:
 
 ### Portrait Mode
+
 - Vertical button layout on right side
 - Bottom action bar with 4 primary actions
 - Compact toolbar at top
 - Drawer slides from left
 
 ### Landscape Mode
+
 - Horizontal optimization of controls
 - Wider info bar for more data
 - Adjusted button positioning
@@ -361,6 +381,7 @@ The new menu system integrates with existing iTAK services:
 ### Platform-Specific Implementations
 
 #### iOS (SwiftUI)
+
 - **NavigationDrawer.swift**: Native SwiftUI drawer component
 - LED indicators with native shadow effects
 - Smooth iOS-style animations
@@ -368,6 +389,7 @@ The new menu system integrates with existing iTAK services:
 - Full integration with existing MapViewController
 
 #### Android/Valdi (TypeScript)
+
 - **EnhancedMapScreen.tsx**: Enhanced toolbar with LED indicators
 - **NavigationDrawer.tsx**: Slide-in drawer with animations
 - CSS-based transitions and animations
@@ -418,6 +440,7 @@ Implementation based on ATAK research and iTAK architecture.
 ## Changelog
 
 ### v1.1.0 (2025-11-09)
+
 - Added authentic ATAK-style 3-bar hamburger menu icon
 - Implemented LED-style connection indicators with glow effects
 - Added slide-in animation for navigation drawer
@@ -428,6 +451,7 @@ Implementation based on ATAK research and iTAK architecture.
 - Improved visual consistency across platforms
 
 ### v1.0.0 (2025-11-09)
+
 - Initial ATAK-style menu system implementation
 - Basic navigation drawer and toolbar
 - Core functionality complete

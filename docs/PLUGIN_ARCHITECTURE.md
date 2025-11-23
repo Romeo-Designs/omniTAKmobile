@@ -59,12 +59,7 @@ omnitak-plugin-template/
   "omnitak_version": ">=1.0.0",
   "type": "ui",
   "platforms": ["ios", "android"],
-  "permissions": [
-    "network.access",
-    "location.read",
-    "cot.read",
-    "cot.write"
-  ],
+  "permissions": ["network.access", "location.read", "cot.read", "cot.write"],
   "entry_points": {
     "ios": "PluginMain",
     "android": "com.example.myplugin.PluginMain"
@@ -198,8 +193,8 @@ include:
     file: '/ios-plugin-build.yml'
 
 variables:
-  PLUGIN_ID: "com.example.myplugin"
-  IOS_MIN_VERSION: "14.0"
+  PLUGIN_ID: 'com.example.myplugin'
+  IOS_MIN_VERSION: '14.0'
 
 stages:
   - validate

@@ -1,6 +1,7 @@
 # Features Guide
 
 ## Table of Contents
+
 - [Overview](#overview)
 - [Map & Navigation](#map--navigation)
 - [Communication](#communication)
@@ -17,14 +18,14 @@ OmniTAK Mobile provides comprehensive tactical awareness capabilities for milita
 
 ### Feature Categories
 
-| Category | Features |
-|----------|----------|
-| **Map & Navigation** | Map types, markers, overlays, offline maps, coordinates |
-| **Communication** | GeoChat, team chat, location sharing, photo messaging |
-| **Tactical Tools** | Drawing, measurement, geofencing, waypoints, routes |
-| **Planning & Analysis** | Line-of-sight, elevation profile, tactical reports |
-| **Data Management** | Mission packages, data sync, import/export |
-| **Integration** | Meshtastic, ArcGIS, video feeds, external sensors |
+| Category                | Features                                                |
+| ----------------------- | ------------------------------------------------------- |
+| **Map & Navigation**    | Map types, markers, overlays, offline maps, coordinates |
+| **Communication**       | GeoChat, team chat, location sharing, photo messaging   |
+| **Tactical Tools**      | Drawing, measurement, geofencing, waypoints, routes     |
+| **Planning & Analysis** | Line-of-sight, elevation profile, tactical reports      |
+| **Data Management**     | Mission packages, data sync, import/export              |
+| **Integration**         | Meshtastic, ArcGIS, video feeds, external sensors       |
 
 ---
 
@@ -58,9 +59,10 @@ The map is the central interface for situational awareness.
 2. First tap: Center on your location
 3. Second tap: Follow mode (map centers as you move)
 4. Third tap: Follow with heading (map rotates to match your direction)
-4. Fourth tap: Disable tracking
+5. Fourth tap: Disable tracking
 
 **Your position shows:**
+
 - Blue dot with accuracy circle
 - Heading arrow when moving
 - Altitude displayed below position
@@ -85,6 +87,7 @@ The map is the central interface for situational awareness.
 ### Markers & Icons
 
 **View friendly positions:**
+
 - Blue icons show friendly units
 - Callsigns display below icons
 - Tap marker to see details:
@@ -115,11 +118,13 @@ The map is the central interface for situational awareness.
 6. Tap "Download"
 
 **Progress shows:**
+
 - Tiles downloaded / total
 - Estimated file size
 - Cancel option
 
 **Use offline maps:**
+
 - Automatically used when no internet
 - Indicator shows "Offline Mode"
 - Limited to downloaded regions
@@ -138,11 +143,13 @@ The map is the central interface for situational awareness.
 4. Tap send (↑)
 
 **Message appears:**
+
 - In conversation list
 - On recipient's device
 - In All Chat Rooms (if broadcast)
 
 **Message types:**
+
 - **Text**: Plain text message
 - **Location**: Tap 📍 to share current location
 - **Photo**: Tap 📷 to attach image
@@ -156,6 +163,7 @@ The map is the central interface for situational awareness.
 3. Type message and send
 
 **Contacts show:**
+
 - Callsign
 - Distance from you
 - Online status (green = online)
@@ -190,6 +198,7 @@ The map is the central interface for situational awareness.
 5. Tap "Send"
 
 **Photo features:**
+
 - Auto-compressed for transmission
 - Thumbnail preview in chat
 - Tap to view full size
@@ -212,6 +221,7 @@ The map is the central interface for situational awareness.
    - **Freehand**: Drag to draw
 
 **Drawing options:**
+
 - Color picker
 - Line width
 - Fill transparency
@@ -263,6 +273,7 @@ The map is the central interface for situational awareness.
 5. Tap "Save"
 
 **Route shows:**
+
 - Line connecting waypoints
 - Total distance
 - Estimated time (at set speed)
@@ -317,6 +328,7 @@ The map is the central interface for situational awareness.
 6. Tap "Save"
 
 **Geofence alerts:**
+
 - Notification when you/team enters/exits
 - Alert sound/vibration
 - Visual indicator on map
@@ -346,6 +358,7 @@ The map is the central interface for situational awareness.
    - Distance markers
 
 **Use cases:**
+
 - Route planning
 - Line-of-sight analysis
 - Landing zone selection
@@ -365,6 +378,7 @@ The map is the central interface for situational awareness.
    - Clearance altitude
 
 **Parameters:**
+
 - Observer height (default: 1.5m)
 - Target height (default: 1.5m)
 - Earth curvature correction
@@ -438,6 +452,7 @@ The map is the central interface for situational awareness.
 5. Tap "Import"
 
 **Package contains:**
+
 - KML overlays
 - Imagery
 - Documents
@@ -514,6 +529,7 @@ The map is the central interface for situational awareness.
 4. Tap "Connect"
 
 **Features:**
+
 - Off-grid messaging via LoRa
 - Position reports shared
 - Mesh network visualization
@@ -539,6 +555,7 @@ The map is the central interface for situational awareness.
    - Unit type
 
 **Your position:**
+
 - Broadcasts to all connected users
 - Shows on their maps
 - Updates at set interval
@@ -556,6 +573,7 @@ The map is the central interface for situational awareness.
 3. Confirm activation
 
 **Emergency features:**
+
 - Rapid PLI updates (5 second intervals)
 - Alert sent to all users
 - Icon changes to emergency state
@@ -583,6 +601,7 @@ The map is the central interface for situational awareness.
 5. Tap "Stop" when done
 
 **Track statistics:**
+
 - Total distance
 - Duration
 - Average speed
@@ -640,4 +659,4 @@ The map is the central interface for situational awareness.
 
 ---
 
-*Last Updated: November 22, 2025*
+_Last Updated: November 22, 2025_

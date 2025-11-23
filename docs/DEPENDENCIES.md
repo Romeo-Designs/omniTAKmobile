@@ -40,6 +40,7 @@ org.maplibre.gl:android-sdk-turf:11.5.2
 ```
 
 **Features:**
+
 - Vector and raster map rendering
 - Custom marker support
 - Gesture handling
@@ -51,6 +52,7 @@ org.maplibre.gl:android-sdk-turf:11.5.2
 ### Geospatial Libraries
 
 #### JTS Topology Suite
+
 **Version:** 1.19.0
 **Repository:** Maven Central
 **License:** EPL-2.0
@@ -62,6 +64,7 @@ org.locationtech.jts:jts-core:1.19.0
 ```
 
 #### GeoPackage Android
+
 **Version:** 6.7.4
 **Repository:** Maven Central
 **License:** MIT
@@ -75,6 +78,7 @@ mil.nga.geopackage:geopackage-android:6.7.4
 ### Network and Caching
 
 #### OkHttp
+
 **Version:** 4.12.0
 **Repository:** Maven Central
 **License:** Apache 2.0
@@ -89,6 +93,7 @@ com.squareup.okio:okio:3.6.0
 ### Image Loading
 
 #### Glide
+
 **Version:** 4.16.0
 **Repository:** Maven Central
 **License:** BSD, MIT, Apache 2.0
@@ -102,6 +107,7 @@ com.github.bumptech.glide:glide:4.16.0
 ### Kotlin Support
 
 #### Kotlin Coroutines
+
 **Version:** 1.7.3
 **Repository:** Maven Central
 **License:** Apache 2.0
@@ -116,6 +122,7 @@ org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3
 ### Location Services
 
 #### Google Play Services Location
+
 **Version:** 21.0.1
 **Repository:** Google Maven
 **License:** Android Software Development Kit License
@@ -139,6 +146,7 @@ MapLibre GL Native provides iOS mapping functionality.
 **Integration Methods:**
 
 1. **Source Build** (via http_archive):
+
    ```python
    http_archive(
        name = "maplibre_gl_native_ios",
@@ -155,6 +163,7 @@ MapLibre GL Native provides iOS mapping functionality.
    ```
 
 **Features:**
+
 - Vector map rendering using Metal
 - Custom annotations
 - Offline map support
@@ -164,6 +173,7 @@ MapLibre GL Native provides iOS mapping functionality.
 **Documentation:** https://maplibre.org/maplibre-native/ios/
 
 **Minimum Requirements:**
+
 - iOS 12.0+
 - Xcode 14.0+
 - Swift 5.5+
@@ -187,6 +197,7 @@ Military symbol rendering library supporting MIL-STD-2525 and APP-6.
 ```
 
 **Features:**
+
 - MIL-STD-2525C/D support
 - APP-6B/C/D support
 - SVG and Canvas rendering
@@ -229,6 +240,7 @@ Geospatial analysis library for JavaScript.
 ```
 
 **Features:**
+
 - Distance calculations
 - Buffer operations
 - Spatial analysis
@@ -239,6 +251,7 @@ Geospatial analysis library for JavaScript.
 ### Vector Tiles
 
 **Packages:**
+
 - `@mapbox/vector-tile` (2.0.3) - Vector tile parsing
 - `pbf` (4.0.1) - Protocol buffer encoding/decoding
 - `geojson` (0.5.0) - GeoJSON utilities
@@ -288,6 +301,7 @@ http_archive(
 ```
 
 **Features:**
+
 - Point, LineString, Polygon types
 - MultiGeometry support
 - GeoJSON compatibility
@@ -323,6 +337,7 @@ http_archive(
 ```
 
 **Features:**
+
 - Fast polygon triangulation
 - Supports holes
 - Header-only implementation
@@ -349,6 +364,7 @@ http_archive(
 ### Semantic Versioning
 
 All dependencies follow semantic versioning where possible:
+
 - **Major version:** Breaking changes
 - **Minor version:** New features, backward compatible
 - **Patch version:** Bug fixes
@@ -356,6 +372,7 @@ All dependencies follow semantic versioning where possible:
 ### Version Pinning
 
 Dependencies are pinned to specific versions in:
+
 - `MODULE.bazel` for Bazel modules and Maven artifacts
 - `package.json` for NPM packages
 - `bzl/omnitak_dependencies.bzl` for custom http_archive dependencies
@@ -375,6 +392,7 @@ Maven dependencies use `version_conflict_policy = "pinned"` to ensure consistent
 ### Upgrading Android Dependencies
 
 1. **Update MODULE.bazel:**
+
    ```python
    maven.install(
        name = "omnitak_android_mvn",
@@ -386,6 +404,7 @@ Maven dependencies use `version_conflict_policy = "pinned"` to ensure consistent
    ```
 
 2. **Verify compatibility:**
+
    ```bash
    bazel query "deps(//docs/modules/omnitak_mobile/android:omnitak_android)" | grep maplibre
    ```
@@ -398,11 +417,13 @@ Maven dependencies use `version_conflict_policy = "pinned"` to ensure consistent
 ### Upgrading iOS Dependencies
 
 1. **Update version in MODULE.bazel:**
+
    ```python
    MAPLIBRE_GL_NATIVE_VERSION = "NEW_VERSION"
    ```
 
 2. **Update SHA256 checksum:**
+
    ```bash
    # Download new version
    curl -L https://github.com/maplibre/maplibre-gl-native/archive/refs/tags/ios-vNEW_VERSION.tar.gz -o maplibre.tar.gz
@@ -412,6 +433,7 @@ Maven dependencies use `version_conflict_policy = "pinned"` to ensure consistent
    ```
 
 3. **Update http_archive:**
+
    ```python
    http_archive(
        name = "maplibre_gl_native_ios",
@@ -428,6 +450,7 @@ Maven dependencies use `version_conflict_policy = "pinned"` to ensure consistent
 ### Upgrading NPM Dependencies
 
 1. **Update package.json:**
+
    ```json
    {
      "dependencies": {
@@ -437,6 +460,7 @@ Maven dependencies use `version_conflict_policy = "pinned"` to ensure consistent
    ```
 
 2. **Update package-lock.json:**
+
    ```bash
    npm update milsymbol
    ```
@@ -450,6 +474,7 @@ Maven dependencies use `version_conflict_policy = "pinned"` to ensure consistent
 ### Upgrading C++ Libraries
 
 1. **Update bzl/omnitak_dependencies.bzl:**
+
    ```python
    http_archive(
        name = "rapidjson",
@@ -475,6 +500,7 @@ Maven dependencies use `version_conflict_policy = "pinned"` to ensure consistent
 **Problem:** Maven dependency conflicts
 
 **Solution:**
+
 ```bash
 # Check dependency tree
 bazel query "deps(//modules/omnitak_mobile:omnitak_mobile)" --output=graph
@@ -488,6 +514,7 @@ bazel query "deps(//modules/omnitak_mobile:omnitak_mobile)" --output=graph
 **Problem:** `BUILD file not found for external dependency`
 
 **Solution:**
+
 1. Check `third-party/` directory for custom BUILD files
 2. Create BUILD file if needed:
    ```bash
@@ -500,6 +527,7 @@ bazel query "deps(//modules/omnitak_mobile:omnitak_mobile)" --output=graph
 **Problem:** `Checksum mismatch for downloaded file`
 
 **Solution:**
+
 ```bash
 # Recalculate checksum
 curl -L DOWNLOAD_URL -o file.tar.gz
@@ -513,12 +541,15 @@ shasum -a 256 file.tar.gz
 **Problem:** `framework not found MapLibre`
 
 **Solution:**
+
 1. Verify Xcode command line tools:
+
    ```bash
    xcode-select --install
    ```
 
 2. Clean and rebuild:
+
    ```bash
    ./scripts/clean_build.sh --all //docs/modules/omnitak_mobile/ios:omnitak_ios
    ```
@@ -530,13 +561,16 @@ shasum -a 256 file.tar.gz
 **Problem:** `Could not resolve org.maplibre.gl:android-sdk`
 
 **Solution:**
+
 1. Verify Maven repositories are accessible:
+
    ```bash
    curl -I https://repo1.maven.org/maven2/
    curl -I https://maven.google.com/
    ```
 
 2. Clear Maven cache:
+
    ```bash
    rm -rf ~/.m2/repository/org/maplibre
    ```
@@ -551,6 +585,7 @@ shasum -a 256 file.tar.gz
 **Problem:** `npm ERR! Could not resolve dependency`
 
 **Solution:**
+
 ```bash
 # Clear NPM cache
 npm cache clean --force
@@ -617,6 +652,7 @@ See individual dependency links above for specific license information. All depe
 ## Support
 
 For dependency-related issues:
+
 1. Check this documentation
 2. Review build logs: `bazel build --verbose_failures ...`
 3. Consult the [BUILD_GUIDE.md](/docs/modules/omnitak_mobile/BUILD_GUIDE.md)

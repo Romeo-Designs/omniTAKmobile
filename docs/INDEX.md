@@ -11,6 +11,7 @@ This index points to the primary guides and references now centralized under `do
 - [Build Android Guide](BUILD_ANDROID.md)
 
 Additional platform setup:
+
 - [Setup Guides](setup/) (e.g., platform-specific setup docs)
 
 ## Core Project & Dependency Docs

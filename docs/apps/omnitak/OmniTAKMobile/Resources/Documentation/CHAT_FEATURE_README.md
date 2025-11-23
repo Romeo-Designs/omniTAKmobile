@@ -11,18 +11,21 @@ This implementation is **READY TO USE**. All files have been created and TAKServ
 All files are located in: `apps/omnitak_ios_test/OmniTAKTest/`
 
 ### Core Chat Files (7 files)
-1. **ChatModels.swift**  - Data models (ChatMessage, Conversation, ChatParticipant, etc.)
-2. **ChatPersistence.swift**  - JSON file storage for messages and conversations
-3. **ChatXMLGenerator.swift**  - Generate TAK GeoChat XML (b-t-f format)
-4. **ChatXMLParser.swift**  - Parse incoming GeoChat CoT messages
-5. **ChatManager.swift**  - Chat state management (ObservableObject)
-6. **ChatView.swift**  - Conversation list UI
-7. **ConversationView.swift**  - Message thread UI with chat bubbles
+
+1. **ChatModels.swift** - Data models (ChatMessage, Conversation, ChatParticipant, etc.)
+2. **ChatPersistence.swift** - JSON file storage for messages and conversations
+3. **ChatXMLGenerator.swift** - Generate TAK GeoChat XML (b-t-f format)
+4. **ChatXMLParser.swift** - Parse incoming GeoChat CoT messages
+5. **ChatManager.swift** - Chat state management (ObservableObject)
+6. **ChatView.swift** - Conversation list UI
+7. **ConversationView.swift** - Message thread UI with chat bubbles
 
 ### Modified Files
-- **TAKService.swift**  ALREADY MODIFIED - Detects b-t-f messages and routes to chat parser
+
+- **TAKService.swift** ALREADY MODIFIED - Detects b-t-f messages and routes to chat parser
 
 ### Files Needing Modification
+
 - **MapViewController.swift** - NEEDS CHANGES (see instructions below)
 
 ---
@@ -53,6 +56,7 @@ See the file `MAPVIEWCONTROLLER_CHANGES.md` for exact line-by-line instructions 
 See `MapViewController_Modified.swift` and `ATAKBottomToolbar_Modified.swift` for complete reference implementations.
 
 **Required Changes Summary:**
+
 1. Add `@State private var showChat = false` state variable
 2. Pass `showChat: $showChat` to ATAKBottomToolbar
 3. Add `.sheet(isPresented: $showChat)` with ChatView
@@ -75,42 +79,46 @@ See `MapViewController_Modified.swift` and `ATAKBottomToolbar_Modified.swift` fo
 ## Features Implemented
 
 ### Messaging
--  Send messages to "All Chat Users" (group chat)
--  Send direct messages to individual participants
--  Receive messages from other TAK clients
--  Message persistence (survives app restart)
--  Message status indicators (sending, sent, delivered, failed)
--  Unread message counts
+
+- Send messages to "All Chat Users" (group chat)
+- Send direct messages to individual participants
+- Receive messages from other TAK clients
+- Message persistence (survives app restart)
+- Message status indicators (sending, sent, delivered, failed)
+- Unread message counts
 
 ### UI/UX
--  Chat button in bottom toolbar
--  Red badge with unread count
--  Conversation list sorted by recent activity
--  Chat bubbles (blue for sent, gray for received)
--  Sender callsign display
--  Timestamps on all messages
--  Auto-scroll to latest message
--  Multi-line text input
--  Empty states for no conversations
+
+- Chat button in bottom toolbar
+- Red badge with unread count
+- Conversation list sorted by recent activity
+- Chat bubbles (blue for sent, gray for received)
+- Sender callsign display
+- Timestamps on all messages
+- Auto-scroll to latest message
+- Multi-line text input
+- Empty states for no conversations
 
 ### TAK Protocol
--  Proper b-t-f message format
--  GeoChat XML with all required elements:
-  - `__chat` with chatroom and sender info
-  - `remarks` with message text
-  - `marti` with destination
-  - `link` to sender's CoT
-  - GPS coordinates in point element
--  Compatible with ATAK, WinTAK, iTAK
--  Auto-discovery of participants from presence CoT
+
+- Proper b-t-f message format
+- GeoChat XML with all required elements:
+- `__chat` with chatroom and sender info
+- `remarks` with message text
+- `marti` with destination
+- `link` to sender's CoT
+- GPS coordinates in point element
+- Compatible with ATAK, WinTAK, iTAK
+- Auto-discovery of participants from presence CoT
 
 ### Data Management
--  Singleton ChatManager for global state
--  JSON file storage (not UserDefaults)
--  Automatic migration from UserDefaults
--  Conversation threading
--  Participant tracking
--  Delete conversations (except "All Chat Users")
+
+- Singleton ChatManager for global state
+- JSON file storage (not UserDefaults)
+- Automatic migration from UserDefaults
+- Conversation threading
+- Participant tracking
+- Delete conversations (except "All Chat Users")
 
 ---
 
@@ -150,6 +158,7 @@ Presence CoT → TAKService.cotCallback()
 ## TAK GeoChat XML Format
 
 ### Group Message
+
 ```xml
 <event version="2.0" uid="GeoChat.SELF-123.msg-456" type="b-t-f" ...>
     <point lat="38.8977" lon="-77.0365" hae="50.0" ce="10.0" le="5.0"/>
@@ -167,6 +176,7 @@ Presence CoT → TAKService.cotCallback()
 ```
 
 ### Direct Message
+
 ```xml
 <event version="2.0" uid="GeoChat.SELF-123.msg-789" type="b-t-f" ...>
     <point lat="38.8977" lon="-77.0365" hae="50.0" ce="10.0" le="5.0"/>
@@ -188,6 +198,7 @@ Presence CoT → TAKService.cotCallback()
 ## Testing Checklist
 
 ### Basic Functionality
+
 - [ ] Chat button appears in bottom toolbar
 - [ ] Tapping chat button opens ChatView
 - [ ] "All Chat Users" conversation exists by default
@@ -196,6 +207,7 @@ Presence CoT → TAKService.cotCallback()
 - [ ] Message bubble is blue (sent from self)
 
 ### TAK Integration
+
 - [ ] Messages send successfully to TAK server
 - [ ] Can receive messages from ATAK/WinTAK/iTAK
 - [ ] Received messages appear in correct conversation
@@ -204,6 +216,7 @@ Presence CoT → TAKService.cotCallback()
 - [ ] Timestamps format correctly
 
 ### Participant Discovery
+
 - [ ] Participants appear after receiving their CoT
 - [ ] Can tap "New Chat" button
 - [ ] Participants list shows discovered users
@@ -211,11 +224,13 @@ Presence CoT → TAKService.cotCallback()
 - [ ] Direct messages work correctly
 
 ### Persistence
+
 - [ ] Messages persist after app restart
 - [ ] Conversations persist after app restart
 - [ ] Unread counts persist after app restart
 
 ### UI/UX
+
 - [ ] Unread badge shows correct count
 - [ ] Badge updates in real-time
 - [ ] Auto-scroll to bottom works
@@ -226,6 +241,7 @@ Presence CoT → TAKService.cotCallback()
 - [ ] Empty states show correctly
 
 ### Error Handling
+
 - [ ] Messages show "failed" status when disconnected
 - [ ] Can retry failed messages
 - [ ] Graceful handling of malformed messages
@@ -236,6 +252,7 @@ Presence CoT → TAKService.cotCallback()
 ## Architecture
 
 ### Class Diagram
+
 ```
 ┌─────────────────┐
 │  ATAKMapView    │
@@ -261,6 +278,7 @@ Presence CoT → TAKService.cotCallback()
 ```
 
 ### Data Flow
+
 ```
 User Input → ChatManager → XMLGenerator → TAKService → omnitak_mobile → Server
 
@@ -272,6 +290,7 @@ Server → omnitak_mobile → TAKService → XMLParser → ChatManager → UI Up
 ## API Reference
 
 ### ChatManager
+
 ```swift
 class ChatManager: ObservableObject {
     static let shared: ChatManager
@@ -290,6 +309,7 @@ class ChatManager: ObservableObject {
 ```
 
 ### ChatXMLGenerator
+
 ```swift
 class ChatXMLGenerator {
     static func generateGeoChatXML(
@@ -304,6 +324,7 @@ class ChatXMLGenerator {
 ```
 
 ### ChatXMLParser
+
 ```swift
 class ChatXMLParser {
     static func parseGeoChatMessage(xml: String) -> ChatMessage?
@@ -318,6 +339,7 @@ class ChatXMLParser {
 ### Customization Options
 
 **User Identity:**
+
 ```swift
 // In ChatManager.swift
 @Published var currentUserId: String = "SELF-\(UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString)"
@@ -325,12 +347,14 @@ class ChatXMLParser {
 ```
 
 **Message Retention:**
+
 ```swift
 // In ChatPersistence.swift - messages are stored indefinitely
 // To implement auto-cleanup, add retention policy in ChatManager
 ```
 
 **Unread Badge:**
+
 ```swift
 // In ATAKBottomToolbar - calculated dynamically
 var totalUnreadCount: Int {
@@ -345,42 +369,51 @@ var totalUnreadCount: Int {
 ### Build Errors
 
 **"Cannot find 'ChatView' in scope"**
-- Solution: Add all Chat*.swift files to Xcode project target
+
+- Solution: Add all Chat\*.swift files to Xcode project target
 
 **"Value of type 'TAKService' has no member 'onChatMessageReceived'"**
+
 - Solution: Verify TAKService.swift modifications were saved
 
 **"Cannot find 'showChat' in scope"**
+
 - Solution: Add `@State private var showChat = false` to ATAKMapView
 
 ### Runtime Errors
 
 **Chat button doesn't open chat**
+
 - Check: `.sheet(isPresented: $showChat)` is added
 - Check: `showChat` binding is passed to ATAKBottomToolbar
 
 **Messages not sending**
+
 - Check: TAK server connection is active (green status)
 - Check: `setupChatIntegration()` is called in `.onAppear`
 - Check: Location services are enabled
 
 **Messages not receiving**
+
 - Check: `onChatMessageReceived` callback is set
 - Check: TAKService modifications are correct
 - Check: Other TAK clients are sending b-t-f format
 
 **Unread badge not showing**
+
 - Check: `totalUnreadCount` computed property exists
 - Check: ChatManager is properly observing conversations
 
 ### Data Issues
 
 **Messages disappear after restart**
+
 - Check: ChatPersistence is saving to files
 - Check: File permissions in Documents directory
 - Check: No crashes during save operations
 
 **Duplicate messages**
+
 - Normal: Parser checks for duplicate message IDs
 - If persisting: Check message ID generation
 
@@ -394,6 +427,7 @@ var totalUnreadCount: Int {
 - No pagination implemented (scrollable list loads all messages)
 
 **Recommendations for Production:**
+
 - Add message pagination for large histories
 - Implement background queue for persistence
 - Add message cleanup for old conversations
@@ -409,6 +443,7 @@ var totalUnreadCount: Int {
 - Location data is included in all messages
 
 **For Secure Deployments:**
+
 - Use TLS connections to TAK server
 - Implement app-level encryption for stored messages
 - Consider TAK server authentication certificates
@@ -418,6 +453,7 @@ var totalUnreadCount: Int {
 ## Future Enhancements
 
 Potential additions:
+
 - [ ] Message editing/deletion
 - [ ] Read receipts
 - [ ] Typing indicators
@@ -437,18 +473,21 @@ Potential additions:
 ## Support & Documentation
 
 ### Reference Files
+
 - `CHAT_IMPLEMENTATION_SUMMARY.md` - Complete technical overview
 - `MAPVIEWCONTROLLER_CHANGES.md` - Step-by-step modification guide
 - `MapViewController_Modified.swift` - Complete reference implementation
 - `ATAKBottomToolbar_Modified.swift` - Complete toolbar reference
 
 ### TAK Protocol Resources
+
 - ATAK Developer Documentation
 - TAK Server Administrator Guide
 - CoT XML Schema Reference
 - TAK Protocol Specification
 
 ### Contact
+
 For issues or questions about this implementation, refer to the OmniTAK project documentation.
 
 ---
