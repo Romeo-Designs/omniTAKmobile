@@ -23,6 +23,7 @@ This guide will help you quickly set up OmniTAK Mobile and perform common tasks.
 ## Installation
 
 ### Requirements
+
 - iOS 15.0 or later
 - iPhone 6s or newer, or any iPad supporting iOS 15+
 - Approximately 200 MB free storage (more for offline maps)
@@ -30,6 +31,7 @@ This guide will help you quickly set up OmniTAK Mobile and perform common tasks.
 ### Installation Methods
 
 **TestFlight (Beta):**
+
 1. Install TestFlight from the App Store (if not already installed)
 2. Receive TestFlight invitation link from administrator
 3. Tap link on your iOS device
@@ -37,6 +39,7 @@ This guide will help you quickly set up OmniTAK Mobile and perform common tasks.
 5. Launch OmniTAK Mobile
 
 **App Store:**
+
 1. Open App Store
 2. Search for "OmniTAK Mobile"
 3. Tap "Get" or price button
@@ -68,6 +71,7 @@ On first launch, OmniTAK will request several permissions:
 ```
 
 **Recommended Permissions:**
+
 - ✅ **Location: Allow Always** - Required for background position updates
 - ✅ **Notifications** - For emergency alerts and chat messages
 - ✅ **Camera** - For photo attachments and QR code scanning
@@ -88,6 +92,7 @@ Configure your operator identity:
 **3. Choose Map Type**
 
 Select your preferred base map:
+
 - **Standard**: Apple Maps standard view (default)
 - **Satellite**: Satellite imagery
 - **Hybrid**: Satellite with road overlay
@@ -100,6 +105,7 @@ Select your preferred base map:
 ### Prerequisites
 
 You'll need from your TAK server administrator:
+
 - Server hostname or IP address
 - Port number (typically 8087 or 8089)
 - Protocol type (TCP/TLS)
@@ -108,11 +114,13 @@ You'll need from your TAK server administrator:
 ### Method 1: Manual Configuration
 
 **Step 1: Add Server**
+
 1. Tap **Settings** (gear icon)
 2. Tap **Servers**
 3. Tap **+ Add Server**
 
 **Step 2: Configure Server**
+
 ```
 ┌─────────────────────────────────┐
 │  Add TAK Server                 │
@@ -134,6 +142,7 @@ You'll need from your TAK server administrator:
 ```
 
 **Fill in:**
+
 - **Name**: Friendly name for this server
 - **Host**: IP address (e.g., `192.168.1.100`) or hostname
 - **Port**: Port number (common: `8087` for TCP, `8089` for TLS)
@@ -141,6 +150,7 @@ You'll need from your TAK server administrator:
 - **Certificate**: If TLS, select imported certificate
 
 **Step 3: Connect**
+
 1. Tap **Save**
 2. Server appears in server list
 3. Tap server row to connect
@@ -162,17 +172,20 @@ You'll need from your TAK server administrator:
 ### Verifying Connection
 
 **Connected Successfully:**
+
 - 🟢 Green dot in status bar
 - Server name displayed
 - Message counters active (📤 Sent / 📥 Received)
 
 **Connection Failed:**
+
 - 🔴 Red dot in status bar
 - "Disconnected" message
 - Check server configuration
 - Verify network connectivity
 
 **Quick Connection Test:**
+
 ```swift
 // Your position should broadcast automatically
 // Check status bar for "📤 Sent: 1" after ~30 seconds
@@ -185,10 +198,12 @@ You'll need from your TAK server administrator:
 ### Send to All Chat Rooms
 
 **Step 1: Open Chat**
+
 1. Tap **Chat** icon (speech bubble)
 2. Select **All Chat Rooms** conversation
 
 **Step 2: Compose Message**
+
 ```
 ┌─────────────────────────────────┐
 │  All Chat Rooms              ⓘ  │
@@ -203,6 +218,7 @@ You'll need from your TAK server administrator:
 ```
 
 **Step 3: Send**
+
 1. Type your message
 2. Tap Send button (📤)
 3. Message status: ⏳ → ⬆️ → ✓
@@ -370,10 +386,12 @@ You'll need from your TAK server administrator:
 ### Download a Region
 
 **Step 1: Navigate to Area**
+
 1. Pan/zoom map to desired region
 2. Ensure entire area of interest is visible
 
 **Step 2: Define Region**
+
 1. Tap **Settings** → **Offline Maps**
 2. Tap **+ Download Region**
 3. Adjust region bounds:
@@ -403,7 +421,8 @@ You'll need from your TAK server administrator:
    ```
 
 **Step 3: Configure Download**
-- **Zoom Levels**: 
+
+- **Zoom Levels**:
   - Lower (10-12): Overview, large area
   - Medium (13-15): Tactical detail
   - Higher (16-18): High detail, small area
@@ -411,12 +430,14 @@ You'll need from your TAK server administrator:
 - Review estimated size and time
 
 **Step 4: Start Download**
+
 1. Tap **Download**
 2. Download begins in background
 3. Progress shown in Offline Maps list
 4. Continue using app during download
 
 **Step 5: Verify**
+
 - Checkmark (✓) appears when complete
 - Tap region to view details
 - Test by enabling Airplane Mode
@@ -424,6 +445,7 @@ You'll need from your TAK server administrator:
 ### Manage Downloaded Regions
 
 **View All Regions:**
+
 ```
 ┌─────────────────────────────────┐
 │  Offline Maps                   │
@@ -447,6 +469,7 @@ You'll need from your TAK server administrator:
 ```
 
 **Region Actions:**
+
 - **View on Map** - Center map on region
 - **Refresh** - Re-download updated tiles
 - **Delete** - Remove cached tiles
@@ -701,12 +724,14 @@ Settings → Chat → Clear History → Confirm
 ## Need More Help?
 
 **Documentation:**
+
 - [Full Features Guide](FEATURES.md)
 - [Architecture Documentation](ARCHITECTURE.md)
 - [API Reference](API_REFERENCE.md)
 - [Troubleshooting Guide](TROUBLESHOOTING.md)
 
 **Support:**
+
 - GitHub Issues: [Report a bug](https://github.com/tyroe1998/omniTAKmobile/issues)
 - Community: TAK Discord/Forums
 - Administrator: Contact your TAK server administrator
@@ -717,20 +742,21 @@ Settings → Chat → Clear History → Confirm
 
 **Essential Shortcuts:**
 
-| Action | Method |
-|--------|--------|
-| **Drop Waypoint** | Long press map → Add Waypoint |
-| **Measure Distance** | Tools → Measure → Tap points |
-| **Send Chat** | Chat icon → Select conversation → Type |
-| **Emergency** | Hold red EMERGENCY button |
-| **Navigate** | Tap waypoint → Navigate |
-| **Draw Line** | Tools → Drawing → Line → Tap points |
-| **Connect Server** | Settings → Servers → Select |
-| **Change Map** | Tap layers icon → Select base map |
-| **View MGRS** | Tap coordinate display (toggles formats) |
-| **Screenshot** | iOS: Volume Up + Power button |
+| Action               | Method                                   |
+| -------------------- | ---------------------------------------- |
+| **Drop Waypoint**    | Long press map → Add Waypoint            |
+| **Measure Distance** | Tools → Measure → Tap points             |
+| **Send Chat**        | Chat icon → Select conversation → Type   |
+| **Emergency**        | Hold red EMERGENCY button                |
+| **Navigate**         | Tap waypoint → Navigate                  |
+| **Draw Line**        | Tools → Drawing → Line → Tap points      |
+| **Connect Server**   | Settings → Servers → Select              |
+| **Change Map**       | Tap layers icon → Select base map        |
+| **View MGRS**        | Tap coordinate display (toggles formats) |
+| **Screenshot**       | iOS: Volume Up + Power button            |
 
 **Status Bar Indicators:**
+
 - 🟢 Connected to TAK server
 - 🔴 Disconnected
 - 🟡 Connecting

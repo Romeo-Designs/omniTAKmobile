@@ -26,14 +26,15 @@ This guide covers building the app from source, creating distributions, and depl
 
 ### Required Software
 
-| Software | Version | Purpose |
-|----------|---------|---------|
-| **macOS** | 12.0+ (Monterey) | Development OS |
-| **Xcode** | 14.0+ | IDE and build tools |
-| **Command Line Tools** | Latest | Build utilities |
-| **Git** | 2.x | Version control |
+| Software               | Version          | Purpose             |
+| ---------------------- | ---------------- | ------------------- |
+| **macOS**              | 12.0+ (Monterey) | Development OS      |
+| **Xcode**              | 14.0+            | IDE and build tools |
+| **Command Line Tools** | Latest           | Build utilities     |
+| **Git**                | 2.x              | Version control     |
 
 **Install Xcode:**
+
 ```bash
 # From Mac App Store
 open "macappstores://apps.apple.com/app/xcode/id497799835"
@@ -42,11 +43,13 @@ open "macappstores://apps.apple.com/app/xcode/id497799835"
 ```
 
 **Install Command Line Tools:**
+
 ```bash
 xcode-select --install
 ```
 
 **Verify Installation:**
+
 ```bash
 xcode-select -p
 # Should output: /Applications/Xcode.app/Contents/Developer
@@ -58,12 +61,14 @@ xcodebuild -version
 ### Apple Developer Account
 
 **Required for:**
+
 - Testing on physical devices
 - Creating distribution certificates
 - Submitting to TestFlight
 - Publishing to App Store
 
 **Account Types:**
+
 - **Individual/Organization** ($99/year) - Full access
 - **Enterprise** ($299/year) - Internal distribution only
 - **Free** - Limited (7-day app validity, no TestFlight/App Store)
@@ -85,23 +90,27 @@ cd omniTAKmobile/apps/omnitak
 ### Initial Setup
 
 **1. Run Setup Script**
+
 ```bash
 chmod +x setup_xcode.sh
 ./setup_xcode.sh
 ```
 
 This script:
+
 - Creates necessary directory structure
 - Configures file references in Xcode project
 - Sets up build phases
 - Configures framework embedding
 
 **2. Open Project**
+
 ```bash
 open OmniTAKMobile.xcodeproj
 ```
 
 **3. Select Development Team**
+
 - Click project navigator (OmniTAKMobile)
 - Select "OmniTAKMobile" target
 - Go to "Signing & Capabilities" tab
@@ -111,6 +120,7 @@ open OmniTAKMobile.xcodeproj
 ### Build for Simulator
 
 **Command Line:**
+
 ```bash
 xcodebuild -project OmniTAKMobile.xcodeproj \
   -scheme OmniTAKMobile \
@@ -120,6 +130,7 @@ xcodebuild -project OmniTAKMobile.xcodeproj \
 ```
 
 **Xcode IDE:**
+
 1. Select target: iPhone 15 Pro (simulator)
 2. Product → Build (Cmd + B)
 3. Product → Run (Cmd + R) to launch
@@ -127,6 +138,7 @@ xcodebuild -project OmniTAKMobile.xcodeproj \
 ### Build for Device
 
 **Command Line:**
+
 ```bash
 xcodebuild -project OmniTAKMobile.xcodeproj \
   -scheme OmniTAKMobile \
@@ -136,6 +148,7 @@ xcodebuild -project OmniTAKMobile.xcodeproj \
 ```
 
 **Xcode IDE:**
+
 1. Connect iOS device via USB
 2. Trust device (Settings → General → Device Management)
 3. Select device in Xcode target dropdown
@@ -150,13 +163,14 @@ xcodebuild -project OmniTAKMobile.xcodeproj \
 
 The project includes three build configurations:
 
-| Configuration | Use Case | Optimizations | Debug Info |
-|---------------|----------|---------------|------------|
-| **Debug** | Development | Minimal | Full |
-| **Release** | Distribution | Full | Minimal |
-| **Release-Development** | Beta testing | Full | Some |
+| Configuration           | Use Case     | Optimizations | Debug Info |
+| ----------------------- | ------------ | ------------- | ---------- |
+| **Debug**               | Development  | Minimal       | Full       |
+| **Release**             | Distribution | Full          | Minimal    |
+| **Release-Development** | Beta testing | Full          | Some       |
 
 **Selecting Configuration:**
+
 ```bash
 # In Xcode
 Product → Scheme → Edit Scheme → Run → Build Configuration → [Select]
@@ -170,19 +184,21 @@ xcodebuild -configuration Release ...
 
 **Key Settings:**
 
-| Setting | Value | Location |
-|---------|-------|----------|
-| **Product Name** | `OmniTAKMobile` | General → Identity |
-| **Bundle Identifier** | `com.engindearing.omnitak.test` | General → Identity |
-| **Deployment Target** | `iOS 15.0` | General → Deployment Info |
-| **Swift Version** | `5.0` | Build Settings → Swift Compiler |
+| Setting                | Value                            | Location                        |
+| ---------------------- | -------------------------------- | ------------------------------- |
+| **Product Name**       | `OmniTAKMobile`                  | General → Identity              |
+| **Bundle Identifier**  | `com.engindearing.omnitak.test`  | General → Identity              |
+| **Deployment Target**  | `iOS 15.0`                       | General → Deployment Info       |
+| **Swift Version**      | `5.0`                            | Build Settings → Swift Compiler |
 | **Optimization Level** | `-O` (Release), `-Onone` (Debug) | Build Settings → Swift Compiler |
 
 **Architectures:**
+
 - **iOS Device:** arm64 (64-bit ARM)
 - **iOS Simulator:** x86_64 (Intel), arm64 (Apple Silicon)
 
 **Customizing Bundle Identifier:**
+
 ```bash
 # In Xcode
 Select Project → Select Target → General → Bundle Identifier
@@ -195,6 +211,7 @@ Select Project → Select Target → General → Bundle Identifier
 ### Capabilities & Entitlements
 
 **Required Capabilities:**
+
 - Background Modes
   - ✅ Location updates
   - ✅ Remote notifications
@@ -210,22 +227,22 @@ Select Project → Select Target → General → Bundle Identifier
 <dict>
     <key>aps-environment</key>
     <string>development</string>
-    
+
     <key>com.apple.developer.avfoundation.multitasking-camera-access</key>
     <true/>
-    
+
     <key>com.apple.developer.kernel.increased-memory-limit</key>
     <true/>
-    
+
     <key>com.apple.developer.low-latency-streaming</key>
     <true/>
-    
+
     <key>com.apple.developer.networking.multipath</key>
     <true/>
-    
+
     <key>com.apple.developer.sustained-execution</key>
     <true/>
-    
+
     <key>com.apple.developer.usernotifications.communication</key>
     <true/>
 </dict>
@@ -233,6 +250,7 @@ Select Project → Select Target → General → Bundle Identifier
 ```
 
 **Adding Capabilities:**
+
 1. Select Target
 2. Signing & Capabilities tab
 3. Click "+ Capability"
@@ -247,6 +265,7 @@ Select Project → Select Target → General → Bundle Identifier
 **Format:** `MAJOR.MINOR.PATCH (BUILD)`
 
 **Example:** `1.2.3 (45)`
+
 - **1** = Major version (breaking changes)
 - **2** = Minor version (new features)
 - **3** = Patch version (bug fixes)
@@ -273,6 +292,7 @@ Select Project → Select Target → General → Bundle Identifier
 ```
 
 **Script Content:**
+
 ```bash
 #!/bin/bash
 set -e
@@ -304,6 +324,7 @@ echo "✅ Updated version: $NEW_VERSION ($NEW_BUILD)"
 ### Manual Version Update
 
 **In Xcode:**
+
 1. Select project in navigator
 2. Select target
 3. General tab → Identity section
@@ -311,6 +332,7 @@ echo "✅ Updated version: $NEW_VERSION ($NEW_BUILD)"
 5. **Build**: Build number (e.g., "34")
 
 **In Info.plist:**
+
 ```xml
 <key>CFBundleShortVersionString</key>
 <string>1.2.0</string>
@@ -322,14 +344,14 @@ echo "✅ Updated version: $NEW_VERSION ($NEW_BUILD)"
 
 **When to increment:**
 
-| Change Type | Version | Build |
-|-------------|---------|-------|
-| Major architectural change | ✅ Major | ✅ |
-| Breaking API change | ✅ Major | ✅ |
-| New feature | ✅ Minor | ✅ |
-| Bug fix | ✅ Patch | ✅ |
-| Documentation only | ❌ | ✅ |
-| Internal refactoring | ❌ | ✅ |
+| Change Type                | Version  | Build |
+| -------------------------- | -------- | ----- |
+| Major architectural change | ✅ Major | ✅    |
+| Breaking API change        | ✅ Major | ✅    |
+| New feature                | ✅ Minor | ✅    |
+| Bug fix                    | ✅ Patch | ✅    |
+| Documentation only         | ❌       | ✅    |
+| Internal refactoring       | ❌       | ✅    |
 
 ---
 
@@ -338,11 +360,13 @@ echo "✅ Updated version: $NEW_VERSION ($NEW_BUILD)"
 ### Certificate Types
 
 **Development Certificate:**
+
 - Used for testing on devices
 - Valid for 1 year
 - Can be shared among team members
 
 **Distribution Certificate:**
+
 - Used for App Store and TestFlight
 - Valid for 1 year
 - Should be securely stored
@@ -350,12 +374,14 @@ echo "✅ Updated version: $NEW_VERSION ($NEW_BUILD)"
 ### Automatic Signing (Recommended)
 
 **Enable in Xcode:**
+
 1. Select target → Signing & Capabilities
 2. Check "Automatically manage signing"
 3. Select Team from dropdown
 4. Xcode handles certificates and provisioning profiles
 
 **Advantages:**
+
 - ✅ Simplest approach
 - ✅ Xcode manages profiles automatically
 - ✅ Works for most cases
@@ -363,12 +389,14 @@ echo "✅ Updated version: $NEW_VERSION ($NEW_BUILD)"
 ### Manual Signing (Advanced)
 
 **When to use:**
+
 - Multiple teams
 - Specific provisioning profile requirements
 - Enterprise distribution
 - CI/CD environments
 
 **Steps:**
+
 1. Create certificates in Apple Developer portal
 2. Download and install certificates
 3. Create provisioning profiles
@@ -377,6 +405,7 @@ echo "✅ Updated version: $NEW_VERSION ($NEW_BUILD)"
 6. Select specific profiles for Debug/Release
 
 **Export Certificates:**
+
 ```bash
 # Open Keychain Access
 # Select certificate → File → Export Items
@@ -384,6 +413,7 @@ echo "✅ Updated version: $NEW_VERSION ($NEW_BUILD)"
 ```
 
 **Import on Another Mac:**
+
 ```bash
 # Double-click .p12 file
 # Enter password
@@ -411,6 +441,7 @@ echo "✅ Updated version: $NEW_VERSION ($NEW_BUILD)"
    - Organizer window opens automatically
 
 **Command Line:**
+
 ```bash
 xcodebuild archive \
   -project OmniTAKMobile.xcodeproj \
@@ -435,6 +466,7 @@ OmniTAKMobile.xcarchive/
 ### Export Options
 
 **ExportOptions-Development.plist:**
+
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -442,13 +474,13 @@ OmniTAKMobile.xcarchive/
 <dict>
     <key>method</key>
     <string>development</string>
-    
+
     <key>signingStyle</key>
     <string>automatic</string>
-    
+
     <key>compileBitcode</key>
     <false/>
-    
+
     <key>provisioningProfiles</key>
     <dict>
         <key>com.engindearing.omnitak.test</key>
@@ -459,6 +491,7 @@ OmniTAKMobile.xcarchive/
 ```
 
 **Export Methods:**
+
 - **development** - Ad-hoc distribution to registered devices
 - **app-store** - App Store submission
 - **ad-hoc** - Limited devices without App Store
@@ -567,18 +600,21 @@ fastlane beta
 ### Invite Testers
 
 **Internal Testers:**
+
 - Automatically have access
 - Receive email invitation
 - Install TestFlight app
 - Redeem invitation
 
 **External Testers:**
+
 - Add individually or in bulk
 - Send invitation
 - Testers install TestFlight app
 - Redeem invitation code
 
 **Public Link:**
+
 - Create public link for easy invitations
 - Share link via email, web, social media
 - Testers join automatically
@@ -587,6 +623,7 @@ fastlane beta
 ### Managing TestFlight Builds
 
 **Build Details:**
+
 - Version and build number
 - Upload date
 - Processing status
@@ -596,6 +633,7 @@ fastlane beta
 - Tester feedback
 
 **Actions:**
+
 - Expire build (stop installations)
 - Export compliance info
 - View crash logs
@@ -608,6 +646,7 @@ fastlane beta
 ### Preparation Checklist
 
 **Technical:**
+
 - [ ] App built with Release configuration
 - [ ] Version number updated
 - [ ] Build number incremented
@@ -619,6 +658,7 @@ fastlane beta
 - [ ] Crash rate < 1%
 
 **Assets:**
+
 - [ ] App icon (1024x1024 PNG)
 - [ ] Screenshots for all required devices
   - 6.7" iPhone (iPhone 15 Pro Max)
@@ -629,6 +669,7 @@ fastlane beta
 - [ ] Promotional artwork (optional)
 
 **Metadata:**
+
 - [ ] App name
 - [ ] Subtitle
 - [ ] Description (4000 chars max)
@@ -640,6 +681,7 @@ fastlane beta
 - [ ] Content rating
 
 **Legal:**
+
 - [ ] Privacy policy
 - [ ] Terms of service
 - [ ] Export compliance
@@ -687,10 +729,11 @@ fastlane beta
    - Reorder by dragging
 
 3. **Description**
+
 ```
-OmniTAK Mobile brings tactical awareness to iOS and iPadOS. 
-Connect to TAK servers, exchange Cursor-on-Target (CoT) messages, 
-view real-time positions on military-grade maps, and coordinate 
+OmniTAK Mobile brings tactical awareness to iOS and iPadOS.
+Connect to TAK servers, exchange Cursor-on-Target (CoT) messages,
+view real-time positions on military-grade maps, and coordinate
 with your team.
 
 FEATURES:
@@ -705,22 +748,25 @@ FEATURES:
 • Secure TLS with client certificates
 • Meshtastic mesh network integration
 
-Perfect for military operations, emergency response, training 
+Perfect for military operations, emergency response, training
 exercises, and any scenario requiring tactical coordination.
 ```
 
 4. **Keywords**
+
 ```
-TAK, ATAK, tactical, military, CoT, GeoChat, navigation, map, 
+TAK, ATAK, tactical, military, CoT, GeoChat, navigation, map,
 offline, situational awareness
 ```
 
 5. **Support URL**
+
 ```
 https://github.com/tyroe1998/omniTAKmobile
 ```
 
 6. **Privacy Policy URL**
+
 ```
 https://yourcompany.com/privacy
 ```
@@ -772,23 +818,29 @@ https://yourcompany.com/privacy
 **Common Rejection Reasons:**
 
 ❌ **Crashes or bugs**
+
 - Test thoroughly before submission
 
 ❌ **Incomplete functionality**
+
 - All features must work
 
 ❌ **Misleading content**
+
 - Screenshots/description must match app
 
 ❌ **Privacy violations**
+
 - Must have privacy policy
 - Disclose data collection
 
 ❌ **Design issues**
+
 - Follow Human Interface Guidelines
 - Provide value on all devices
 
 **App Review Time:**
+
 - Typically 24-48 hours
 - Can be faster or slower
 - Holiday seasons slower
@@ -802,6 +854,7 @@ https://yourcompany.com/privacy
 Enterprise distribution allows internal-only deployment without App Store.
 
 **Requirements:**
+
 - Apple Developer Enterprise Program ($299/year)
 - Organization verification by Apple
 - Internal use only (not for public)
@@ -828,6 +881,7 @@ Enterprise distribution allows internal-only deployment without App Store.
 ### Distribution Methods
 
 **Over-the-Air (OTA):**
+
 ```xml
 <!-- manifest.plist -->
 <?xml version="1.0" encoding="UTF-8"?>
@@ -864,6 +918,7 @@ Enterprise distribution allows internal-only deployment without App Store.
 ```
 
 **Installation Link:**
+
 ```html
 <a href="itms-services://?action=download-manifest&url=https://yourserver.com/manifest.plist">
   Install OmniTAK Mobile
@@ -871,6 +926,7 @@ Enterprise distribution allows internal-only deployment without App Store.
 ```
 
 **MDM (Mobile Device Management):**
+
 - Push to managed devices
 - Jamf, AirWatch, MobileIron, etc.
 - Automatic updates
@@ -888,36 +944,36 @@ name: iOS Build
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
 jobs:
   build:
     runs-on: macos-latest
-    
+
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Select Xcode
-      run: sudo xcode-select -s /Applications/Xcode_14.3.app
-    
-    - name: Build
-      run: |
-        cd apps/omnitak
-        xcodebuild -project OmniTAKMobile.xcodeproj \
-          -scheme OmniTAKMobile \
-          -sdk iphonesimulator \
-          -configuration Debug \
-          build
-    
-    - name: Run Tests
-      run: |
-        xcodebuild test \
-          -project OmniTAKMobile.xcodeproj \
-          -scheme OmniTAKMobile \
-          -sdk iphonesimulator \
-          -destination 'platform=iOS Simulator,name=iPhone 15 Pro'
+      - uses: actions/checkout@v3
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_14.3.app
+
+      - name: Build
+        run: |
+          cd apps/omnitak
+          xcodebuild -project OmniTAKMobile.xcodeproj \
+            -scheme OmniTAKMobile \
+            -sdk iphonesimulator \
+            -configuration Debug \
+            build
+
+      - name: Run Tests
+        run: |
+          xcodebuild test \
+            -project OmniTAKMobile.xcodeproj \
+            -scheme OmniTAKMobile \
+            -sdk iphonesimulator \
+            -destination 'platform=iOS Simulator,name=iPhone 15 Pro'
 ```
 
 ### Fastlane Automation
@@ -956,8 +1012,9 @@ end
 ### Common Build Errors
 
 **"No signing certificate found"**
+
 ```
-Solution: 
+Solution:
 1. Xcode → Preferences → Accounts
 2. Select Apple ID
 3. Click "Manage Certificates"
@@ -965,6 +1022,7 @@ Solution:
 ```
 
 **"Provisioning profile doesn't include signing certificate"**
+
 ```
 Solution:
 1. Enable "Automatically manage signing"
@@ -973,6 +1031,7 @@ Solution:
 ```
 
 **"Command PhaseScriptExecution failed"**
+
 ```
 Solution:
 1. Review build script output
@@ -981,6 +1040,7 @@ Solution:
 ```
 
 **"Framework not found"**
+
 ```
 Solution:
 1. Project → Target → General → Frameworks
@@ -989,6 +1049,7 @@ Solution:
 ```
 
 **Swift compiler errors after update**
+
 ```
 Solution:
 1. Clean build folder (Cmd + Shift + K)
@@ -1000,12 +1061,14 @@ Solution:
 ### Performance Issues
 
 **Slow builds:**
+
 - Enable parallel builds: Build Settings → Build Options → Parallelize Build
 - Increase derivedDataPath size
 - Use SSD for DerivedData
 - Close other applications
 
 **Large app size:**
+
 - Enable App Thinning (automatic)
 - Remove unused assets
 - Optimize images
@@ -1028,6 +1091,7 @@ Key deployment steps:
 9. ✅ **Release** - Publish after approval
 
 **Typical Timeline:**
+
 - Build & upload: 30 minutes
 - TestFlight processing: 10-60 minutes
 - Beta testing: 1-2 weeks

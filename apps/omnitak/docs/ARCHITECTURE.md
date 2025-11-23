@@ -88,10 +88,10 @@ struct ChatMessage: Codable, Identifiable {
 class ChatManager: ObservableObject {
     @Published var messages: [ChatMessage] = []
     @Published var conversations: [Conversation] = []
-    
+
     private let chatService: ChatService
     private let takService: TAKService
-    
+
     func sendMessage(text: String, to conversationId: String) {
         // Coordinate with services
         chatService.sendGeoChat(text: text, conversationId: conversationId)
@@ -101,7 +101,7 @@ class ChatManager: ObservableObject {
 // VIEW - SwiftUI declarative UI
 struct ChatView: View {
     @StateObject private var chatManager = ChatManager.shared
-    
+
     var body: some View {
         List(chatManager.messages) { message in
             MessageRow(message: message)
@@ -111,6 +111,7 @@ struct ChatView: View {
 ```
 
 **Benefits:**
+
 - Clear separation between UI and business logic
 - Testable view models without UI dependencies
 - Reactive UI updates via Combine
@@ -131,6 +132,7 @@ class ChatManager: ObservableObject {
 ```
 
 **Singletons in OmniTAK:**
+
 - `ChatManager.shared`
 - `ServerManager.shared`
 - `CertificateManager.shared`
@@ -149,7 +151,7 @@ class ChatManager: ObservableObject {
 // Service publishes events
 class PositionBroadcastService {
     let positionUpdatePublisher = PassthroughSubject<CoTEvent, Never>()
-    
+
     func broadcastPosition() {
         let event = createPositionCoT()
         positionUpdatePublisher.send(event)
@@ -159,7 +161,7 @@ class PositionBroadcastService {
 // Manager subscribes
 class MapStateManager: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
-    
+
     func observePositionUpdates() {
         PositionBroadcastService.shared.positionUpdatePublisher
             .sink { [weak self] event in
@@ -177,7 +179,7 @@ The map system uses a coordinator to manage complex interactions between map vie
 ```swift
 class MapOverlayCoordinator {
     private weak var mapView: MKMapView?
-    
+
     func addMarker(_ marker: EnhancedCoTMarker) { }
     func updateMarker(_ marker: EnhancedCoTMarker) { }
     func removeMarker(uid: String) { }
@@ -194,17 +196,20 @@ class MapOverlayCoordinator {
 **Location:** `OmniTAKMobile/Views/`, `OmniTAKMobile/UI/`
 
 **Components:**
+
 - **60+ SwiftUI Views** - Screens and components
 - **UIKit Controllers** - Map view controllers and legacy components
 - **UI Components** - Reusable widgets (MilStd2525, RadialMenu)
 
 **Responsibilities:**
+
 - Render UI based on view model state
 - Capture user interactions
 - Display loading states and errors
 - Navigate between screens
 
 **Example Structure:**
+
 ```
 Views/
 ├── Map/
@@ -231,39 +236,40 @@ Views/
 
 **11 Manager Classes:**
 
-| Manager | Responsibilities | Lines of Code |
-|---------|-----------------|---------------|
-| **ChatManager** | Message state, conversations, delivery tracking | 891 |
-| **ServerManager** | TAK server configuration, active server selection | 154 |
-| **CertificateManager** | Certificate storage, keychain management | 436 |
-| **OfflineMapManager** | Map region downloads, tile caching | 371 |
-| **DrawingToolsManager** | Drawing state (marker, line, circle, polygon) | 264 |
-| **GeofenceManager** | Geofence storage and state updates | ~200 |
-| **WaypointManager** | Waypoint management | ~150 |
-| **MeshtasticManager** | Mesh network device connection and state | 613 |
-| **MeasurementManager** | Measurement tool state | ~100 |
-| **DataPackageManager** | Data package import/export | ~200 |
-| **CoTFilterManager** | CoT message filtering criteria | ~100 |
+| Manager                 | Responsibilities                                  | Lines of Code |
+| ----------------------- | ------------------------------------------------- | ------------- |
+| **ChatManager**         | Message state, conversations, delivery tracking   | 891           |
+| **ServerManager**       | TAK server configuration, active server selection | 154           |
+| **CertificateManager**  | Certificate storage, keychain management          | 436           |
+| **OfflineMapManager**   | Map region downloads, tile caching                | 371           |
+| **DrawingToolsManager** | Drawing state (marker, line, circle, polygon)     | 264           |
+| **GeofenceManager**     | Geofence storage and state updates                | ~200          |
+| **WaypointManager**     | Waypoint management                               | ~150          |
+| **MeshtasticManager**   | Mesh network device connection and state          | 613           |
+| **MeasurementManager**  | Measurement tool state                            | ~100          |
+| **DataPackageManager**  | Data package import/export                        | ~200          |
+| **CoTFilterManager**    | CoT message filtering criteria                    | ~100          |
 
 **Common Pattern:**
+
 ```swift
 class FeatureManager: ObservableObject {
     // MARK: - Published State
     @Published var items: [Item] = []
     @Published var isLoading: Bool = false
     @Published var error: String?
-    
+
     // MARK: - Dependencies
     private let service: FeatureService
     private var cancellables = Set<AnyCancellable>()
-    
+
     // MARK: - Initialization
     static let shared = FeatureManager()
     private init() {
         service = FeatureService()
         setupObservers()
     }
-    
+
     // MARK: - Public Methods
     func performAction() {
         service.doSomething()
@@ -287,6 +293,7 @@ class FeatureManager: ObservableObject {
 **27 Service Classes:**
 
 **Core Services:**
+
 - **TAKService** (1105 lines) - Core network connectivity, CoT send/receive
 - **PositionBroadcastService** (398 lines) - Automatic PLI broadcasting
 - **EmergencyBeaconService** (417 lines) - Emergency alert system
@@ -294,12 +301,14 @@ class FeatureManager: ObservableObject {
 - **CertificateEnrollmentService** - QR code-based certificate enrollment
 
 **Navigation Services:**
+
 - **RoutePlanningService** - Route creation and optimization
 - **NavigationService** - Turn-by-turn navigation
 - **TurnByTurnNavigationService** - Voice guidance
 - **WaypointNavigationService** - Waypoint sequencing
 
 **Map Services:**
+
 - **ElevationProfileService** - Elevation calculations
 - **LineOfSightService** - LOS analysis
 - **TerrainVisualizationService** - 3D terrain
@@ -309,6 +318,7 @@ class FeatureManager: ObservableObject {
 - **RangeBearingService** - Range ring calculations
 
 **Integration Services:**
+
 - **MissionPackageSyncService** - Mission data sync
 - **ArcGISFeatureService** - ArcGIS integration
 - **ArcGISPortalService** - ArcGIS portal access
@@ -317,12 +327,14 @@ class FeatureManager: ObservableObject {
 - **PhotoAttachmentService** - Image handling
 
 **Utility Services:**
+
 - **TeamService** - Team management
 - **EchelonService** - Military unit echelons
 - **PointDropperService** - Point placement
 - **NetworkStatusService** - Connectivity monitoring
 
 **Responsibilities:**
+
 - Implement core business logic
 - Interact with external APIs and services
 - Perform complex calculations
@@ -336,6 +348,7 @@ class FeatureManager: ObservableObject {
 **Components:**
 
 **Models (23 files):**
+
 ```
 ChatModels.swift           (259 lines)
 PointMarkerModels.swift    (377 lines)
@@ -354,6 +367,7 @@ ArcGISModels.swift
 ```
 
 **CoT Processing:**
+
 ```
 CoT/
 ├── CoTMessageParser.swift      (396 lines) - Parse XML to models
@@ -370,6 +384,7 @@ CoT/
 ```
 
 **Storage (5 managers):**
+
 ```
 Storage/
 ├── ChatPersistence.swift
@@ -380,6 +395,7 @@ Storage/
 ```
 
 **Utilities:**
+
 ```
 Utilities/
 ├── Calculators/        - Distance, bearing, MGRS conversion
@@ -428,15 +444,16 @@ SwiftUI Views auto-refresh
 ```
 
 **Code Example:**
+
 ```swift
 // TAKService.swift
 func receiveLoop() {
     connection.receive(minimumIncompleteLength: 1, maximumLength: 65536) { data, _, _, error in
         guard let data = data else { return }
-        
+
         // Accumulate buffer
         self.receiveBuffer.append(data)
-        
+
         // Extract complete XML messages
         while let xmlString = self.extractXMLMessage() {
             DispatchQueue.main.async {
@@ -447,7 +464,7 @@ func receiveLoop() {
                 }
             }
         }
-        
+
         // Continue receiving
         self.receiveLoop()
     }
@@ -485,6 +502,7 @@ TAK Server
 ```
 
 **Code Example:**
+
 ```swift
 // ChatManager.swift
 func sendMessage(text: String, to conversationId: String) {
@@ -496,15 +514,15 @@ func sendMessage(text: String, to conversationId: String) {
         timestamp: Date(),
         status: .sending
     )
-    
+
     messages.append(message)
-    
+
     // Generate CoT XML
     let xml = ChatCoTGenerator.generate(message)
-    
+
     // Send via TAK service
     TAKService.shared.sendCoT(xml)
-    
+
     // Update status
     updateMessageStatus(message.id, status: .sent)
 }
@@ -526,11 +544,12 @@ SwiftUI automatically re-renders
 ```
 
 **Example:**
+
 ```swift
 // Service
 class TAKService: ObservableObject {
     @Published var connectionStatus: ConnectionStatus = .disconnected
-    
+
     func connect() {
         connectionStatus = .connecting
         // ... establish connection
@@ -541,7 +560,7 @@ class TAKService: ObservableObject {
 // View automatically updates when status changes
 struct StatusBar: View {
     @ObservedObject var takService: TAKService
-    
+
     var body: some View {
         Text(takService.connectionStatus.description)
             .foregroundColor(takService.connectionStatus.color)
@@ -558,12 +577,14 @@ struct StatusBar: View {
 **Publisher Types:**
 
 1. **@Published** - Automatic property observation
+
    ```swift
    @Published var messages: [ChatMessage] = []
    // Automatically creates publisher: $messages
    ```
 
 2. **PassthroughSubject** - Manual event emission
+
    ```swift
    let eventPublisher = PassthroughSubject<CoTEvent, Never>()
    eventPublisher.send(event)  // Emit event
@@ -612,6 +633,7 @@ service.dataPublisher
 ### State Ownership
 
 **Single Source of Truth:**
+
 - Each piece of state is owned by exactly one manager
 - Views observe state, never mutate directly
 - Changes flow through manager methods
@@ -625,6 +647,7 @@ chatManager.messages.append(newMessage)  // Direct mutation
 ```
 
 **State Hierarchy:**
+
 ```
 Application State (App-wide)
     ├─ ServerManager.activeServer
@@ -647,6 +670,7 @@ Application State (App-wide)
 ### TCP/UDP/TLS Implementation
 
 **Network Stack:**
+
 ```
 TAKService (high-level interface)
     │
@@ -669,20 +693,20 @@ func connect(host: String, port: UInt16, useTLS: Bool) {
         host: NWEndpoint.Host(host),
         port: NWEndpoint.Port(rawValue: port)!
     )
-    
+
     let parameters: NWParameters
     if useTLS {
         parameters = configureTLSParameters()
     } else {
         parameters = .tcp
     }
-    
+
     let connection = NWConnection(to: endpoint, using: parameters)
-    
+
     connection.stateUpdateHandler = { [weak self] state in
         self?.handleConnectionState(state)
     }
-    
+
     connection.start(queue: .global(qos: .userInitiated))
 }
 ```
@@ -692,7 +716,7 @@ func connect(host: String, port: UInt16, useTLS: Bool) {
 ```swift
 func configureTLSParameters() -> NWParameters {
     let options = NWProtocolTLS.Options()
-    
+
     // Set minimum TLS version
     if allowLegacyTLS {
         sec_protocol_options_set_min_tls_protocol_version(
@@ -705,7 +729,7 @@ func configureTLSParameters() -> NWParameters {
             .TLSv12
         )
     }
-    
+
     // Client certificate
     if let identity = loadCertificateIdentity() {
         sec_protocol_options_set_local_identity(
@@ -713,7 +737,7 @@ func configureTLSParameters() -> NWParameters {
             identity
         )
     }
-    
+
     // Server verification
     sec_protocol_options_set_verify_block(
         options.securityProtocolOptions,
@@ -723,7 +747,7 @@ func configureTLSParameters() -> NWParameters {
         },
         .global()
     )
-    
+
     let parameters = NWParameters(tls: options, tcp: .init())
     return parameters
 }
@@ -743,17 +767,17 @@ func extractXMLMessage() -> String? {
     guard let startRange = receiveBuffer.range(of: "<?xml".data(using: .utf8)!) else {
         return nil
     }
-    
+
     guard let endRange = receiveBuffer.range(
         of: "</event>".data(using: .utf8)!,
         in: startRange.lowerBound..<receiveBuffer.endIndex
     ) else {
         return nil
     }
-    
+
     let xmlData = receiveBuffer[startRange.lowerBound...endRange.upperBound]
     receiveBuffer.removeSubrange(startRange.lowerBound...endRange.upperBound)
-    
+
     return String(data: xmlData, encoding: .utf8)
 }
 ```
@@ -761,6 +785,7 @@ func extractXMLMessage() -> String? {
 ### Multi-Server Federation
 
 **Architecture:**
+
 - Each server has its own `DirectTCPSender` instance
 - `TAKService` maintains array of active connections
 - Outbound messages broadcast to all connected servers
@@ -770,13 +795,13 @@ func extractXMLMessage() -> String? {
 class TAKService: ObservableObject {
     private var connections: [UUID: DirectTCPSender] = [:]
     @Published var activeServers: [TAKServer] = []
-    
+
     func connectToServer(_ server: TAKServer) {
         let sender = DirectTCPSender()
         sender.connect(server.host, server.port, server.useTLS)
         connections[server.id] = sender
     }
-    
+
     func broadcastCoT(_ xml: String) {
         for sender in connections.values {
             sender.send(xml)
@@ -825,15 +850,15 @@ class CoTMessageParser {
         guard let xmlData = xmlString.data(using: .utf8) else {
             return nil
         }
-        
+
         let parser = XMLParser(data: xmlData)
         let delegate = CoTParserDelegate()
         parser.delegate = delegate
-        
+
         guard parser.parse() else {
             return nil
         }
-        
+
         return delegate.cotEvent
     }
 }
@@ -843,7 +868,7 @@ class CoTParserDelegate: NSObject, XMLParserDelegate {
     private var currentElement: String = ""
     private var eventAttributes: [String: String] = [:]
     private var detailDict: [String: Any] = [:]
-    
+
     func parser(
         _ parser: XMLParser,
         didStartElement elementName: String,
@@ -852,7 +877,7 @@ class CoTParserDelegate: NSObject, XMLParserDelegate {
         attributes attributeDict: [String : String]
     ) {
         currentElement = elementName
-        
+
         switch elementName {
         case "event":
             eventAttributes = attributeDict
@@ -866,7 +891,7 @@ class CoTParserDelegate: NSObject, XMLParserDelegate {
             break
         }
     }
-    
+
     func parserDidEndDocument(_ parser: XMLParser) {
         // Build CoTEvent from accumulated data
         cotEvent = CoTEvent(
@@ -886,44 +911,44 @@ class CoTParserDelegate: NSObject, XMLParserDelegate {
 // CoTEventHandler.swift (333 lines)
 class CoTEventHandler {
     static let shared = CoTEventHandler()
-    
+
     func handleEvent(_ event: CoTEvent) {
         // Apply filters
         guard CoTFilterManager.shared.shouldDisplay(event) else {
             return
         }
-        
+
         // Route based on type
         let typePrefix = String(event.type.prefix(3))
-        
+
         switch typePrefix {
         case "a-f", "a-h", "a-n", "a-u":
             // Position update
             handlePositionUpdate(event)
-            
+
         case "b-t":
             // Chat message
             handleChatMessage(event)
-            
+
         case "b-a":
             // Alert/Emergency
             handleEmergency(event)
-            
+
         case "b-m-p-w":
             // Waypoint
             handleWaypoint(event)
-            
+
         default:
             print("⚠️ Unknown CoT type: \(event.type)")
         }
     }
-    
+
     private func handlePositionUpdate(_ event: CoTEvent) {
         DispatchQueue.main.async {
             // Update or create marker
             let marker = EnhancedCoTMarker(from: event)
             MapStateManager.shared.updateMarker(marker)
-            
+
             // Update team member position
             TeamService.shared.updateMemberPosition(
                 uid: event.uid,
@@ -931,12 +956,12 @@ class CoTEventHandler {
             )
         }
     }
-    
+
     private func handleChatMessage(_ event: CoTEvent) {
         guard let chatDetail = event.detail.chatDetail else {
             return
         }
-        
+
         DispatchQueue.main.async {
             let message = ChatMessage(from: chatDetail)
             ChatManager.shared.addReceivedMessage(message)
@@ -952,6 +977,7 @@ class CoTEventHandler {
 ### MapKit Integration
 
 **Hybrid Architecture:**
+
 - SwiftUI wrapper (`ATAKMapView`) for modern interface
 - UIKit `MKMapView` for actual map rendering
 - Custom overlays and annotations
@@ -980,13 +1006,13 @@ EnhancedMapViewController (UIKit)
 // ATAKMapView.swift (SwiftUI)
 struct ATAKMapView: View {
     @StateObject private var mapState = MapStateManager.shared
-    
+
     var body: some View {
         ZStack {
             // Map canvas
             MapViewRepresentable(mapState: mapState)
                 .ignoresSafeArea()
-            
+
             // Overlays
             VStack {
                 ATAKStatusBar()
@@ -1000,13 +1026,13 @@ struct ATAKMapView: View {
 // MapViewRepresentable.swift
 struct MapViewRepresentable: UIViewControllerRepresentable {
     let mapState: MapStateManager
-    
+
     func makeUIViewController(context: Context) -> EnhancedMapViewController {
         let controller = EnhancedMapViewController()
         controller.configure(with: mapState)
         return controller
     }
-    
+
     func updateUIViewController(_ uiViewController: EnhancedMapViewController, context: Context) {
         // Update map based on state changes
     }
@@ -1034,29 +1060,29 @@ struct MapViewRepresentable: UIViewControllerRepresentable {
 // MilStd2525MarkerView.swift (SwiftUI)
 struct MilStd2525MarkerView: View {
     let marker: EnhancedCoTMarker
-    
+
     var body: some View {
         ZStack {
             // Affiliation frame
             affiliationShape()
                 .fill(affiliationColor())
                 .frame(width: 40, height: 40)
-            
+
             // Unit type icon
             Image(systemName: unitTypeIcon())
                 .foregroundColor(.white)
-            
+
             // Echelon indicator (top)
             echelonIndicator()
                 .offset(y: -25)
-            
+
             // Callsign label (bottom)
             Text(marker.callsign)
                 .font(.caption)
                 .offset(y: 30)
         }
     }
-    
+
     private func affiliationShape() -> some Shape {
         switch marker.affiliation {
         case .friendly:  return RoundedRectangle(cornerRadius: 4)  // Rectangle
@@ -1065,7 +1091,7 @@ struct MilStd2525MarkerView: View {
         case .unknown:   return Quatrefoil()
         }
     }
-    
+
     private func affiliationColor() -> Color {
         switch marker.affiliation {
         case .friendly: return .blue
@@ -1091,7 +1117,7 @@ protocol TileProvider {
 // ArcGIS Implementation
 class ArcGISTileProvider: TileProvider {
     let serviceURL: String
-    
+
     func tileURL(x: Int, y: Int, zoom: Int) -> URL? {
         URL(string: "\(serviceURL)/tile/\(zoom)/\(y)/\(x)")
     }
@@ -1123,16 +1149,16 @@ class OfflineTileProvider: TileProvider {
 
 ### Storage Strategy
 
-| Data Type | Storage Method | Location | Reason |
-|-----------|---------------|----------|---------|
-| **Settings** | UserDefaults | Standard defaults | Lightweight, simple |
-| **Certificates** | Keychain | Secure enclave | Security requirement |
-| **Chat History** | JSON files | Documents/ | Structured, queryable |
-| **Drawings** | JSON files | Documents/ | Structured, queryable |
-| **Routes** | JSON files | Documents/ | Structured, queryable |
-| **Teams** | JSON files | Documents/ | Structured, queryable |
-| **Map Tiles** | File system | Documents/OfflineMaps/ | Large binary data |
-| **Photos** | File system | Documents/Attachments/ | Large binary data |
+| Data Type        | Storage Method | Location               | Reason                |
+| ---------------- | -------------- | ---------------------- | --------------------- |
+| **Settings**     | UserDefaults   | Standard defaults      | Lightweight, simple   |
+| **Certificates** | Keychain       | Secure enclave         | Security requirement  |
+| **Chat History** | JSON files     | Documents/             | Structured, queryable |
+| **Drawings**     | JSON files     | Documents/             | Structured, queryable |
+| **Routes**       | JSON files     | Documents/             | Structured, queryable |
+| **Teams**        | JSON files     | Documents/             | Structured, queryable |
+| **Map Tiles**    | File system    | Documents/OfflineMaps/ | Large binary data     |
+| **Photos**       | File system    | Documents/Attachments/ | Large binary data     |
 
 ### Persistence Implementation
 
@@ -1141,18 +1167,18 @@ class OfflineTileProvider: TileProvider {
 class ChatPersistence {
     private static let messagesFilename = "chat_messages.json"
     private static let conversationsFilename = "conversations.json"
-    
+
     static func saveMessages(_ messages: [ChatMessage]) {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
-        
+
         guard let data = try? encoder.encode(messages) else {
             print("❌ Failed to encode messages")
             return
         }
-        
+
         let url = documentsDirectory.appendingPathComponent(messagesFilename)
-        
+
         do {
             try data.write(to: url, options: .atomic)
             print("✅ Saved \(messages.count) messages")
@@ -1160,20 +1186,20 @@ class ChatPersistence {
             print("❌ Failed to save messages: \(error)")
         }
     }
-    
+
     static func loadMessages() -> [ChatMessage] {
         let url = documentsDirectory.appendingPathComponent(messagesFilename)
-        
+
         guard let data = try? Data(contentsOf: url) else {
             return []
         }
-        
+
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-        
+
         return (try? decoder.decode([ChatMessage].self, from: data)) ?? []
     }
-    
+
     private static var documentsDirectory: URL {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
     }
@@ -1192,29 +1218,29 @@ class CertificateManager {
             kSecValueData as String: certData,
             kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked
         ]
-        
+
         // Delete existing
         SecItemDelete(query as CFDictionary)
-        
+
         // Add new
         let status = SecItemAdd(query as CFDictionary, nil)
         return status == errSecSuccess
     }
-    
+
     func loadCertificate(name: String) -> Data? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: name,
             kSecReturnData as String: true
         ]
-        
+
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
-        
+
         guard status == errSecSuccess, let data = result as? Data else {
             return nil
         }
-        
+
         return data
     }
 }
@@ -1227,6 +1253,7 @@ class CertificateManager {
 ### Main Thread Rules
 
 **Always on Main Thread:**
+
 - UI updates (SwiftUI, UIKit)
 - `@Published` property updates
 - `ObservableObject` state changes
@@ -1246,16 +1273,18 @@ DispatchQueue.global().async {
 ### Background Operations
 
 **Network I/O:**
+
 ```swift
 // NWConnection automatically uses background queue
 connection.start(queue: .global(qos: .userInitiated))
 ```
 
 **File I/O:**
+
 ```swift
 DispatchQueue.global(qos: .utility).async {
     let data = heavyFileOperation()
-    
+
     DispatchQueue.main.async {
         self.updateUI(with: data)
     }
@@ -1263,11 +1292,12 @@ DispatchQueue.global(qos: .utility).async {
 ```
 
 **Async/Await (iOS 15+):**
+
 ```swift
 Task {
     // Background work
     let result = await fetchData()
-    
+
     // Main actor for UI updates
     await MainActor.run {
         self.data = result
@@ -1287,7 +1317,7 @@ Task {
 // ❌ STRONG REFERENCE CYCLE
 class Manager {
     var closure: (() -> Void)?
-    
+
     func setup() {
         closure = {
             self.doSomething()  // Strong reference to self
@@ -1298,7 +1328,7 @@ class Manager {
 // ✅ WEAK SELF
 class Manager {
     var closure: (() -> Void)?
-    
+
     func setup() {
         closure = { [weak self] in
             self?.doSomething()  // Weak reference, breaks cycle
@@ -1312,7 +1342,7 @@ class Manager {
 ```swift
 class MyManager: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
-    
+
     func observe() {
         service.publisher
             .sink { [weak self] value in  // Prevent retain cycle
@@ -1326,11 +1356,13 @@ class MyManager: ObservableObject {
 ### Large Data Handling
 
 **Map Tiles:**
+
 - Tiles loaded on-demand
 - LRU cache for recent tiles
 - Automatic purging on memory warning
 
 **CoT Messages:**
+
 - Limit stored history (e.g., 1000 most recent)
 - Paginated loading for chat history
 - Automatic cleanup of old data
@@ -1348,9 +1380,10 @@ OmniTAK Mobile's architecture demonstrates:
 ✅ **Hybrid SwiftUI/UIKit** map system for performance  
 ✅ **Persistent storage** with appropriate technologies for each data type  
 ✅ **Thread-safe operations** with proper main thread discipline  
-✅ **Memory-efficient** design with ARC and weak references  
+✅ **Memory-efficient** design with ARC and weak references
 
 The architecture is designed to be:
+
 - **Maintainable** - Clear responsibilities and separation
 - **Testable** - Protocols and dependency injection
 - **Scalable** - Easy to add new features

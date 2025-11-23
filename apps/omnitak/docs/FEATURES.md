@@ -35,24 +35,25 @@ The Cursor-on-Target (CoT) protocol is the foundation of TAK interoperability. O
 
 ### Supported CoT Event Types
 
-| Type Prefix | Category | Description | Examples |
-|-------------|----------|-------------|----------|
-| **a-f-*** | Friendly Units | Blue force positions | `a-f-G-U-C-I` (Infantry) |
-| **a-h-*** | Hostile Units | Red force positions | `a-h-G-E-V-A` (Armor) |
-| **a-n-*** | Neutral Units | Green force positions | `a-n-G` (Neutral) |
-| **a-u-*** | Unknown Units | Yellow force positions | `a-u-G` (Unknown) |
-| **b-t-f** | Chat/Text | GeoChat messages | `b-t-f` (Text message) |
-| **b-a-*** | Alerts | Emergency alerts | `b-a-o-can` (Cancel), `b-a-o-tac` (Emergency) |
-| **b-m-p-w** | Waypoints | Map waypoints | `b-m-p-w` (Waypoint marker) |
+| Type Prefix | Category       | Description            | Examples                                      |
+| ----------- | -------------- | ---------------------- | --------------------------------------------- |
+| **a-f-\***  | Friendly Units | Blue force positions   | `a-f-G-U-C-I` (Infantry)                      |
+| **a-h-\***  | Hostile Units  | Red force positions    | `a-h-G-E-V-A` (Armor)                         |
+| **a-n-\***  | Neutral Units  | Green force positions  | `a-n-G` (Neutral)                             |
+| **a-u-\***  | Unknown Units  | Yellow force positions | `a-u-G` (Unknown)                             |
+| **b-t-f**   | Chat/Text      | GeoChat messages       | `b-t-f` (Text message)                        |
+| **b-a-\***  | Alerts         | Emergency alerts       | `b-a-o-can` (Cancel), `b-a-o-tac` (Emergency) |
+| **b-m-p-w** | Waypoints      | Map waypoints          | `b-m-p-w` (Waypoint marker)                   |
 
 ### CoT Message Structure
 
 **Example Position Update:**
+
 ```xml
 <?xml version="1.0"?>
-<event version="2.0" uid="ANDROID-12345678" 
-       type="a-f-G-U-C-I" time="2025-11-23T10:30:00Z" 
-       start="2025-11-23T10:30:00Z" stale="2025-11-23T10:33:00Z" 
+<event version="2.0" uid="ANDROID-12345678"
+       type="a-f-G-U-C-I" time="2025-11-23T10:30:00Z"
+       start="2025-11-23T10:30:00Z" stale="2025-11-23T10:33:00Z"
        how="m-g">
     <point lat="38.8977" lon="-77.0365" hae="50.0" ce="10.0" le="5.0"/>
     <detail>
@@ -66,6 +67,7 @@ The Cursor-on-Target (CoT) protocol is the foundation of TAK interoperability. O
 ```
 
 **Key Fields:**
+
 - **uid** - Unique identifier for the entity
 - **type** - CoT type string (determines icon and affiliation)
 - **time** - Event timestamp (ISO 8601 UTC)
@@ -86,11 +88,13 @@ The Cursor-on-Target (CoT) protocol is the foundation of TAK interoperability. O
 ### Server Configuration
 
 **Supported Protocols:**
+
 - **TCP** - Unencrypted TCP connection
 - **UDP** - Connectionless UDP (less common)
 - **TLS** - Encrypted TCP with TLS 1.2/1.3
 
 **Configuration Fields:**
+
 ```swift
 struct TAKServer {
     var name: String              // Display name
@@ -104,6 +108,7 @@ struct TAKServer {
 ```
 
 **Common TAK Server Ports:**
+
 - **8087** - TCP (unencrypted)
 - **8089** - TLS (encrypted with client certificate)
 - **4242** - Alternative UDP port
@@ -113,17 +118,20 @@ struct TAKServer {
 OmniTAK supports connecting to multiple TAK servers simultaneously.
 
 **Use Cases:**
+
 - Connect to multiple tactical networks
 - Bridge between classified and unclassified networks
 - Redundant connectivity for reliability
 
 **Behavior:**
+
 - Outbound CoT messages broadcast to ALL connected servers
 - Inbound messages from any server processed identically
 - Each server has independent connection state
 - Automatic reconnection on failure
 
 **Code Example:**
+
 ```swift
 // Add multiple servers
 let server1 = TAKServer(name: "Primary", host: "192.168.1.10", port: 8089, useTLS: true)
@@ -143,12 +151,14 @@ TAKService.shared.broadcastCoT(cotXML)
 ### Connection Status Monitoring
 
 **Connection States:**
+
 - **Disconnected** - No connection established
 - **Connecting** - Connection in progress
 - **Connected** - Active connection, exchanging data
 - **Error** - Connection failed or lost
 
 **Status Indicators:**
+
 - Green dot = Connected
 - Yellow dot = Connecting
 - Red dot = Disconnected/Error
@@ -160,15 +170,15 @@ TAKService.shared.broadcastCoT(cotXML)
 
 ### Map Modes
 
-| Mode | Description | Activation |
-|------|-------------|------------|
-| **Normal** | Standard map interaction (pan, zoom) | Default |
-| **Cursor** | Crosshair cursor for precise targeting | Tap cursor button |
-| **Drawing** | Active drawing mode (line, polygon, etc.) | Select drawing tool |
-| **Measurement** | Measure distances and bearings | Tap measure tool |
-| **Range Bearing** | Calculate range and bearing to point | Long press + select |
-| **Point Drop** | Drop markers at location | Tap point drop button |
-| **Track Recording** | Record breadcrumb trail | Enable track recording |
+| Mode                | Description                               | Activation             |
+| ------------------- | ----------------------------------------- | ---------------------- |
+| **Normal**          | Standard map interaction (pan, zoom)      | Default                |
+| **Cursor**          | Crosshair cursor for precise targeting    | Tap cursor button      |
+| **Drawing**         | Active drawing mode (line, polygon, etc.) | Select drawing tool    |
+| **Measurement**     | Measure distances and bearings            | Tap measure tool       |
+| **Range Bearing**   | Calculate range and bearing to point      | Long press + select    |
+| **Point Drop**      | Drop markers at location                  | Tap point drop button  |
+| **Track Recording** | Record breadcrumb trail                   | Enable track recording |
 
 ### MIL-STD-2525 Symbology
 
@@ -183,6 +193,7 @@ Friendly (Blue)          Hostile (Red)           Neutral (Green)         Unknown
 ```
 
 **Unit Types (SF Symbols):**
+
 - `person.fill` - Infantry
 - `car.fill` - Wheeled vehicle
 - `airplane` - Aviation
@@ -191,6 +202,7 @@ Friendly (Blue)          Hostile (Red)           Neutral (Green)         Unknown
 - Custom icons for specialized units
 
 **Echelon Indicators:**
+
 - No indicator - Individual
 - **•** - Team/Crew (2-4 personnel)
 - **••** - Squad (8-13 personnel)
@@ -203,6 +215,7 @@ Friendly (Blue)          Hostile (Red)           Neutral (Green)         Unknown
 - **XXX** - Army (50,000-200,000 personnel)
 
 **Modifiers:**
+
 - **HQ** - Headquarters (staff indicator)
 - **TF** - Task Force
 - **FD** - Feint/Dummy (deception)
@@ -230,24 +243,28 @@ Friendly (Blue)          Hostile (Red)           Neutral (Green)         Unknown
 ### Coordinate Display Systems
 
 **Supported Formats:**
+
 1. **Decimal Degrees (DD):** `38.8977°N, 77.0365°W`
 2. **Degrees Decimal Minutes (DDM):** `38°53.862'N, 77°02.190'W`
 3. **Degrees Minutes Seconds (DMS):** `38°53'51.7"N, 77°02'11.4"W`
 4. **MGRS (Military Grid Reference System):** `18SUJ2337506390`
 
 **MGRS Format:**
+
 - **18S** - Grid zone designation (GZD)
 - **UJ** - 100km grid square
 - **23375** - Easting (5-digit precision = 1 meter)
 - **06390** - Northing (5-digit precision = 1 meter)
 
 **Switching Formats:**
+
 - Tap coordinate display in status bar
 - Select preferred format in Settings
 
 ### Map Layers & Overlays
 
 **Base Map Layers:**
+
 - **Standard** - Apple Maps standard view
 - **Satellite** - Satellite imagery
 - **Hybrid** - Satellite with road/label overlay
@@ -258,6 +275,7 @@ Friendly (Blue)          Hostile (Red)           Neutral (Green)         Unknown
   - Offline cached tiles
 
 **Overlay Layers:**
+
 - **MGRS Grid** - Military grid overlay with labels
 - **Range Rings** - Distance rings around points (customizable radii)
 - **Compass Rose** - North indicator
@@ -267,6 +285,7 @@ Friendly (Blue)          Hostile (Red)           Neutral (Green)         Unknown
 - **User Drawings** - Tactical graphics
 
 **Layer Controls:**
+
 ```swift
 // Toggle MGRS grid
 MapStateManager.shared.showMGRSGrid = true
@@ -284,12 +303,14 @@ MapStateManager.shared.showBreadcrumbs = true
 ### 3D Terrain Visualization
 
 **Features:**
+
 - Elevation-aware terrain rendering
 - Tilt and rotation controls
 - Hillshade rendering
 - Line-of-sight analysis with terrain occlusion
 
 **Activation:**
+
 - Long press on map type button
 - Select "3D Terrain" mode
 - Use two-finger gestures to tilt/rotate
@@ -303,21 +324,22 @@ MapStateManager.shared.showBreadcrumbs = true
 GeoChat is TAK's location-aware text messaging system. Messages are exchanged as CoT events with chat metadata.
 
 **GeoChat CoT Structure:**
+
 ```xml
 <?xml version="1.0"?>
-<event version="2.0" uid="GeoChat.ANDROID-12345678.All Chat Rooms.UUID" 
-       type="b-t-f" time="2025-11-23T10:30:00Z" 
+<event version="2.0" uid="GeoChat.ANDROID-12345678.All Chat Rooms.UUID"
+       type="b-t-f" time="2025-11-23T10:30:00Z"
        start="2025-11-23T10:30:00Z" stale="2025-11-23T10:33:00Z">
     <point lat="38.8977" lon="-77.0365" hae="50.0" ce="10.0" le="5.0"/>
     <detail>
-        <__chat parent="RootContactGroup" groupOwner="false" 
-                messageId="UUID" chatroom="All Chat Rooms" 
+        <__chat parent="RootContactGroup" groupOwner="false"
+                messageId="UUID" chatroom="All Chat Rooms"
                 id="ANDROID-12345678" senderCallsign="ALPHA-1">
             <chatgrp uid0="ANDROID-12345678" uid1="All Chat Rooms" id="All Chat Rooms"/>
         </__chat>
-        <link uid="ANDROID-12345678" production_time="2025-11-23T10:30:00Z" 
+        <link uid="ANDROID-12345678" production_time="2025-11-23T10:30:00Z"
               type="a-f-G-U-C-I" parent_callsign="ALPHA-1" relation="p-p"/>
-        <remarks source="BAO.F.ATAK.ANDROID-12345678" 
+        <remarks source="BAO.F.ATAK.ANDROID-12345678"
                  to="All Chat Rooms" time="2025-11-23T10:30:00Z">
             Hello from OmniTAK Mobile!
         </remarks>
@@ -328,16 +350,19 @@ GeoChat is TAK's location-aware text messaging system. Messages are exchanged as
 ### Message Types
 
 **Direct Messages (1-on-1):**
+
 - Private conversation between two users
 - `chatroom` attribute contains recipient UID
 - Only visible to sender and recipient
 
 **Group Chat (All Chat Rooms):**
+
 - Broadcast to all connected users
 - `chatroom="All Chat Rooms"`
 - Visible to everyone on the network
 
 **Custom Chat Rooms:**
+
 - Named rooms for team-specific communication
 - Custom `chatroom` attribute
 - Users must join room to see messages
@@ -345,6 +370,7 @@ GeoChat is TAK's location-aware text messaging system. Messages are exchanged as
 ### Message Status Tracking
 
 **Status States:**
+
 ```swift
 enum MessageStatus {
     case pending    // Created, not yet sent
@@ -356,6 +382,7 @@ enum MessageStatus {
 ```
 
 **Visual Indicators:**
+
 - ⏳ Pending (gray)
 - ⬆️ Sending (blue, animated)
 - ✓ Sent (blue)
@@ -363,6 +390,7 @@ enum MessageStatus {
 - ❌ Failed (red)
 
 **Retry Mechanism:**
+
 - Failed messages queued for retry
 - Automatic retry on reconnection
 - Manual retry option
@@ -371,17 +399,20 @@ enum MessageStatus {
 ### Photo Attachments
 
 **Supported Formats:**
+
 - JPEG, PNG, HEIC
 - Maximum size: 10 MB per image
 - Automatic compression for large images
 
 **Attachment Flow:**
+
 1. Select image from photo library or camera
 2. Image attached to chat message
 3. CoT message includes image data (Base64 encoded)
 4. Recipient decodes and displays image
 
 **CoT Structure with Image:**
+
 ```xml
 <detail>
     <__chat ...>
@@ -401,6 +432,7 @@ enum MessageStatus {
 All GeoChat messages include sender's location in the `<point>` element.
 
 **Recipient Experience:**
+
 - Tap message to view location on map
 - "Navigate to sender" option
 - Location timestamp displayed
@@ -408,6 +440,7 @@ All GeoChat messages include sender's location in the `<point>` element.
 ### Conversation Management
 
 **Features:**
+
 - Unread message badges
 - Last message preview
 - Participant online/offline status
@@ -416,6 +449,7 @@ All GeoChat messages include sender's location in the `<point>` element.
 - Block contacts
 
 **Data Persistence:**
+
 - Chat history saved locally
 - Automatic sync across app launches
 - Configurable history retention (default: 30 days)
@@ -431,6 +465,7 @@ Position Location Information (PLI) is automatic periodic broadcasting of your G
 ### Configuration
 
 **Settings:**
+
 ```swift
 // Update interval (seconds)
 PositionBroadcastService.shared.updateInterval = 30  // Default: 30s
@@ -448,6 +483,7 @@ PositionBroadcastService.shared.teamRole = "Team Lead"
 ```
 
 **Recommended Intervals:**
+
 - **Stationary:** 60-120 seconds
 - **Walking:** 30-60 seconds
 - **Vehicle:** 10-30 seconds
@@ -457,10 +493,11 @@ PositionBroadcastService.shared.teamRole = "Team Lead"
 ### Generated CoT
 
 **Position Update Message:**
+
 ```xml
-<event version="2.0" uid="OMNITAK-IOS-DEVICE-UUID" 
-       type="a-f-G-E-S" time="2025-11-23T10:30:00Z" 
-       start="2025-11-23T10:30:00Z" stale="2025-11-23T10:33:00Z" 
+<event version="2.0" uid="OMNITAK-IOS-DEVICE-UUID"
+       type="a-f-G-E-S" time="2025-11-23T10:30:00Z"
+       start="2025-11-23T10:30:00Z" stale="2025-11-23T10:33:00Z"
        how="m-g">
     <point lat="38.8977" lon="-77.0365" hae="50.0" ce="10.0" le="5.0"/>
     <detail>
@@ -477,15 +514,18 @@ PositionBroadcastService.shared.teamRole = "Team Lead"
 ### Background Broadcasting
 
 **iOS Background Modes:**
+
 - Location updates (continuous)
 - Background task completion (finite time)
 
 **Limitations:**
+
 - iOS may suspend broadcasting if app backgrounded for extended period
 - Enable "Location Always" permission for best results
 - Battery optimization may reduce update frequency
 
 **Recommendations:**
+
 - Keep app in foreground during operations
 - Use Low Power Mode with caution
 - Monitor battery level
@@ -508,12 +548,14 @@ enum EmergencyType {
 ### Emergency Activation
 
 **UI:**
+
 - Red "EMERGENCY" button (prominent placement)
 - Hold-to-activate (prevent accidental activation)
 - Confirmation dialog with type selection
 - Visual and haptic feedback
 
 **Behavior:**
+
 1. Immediate CoT broadcast with emergency type
 2. Repeated broadcasting every 30 seconds
 3. Visual indicator (flashing red border on map)
@@ -524,9 +566,10 @@ enum EmergencyType {
 ### Emergency CoT Messages
 
 **911 Emergency:**
+
 ```xml
-<event version="2.0" uid="OMNITAK-IOS-DEVICE-UUID" 
-       type="b-a-o-tac" time="2025-11-23T10:30:00Z" 
+<event version="2.0" uid="OMNITAK-IOS-DEVICE-UUID"
+       type="b-a-o-tac" time="2025-11-23T10:30:00Z"
        start="2025-11-23T10:30:00Z" stale="2025-11-23T10:33:00Z">
     <point lat="38.8977" lon="-77.0365" hae="50.0" ce="10.0" le="5.0"/>
     <detail>
@@ -539,6 +582,7 @@ enum EmergencyType {
 ```
 
 **In Contact:**
+
 ```xml
 <event type="b-a-o-can" ...>  <!-- "can" = troops in contact -->
     <detail>
@@ -550,6 +594,7 @@ enum EmergencyType {
 ```
 
 **Cancel Emergency:**
+
 ```xml
 <event type="b-a-o-can" ...>  <!-- "can" = cancel -->
     <detail>
@@ -563,12 +608,14 @@ enum EmergencyType {
 ### Safety Features
 
 **Fail-Safes:**
+
 - Emergency state persists across app restart
 - Auto-resume broadcasting if connection lost and restored
 - Warning if attempting to close app during emergency
 - Emergency log saved locally
 
 **Testing Mode:**
+
 - "Test Emergency Beacon" option in settings
 - Sends emergency CoT with `<test>true</test>` tag
 - No actual alert triggered on receiving end
@@ -598,18 +645,18 @@ struct TeamMember {
 
 ### Team Colors (ATAK Standard)
 
-| Color | Hex | Usage |
-|-------|-----|-------|
-| **Cyan** | `#00FFFF` | Default team |
-| **Green** | `#00FF00` | Team 2 |
-| **Yellow** | `#FFFF00` | Team 3 |
-| **Magenta** | `#FF00FF` | Team 4 |
-| **Red** | `#FF0000` | Team 5 |
-| **Blue** | `#0000FF` | Team 6 |
-| **White** | `#FFFFFF` | Team 7 |
-| **Orange** | `#FFA500` | Team 8 |
-| **Purple** | `#800080` | Team 9 |
-| **Dark Green** | `#006400` | Team 10 |
+| Color          | Hex       | Usage        |
+| -------------- | --------- | ------------ |
+| **Cyan**       | `#00FFFF` | Default team |
+| **Green**      | `#00FF00` | Team 2       |
+| **Yellow**     | `#FFFF00` | Team 3       |
+| **Magenta**    | `#FF00FF` | Team 4       |
+| **Red**        | `#FF0000` | Team 5       |
+| **Blue**       | `#0000FF` | Team 6       |
+| **White**      | `#FFFFFF` | Team 7       |
+| **Orange**     | `#FFA500` | Team 8       |
+| **Purple**     | `#800080` | Team 9       |
+| **Dark Green** | `#006400` | Team 10      |
 
 ### Team Roles
 
@@ -623,6 +670,7 @@ struct TeamMember {
 ### Team CoT Encoding
 
 **Team Information in CoT:**
+
 ```xml
 <detail>
     <__group name="Cyan" role="Team Lead"/>
@@ -630,6 +678,7 @@ struct TeamMember {
 ```
 
 **Automatic Features:**
+
 - Team members' markers color-coded on map
 - Team roster auto-populated from CoT traffic
 - Online/offline status from stale times
@@ -638,6 +687,7 @@ struct TeamMember {
 ### Team Management UI
 
 **Features:**
+
 - Create/edit/delete teams
 - Assign members to teams
 - View team roster with status
@@ -652,12 +702,14 @@ struct TeamMember {
 ### Waypoint Creation
 
 **Methods:**
+
 1. **Long press on map** - Drop waypoint at location
 2. **Search address** - Enter address or coordinates
 3. **Current location** - Waypoint at GPS position
 4. **Import from file** - KML/KMZ import
 
 **Waypoint Properties:**
+
 ```swift
 struct Waypoint {
     var name: String                     // Waypoint name
@@ -671,6 +723,7 @@ struct Waypoint {
 ```
 
 **Waypoint Categories:**
+
 - Checkpoint
 - Objective
 - Rally Point
@@ -684,6 +737,7 @@ struct Waypoint {
 ### Route Planning
 
 **Route Creation:**
+
 ```swift
 struct Route {
     var name: String
@@ -704,6 +758,7 @@ struct RouteWaypoint {
 ```
 
 **Route Planning Tools:**
+
 - Drag-and-drop waypoint reordering
 - Auto-calculate distances
 - Estimated time calculation (based on speed profile)
@@ -715,6 +770,7 @@ struct RouteWaypoint {
 ### Navigation
 
 **Turn-by-Turn Navigation:**
+
 ```
 ┌─────────────────────────────┐
 │  ALPHA-1 → Checkpoint 2     │
@@ -729,6 +785,7 @@ struct RouteWaypoint {
 ```
 
 **Features:**
+
 - Auto-advance to next waypoint
 - Distance and bearing to waypoint
 - ETA calculation
@@ -737,6 +794,7 @@ struct RouteWaypoint {
 - Route completion notification
 
 **Voice Guidance:**
+
 - "In 500 meters, turn right"
 - "Arriving at checkpoint"
 - "You have reached your destination"
@@ -763,24 +821,28 @@ enum DrawingMode {
 **Creating Drawings:**
 
 **1. Marker:**
+
 - Select marker tool
 - Tap map location
 - Marker placed immediately
 - Customize color, label, icon
 
 **2. Line:**
+
 - Select line tool
 - Tap map to add points
 - Tap existing point to finish
 - Customize color, width, style
 
 **3. Circle:**
+
 - Select circle tool
 - Tap center point
 - Drag to set radius OR enter radius value
 - Customize color, fill opacity
 
 **4. Polygon:**
+
 - Select polygon tool
 - Tap to add vertices
 - Close polygon by tapping first vertex
@@ -800,7 +862,7 @@ struct Drawing {
 
 enum DrawingColor: String, CaseIterable {
     case red, blue, green, yellow, orange, purple, black, white
-    
+
     var cgColor: CGColor {
         // Color conversions
     }
@@ -810,6 +872,7 @@ enum DrawingColor: String, CaseIterable {
 ### Drawing Management
 
 **Operations:**
+
 - **Edit** - Modify points, colors, labels
 - **Move** - Reposition entire drawing
 - **Duplicate** - Copy drawing
@@ -819,6 +882,7 @@ enum DrawingColor: String, CaseIterable {
 - **Share** - Send via CoT
 
 **Drawing List:**
+
 - View all drawings
 - Search/filter by name, color, type
 - Bulk operations (show all, hide all, delete all)
@@ -827,6 +891,7 @@ enum DrawingColor: String, CaseIterable {
 ### Drawing CoT Encoding
 
 **Line/Polygon CoT:**
+
 ```xml
 <event type="u-d-f" uid="DRAWING-UUID" ...>
     <point lat="38.8977" lon="-77.0365" hae="0" ce="9999999" le="9999999"/>
@@ -856,17 +921,20 @@ enum DrawingColor: String, CaseIterable {
 **Tool:** Measure straight-line distance between two or more points.
 
 **Usage:**
+
 1. Select measurement tool
 2. Tap start point
 3. Tap end point (or multiple intermediate points)
 4. View total distance
 
 **Display:**
+
 - Cumulative distance (total)
 - Segment distances (between each pair)
 - Units: meters, kilometers, feet, miles, nautical miles
 
 **Features:**
+
 - Real-time distance updates as you drag points
 - Elevation-aware distance (3D distance if elevation data available)
 - Copy measurement to clipboard
@@ -876,17 +944,20 @@ enum DrawingColor: String, CaseIterable {
 **Tool:** Calculate azimuth/bearing from one point to another.
 
 **Usage:**
+
 1. Select bearing tool
 2. Tap start point
 3. Tap end point
 4. View bearing
 
 **Display:**
+
 - True bearing (0-360°)
 - Magnetic bearing (if declination known)
 - Back bearing (reciprocal)
 
 **Formats:**
+
 - **Degrees:** `045°`
 - **Mils:** `800 mils`
 - **Compass:** `NE` (Northeast)
@@ -896,12 +967,14 @@ enum DrawingColor: String, CaseIterable {
 **Tool:** Calculate area enclosed by a polygon.
 
 **Usage:**
+
 1. Select area tool
 2. Tap vertices to create polygon
 3. Close polygon
 4. View area
 
 **Units:**
+
 - Square meters (m²)
 - Square kilometers (km²)
 - Square feet (ft²)
@@ -913,11 +986,13 @@ enum DrawingColor: String, CaseIterable {
 **Tool:** Combined distance and bearing from your current position to a target.
 
 **Usage:**
+
 1. Long press on map
 2. Select "Range & Bearing" from radial menu
 3. View range and bearing in HUD
 
 **HUD Display:**
+
 ```
 ┌─────────────────────────┐
 │  Range & Bearing        │
@@ -935,11 +1010,13 @@ enum DrawingColor: String, CaseIterable {
 **Tool:** Visualize terrain elevation along a path.
 
 **Usage:**
+
 1. Create route or measurement line
 2. Select "Elevation Profile"
 3. View profile graph
 
 **Profile Graph:**
+
 ```
 Elevation (m)
   800 ┤     ╱╲
@@ -952,12 +1029,14 @@ Elevation (m)
 ```
 
 **Data Displayed:**
+
 - Min/max elevation
 - Elevation gain/loss
 - Average grade
 - Steepest section
 
 **Data Source:**
+
 - Apple's elevation API
 - External elevation service (USGS, SRTM)
 - Cached elevation data
@@ -978,6 +1057,7 @@ enum GeofenceShape {
 ### Creating Geofences
 
 **Circle Geofence:**
+
 1. Long press on map
 2. Select "Create Geofence"
 3. Choose "Circle"
@@ -985,6 +1065,7 @@ enum GeofenceShape {
 5. Name and configure
 
 **Polygon Geofence:**
+
 1. Select geofence tool
 2. Choose "Polygon"
 3. Tap vertices on map
@@ -1009,6 +1090,7 @@ struct Geofence {
 ### Monitoring & Alerts
 
 **Entry Alert:**
+
 ```
 ┌─────────────────────────────────┐
 │  🟢 Geofence Entry               │
@@ -1021,6 +1103,7 @@ struct Geofence {
 ```
 
 **Exit Alert:**
+
 ```
 ┌─────────────────────────────────┐
 │  🔴 Geofence Exit                │
@@ -1035,6 +1118,7 @@ struct Geofence {
 ### Geofence Status Tracking
 
 **Tracked Data:**
+
 - Current status (inside/outside)
 - Entry time (if inside)
 - Dwell time (time spent inside)
@@ -1042,6 +1126,7 @@ struct Geofence {
 - Total time inside (cumulative)
 
 **Dwell Time Display:**
+
 ```
 Geofence: Base Perimeter
 Status: Inside
@@ -1053,11 +1138,13 @@ Total Time (24h): 8h 15m 30s
 ### Geofence Sharing
 
 **Export Geofence:**
+
 - Share as CoT message
 - Export as KML/KMZ
 - Send to team members
 
 **Geofence CoT:**
+
 ```xml
 <event type="u-d-f" uid="GEOFENCE-UUID" ...>
     <point lat="38.8977" lon="-77.0365" hae="0" ce="9999999" le="9999999"/>
@@ -1082,6 +1169,7 @@ Offline maps allow operation without internet connectivity by pre-downloading ma
 ### Downloading Regions
 
 **Region Configuration:**
+
 ```swift
 struct OfflineMapRegion {
     var name: String
@@ -1096,6 +1184,7 @@ struct OfflineMapRegion {
 ```
 
 **Download Process:**
+
 1. Navigate to desired location on map
 2. Tap "Offline Maps"
 3. Tap "Define Region"
@@ -1105,6 +1194,7 @@ struct OfflineMapRegion {
 7. Monitor progress
 
 **Tile Calculation:**
+
 ```
 Tiles = Σ(zoom=minZoom to maxZoom) [4^zoom × area_fraction]
 
@@ -1118,6 +1208,7 @@ Example:
 ### Storage Management
 
 **Storage Locations:**
+
 ```
 Documents/
 └── OfflineMaps/
@@ -1130,12 +1221,14 @@ Documents/
 ```
 
 **Operations:**
+
 - View total storage used
 - Delete individual regions
 - Refresh expired tiles
 - Export/import region definitions
 
 **Storage Limits:**
+
 - iOS limits app storage based on device capacity
 - Warn if download exceeds 1 GB
 - Automatic cleanup of oldest tiles if storage full
@@ -1143,6 +1236,7 @@ Documents/
 ### Offline Tile Serving
 
 **Tile Request Flow:**
+
 ```
 Map requests tile (zoom, x, y)
     │
@@ -1156,6 +1250,7 @@ Check offline cache
 ```
 
 **Tile Overlay:**
+
 ```swift
 class OfflineTileOverlay: MKTileOverlay {
     override func url(forTilePath path: MKTileOverlayPath) -> URL {
@@ -1166,7 +1261,7 @@ class OfflineTileOverlay: MKTileOverlay {
             .appendingPathComponent("\(path.z)")
             .appendingPathComponent("\(path.x)")
             .appendingPathComponent("\(path.y).png")
-        
+
         if FileManager.default.fileExists(atPath: filePath.path) {
             return filePath
         } else {
@@ -1184,16 +1279,19 @@ class OfflineTileOverlay: MKTileOverlay {
 ### Client Certificates
 
 **Supported Formats:**
+
 - **P12 (PKCS#12)** - Certificate + private key
 - **PEM** - Certificate only (if private key separate)
 
 **Import Methods:**
+
 1. **Files App** - Select P12 file, share to OmniTAK
 2. **AirDrop** - Receive P12 from another device
 3. **QR Code** - Scan QR code with enrollment data
 4. **Email** - Open attachment in OmniTAK
 
 **Import Workflow:**
+
 ```
 Select P12 file
     │
@@ -1213,12 +1311,14 @@ Available for TAK server authentication
 ### Keychain Storage
 
 **Security:**
+
 - Certificates stored in iOS Keychain (secure enclave)
 - Encrypted at rest
 - Requires device unlock for access
 - Protected by iOS biometric authentication
 
 **Keychain Operations:**
+
 ```swift
 // Save certificate
 func saveCertificate(data: Data, password: String, name: String) -> Bool {
@@ -1228,7 +1328,7 @@ func saveCertificate(data: Data, password: String, name: String) -> Bool {
         kSecValueData as String: data,
         kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked
     ]
-    
+
     SecItemDelete(query as CFDictionary)  // Delete existing
     let status = SecItemAdd(query as CFDictionary, nil)
     return status == errSecSuccess
@@ -1241,10 +1341,10 @@ func loadCertificate(name: String) -> Data? {
         kSecAttrAccount as String: name,
         kSecReturnData as String: true
     ]
-    
+
     var result: AnyObject?
     let status = SecItemCopyMatching(query as CFDictionary, &result)
-    
+
     return (status == errSecSuccess) ? result as? Data : nil
 }
 ```
@@ -1252,6 +1352,7 @@ func loadCertificate(name: String) -> Data? {
 ### QR Code Enrollment
 
 **QR Code Format:**
+
 ```json
 {
   "serverUrl": "https://tak.example.com:8089",
@@ -1262,6 +1363,7 @@ func loadCertificate(name: String) -> Data? {
 ```
 
 **Enrollment Process:**
+
 1. TAK administrator generates QR code
 2. User taps "Enroll via QR"
 3. Scan QR code with camera
@@ -1273,28 +1375,32 @@ func loadCertificate(name: String) -> Data? {
 ### TLS Configuration
 
 **TLS Version Support:**
+
 - **TLS 1.3** (recommended)
 - **TLS 1.2** (widely supported)
 - **TLS 1.1** (legacy, disabled by default)
 - **TLS 1.0** (legacy, disabled by default)
 
 **Legacy TLS Warning:**
+
 ```
 ⚠️ Warning: Legacy TLS Enabled
 
-TLS 1.0 and 1.1 have known security 
-vulnerabilities. Only enable if 
+TLS 1.0 and 1.1 have known security
+vulnerabilities. Only enable if
 required for legacy TAK servers.
 
-Recommended: Upgrade TAK server to 
+Recommended: Upgrade TAK server to
 support TLS 1.2 or higher.
 ```
 
 **Server Certificate Verification:**
+
 - **Enabled (Default)** - Verify server certificate against system trust store
 - **Disabled** - Accept self-signed certificates (common for tactical deployments)
 
 **Self-Signed CA Support:**
+
 - Import custom CA certificate
 - Add to system trust store
 - All certificates signed by CA will be trusted
@@ -1318,6 +1424,7 @@ OmniTAK Mobile supports generation of standardized military tactical reports:
 **Purpose:** Report immediate intelligence of tactical significance.
 
 **Format:**
+
 ```
 Line 1: DTG (Date-Time Group)
 Line 2: Location (MGRS or Lat/Lon)
@@ -1331,6 +1438,7 @@ Line 9: Reporting unit
 ```
 
 **Example:**
+
 ```
 1. 231030ZNOV2025
 2. 18SUJ2337506390
@@ -1344,6 +1452,7 @@ Line 9: Reporting unit
 ```
 
 **CoT Transmission:**
+
 - Sent as `b-r-s` (report-SPOTREP) type
 - Includes location of observation
 - Formatted text in `<remarks>` element
@@ -1353,6 +1462,7 @@ Line 9: Reporting unit
 **Purpose:** Standardized format for intelligence reports.
 
 **Acronym:**
+
 - **S** - Size (number of personnel/equipment)
 - **A** - Activity (what they're doing)
 - **L** - Location (where observed)
@@ -1361,6 +1471,7 @@ Line 9: Reporting unit
 - **E** - Equipment (weapons, vehicles)
 
 **UI:**
+
 ```
 ┌─────────────────────────────────┐
 │  SALUTE Report                  │
@@ -1385,6 +1496,7 @@ Line 9: Reporting unit
 **Purpose:** Request medical evacuation for casualties.
 
 **9-Line Format:**
+
 ```
 Line 1: Location of pickup site (MGRS)
 Line 2: Radio frequency and call sign
@@ -1425,6 +1537,7 @@ Line 9: NBC contamination
 ```
 
 **UI Features:**
+
 - Auto-populate location with current GPS
 - Dropdowns for standardized selections
 - Precedence calculation based on injuries
@@ -1433,6 +1546,7 @@ Line 9: NBC contamination
 - Print/export as PDF
 
 **CoT Structure:**
+
 ```xml
 <event type="b-r-f-h-c" uid="MEDEVAC-UUID" ...>  <!-- Medical report -->
     <point lat="38.8977" lon="-77.0365" hae="50.0" ce="10.0" le="5.0"/>
@@ -1458,6 +1572,7 @@ Line 9: NBC contamination
 **Purpose:** Request close air support from aircraft.
 
 **Format:**
+
 ```
 Line 1: IP/BP (Initial Point/Battle Position)
 Line 2: Heading and distance to target
@@ -1471,6 +1586,7 @@ Line 9: Remarks (threats, hazards, restrictions)
 ```
 
 **UI:**
+
 - Map-based target selection
 - Auto-calculate heading/distance from IP
 - Target type dropdown (vehicle, personnel, structure)
@@ -1489,16 +1605,19 @@ Meshtastic is a long-range, low-power mesh network protocol using LoRa radios. O
 ### Connection Types
 
 **Bluetooth LE (iOS):**
+
 - Pair with Meshtastic device via Bluetooth
 - Automatic reconnection
 - Low power consumption
 
 **Serial/USB (macOS):**
+
 - Direct USB connection
 - Higher data rate
 - Continuous power
 
 **TCP/IP (Network):**
+
 - Connect to Meshtastic device over WiFi
 - Multiple simultaneous connections
 - Remote access
@@ -1506,6 +1625,7 @@ Meshtastic is a long-range, low-power mesh network protocol using LoRa radios. O
 ### Device Configuration
 
 **Connection Settings:**
+
 ```swift
 struct MeshtasticConnection {
     var connectionType: ConnectionType  // bluetooth, serial, tcp
@@ -1516,6 +1636,7 @@ struct MeshtasticConnection {
 ```
 
 **Connection Process:**
+
 1. Scan for Meshtastic devices
 2. Select device from list
 3. Pair (Bluetooth) or connect (TCP)
@@ -1525,18 +1646,21 @@ struct MeshtasticConnection {
 ### Message Bridging
 
 **TAK → Meshtastic:**
+
 - Selected CoT messages forwarded to mesh
 - Configurable message types (position, chat, emergency)
 - Automatic message compression
 - Rate limiting (mesh has low bandwidth)
 
 **Meshtastic → TAK:**
+
 - Mesh messages converted to CoT
 - Position updates → CoT PLI
 - Text messages → GeoChat
 - Telemetry → CoT sensor data
 
 **Bridge Configuration:**
+
 ```swift
 struct MeshtasticBridge {
     var bridgeEnabled: Bool
@@ -1551,6 +1675,7 @@ struct MeshtasticBridge {
 ### Mesh Network Visualization
 
 **Node Display:**
+
 - Mesh nodes shown on map
 - Node ID and callsign
 - Signal strength indicator (RSSI/SNR)
@@ -1558,12 +1683,14 @@ struct MeshtasticBridge {
 - Last heard timestamp
 
 **Network Topology:**
+
 - Visualize mesh network structure
 - Show hop count to each node
 - Identify network bottlenecks
 - Route tracing
 
 **Mesh Status:**
+
 ```
 ┌─────────────────────────────────┐
 │  Meshtastic Status              │
@@ -1591,19 +1718,21 @@ struct MeshtasticBridge {
 Meshtastic uses Protocol Buffers for message encoding.
 
 **Message Types:**
+
 - `POSITION_APP` - GPS position
 - `TEXT_MESSAGE_APP` - Text chat
 - `NODEINFO_APP` - Node identification
 - `TELEMETRY_APP` - Battery, temperature, etc.
 
 **Parsing Example:**
+
 ```swift
 func parsePositionMessage(_ data: Data) -> MeshtasticPosition? {
     // Decode protobuf
     guard let proto = try? Position(serializedData: data) else {
         return nil
     }
-    
+
     // Convert to OmniTAK model
     return MeshtasticPosition(
         nodeId: proto.nodeID,
@@ -1626,6 +1755,7 @@ Data packages are bundles of tactical data (waypoints, routes, overlays, imagery
 ### Supported Formats
 
 **Import:**
+
 - **KML** (Keyhole Markup Language)
 - **KMZ** (Compressed KML)
 - **GPX** (GPS Exchange Format)
@@ -1633,6 +1763,7 @@ Data packages are bundles of tactical data (waypoints, routes, overlays, imagery
 - **TAK Data Package** (.zip with manifest)
 
 **Export:**
+
 - **KML/KMZ** - Google Earth compatible
 - **TAK Data Package** - Full TAK compatibility
 - **GPX** - GPS device compatible
@@ -1640,6 +1771,7 @@ Data packages are bundles of tactical data (waypoints, routes, overlays, imagery
 ### Importing Data Packages
 
 **Import Sources:**
+
 1. **Files App** - Browse and select file
 2. **AirDrop** - Receive from another device
 3. **Email** - Open attachment
@@ -1647,6 +1779,7 @@ Data packages are bundles of tactical data (waypoints, routes, overlays, imagery
 5. **Share Sheet** - From other apps
 
 **Import Process:**
+
 ```
 Select file (KML/KMZ/GPX)
     │
@@ -1667,19 +1800,20 @@ Save to local database
 ```
 
 **KML Parsing:**
+
 ```swift
 func parseKML(_ data: Data) -> [MapFeature] {
     let parser = XMLParser(data: data)
     let delegate = KMLParserDelegate()
     parser.delegate = delegate
-    
+
     guard parser.parse() else {
         return []
     }
-    
+
     // Convert KML features to OmniTAK features
     var features: [MapFeature] = []
-    
+
     for placemark in delegate.placemarks {
         if let point = placemark.point {
             // Waypoint
@@ -1692,7 +1826,7 @@ func parseKML(_ data: Data) -> [MapFeature] {
             features.append(Geofence(from: polygon))
         }
     }
-    
+
     return features
 }
 ```
@@ -1700,6 +1834,7 @@ func parseKML(_ data: Data) -> [MapFeature] {
 ### Creating Data Packages
 
 **Package Contents:**
+
 - Waypoints (selected or all)
 - Routes (selected or all)
 - Drawings (selected or all)
@@ -1708,6 +1843,7 @@ func parseKML(_ data: Data) -> [MapFeature] {
 - Metadata (creator, timestamp, description)
 
 **Export Workflow:**
+
 ```
 User selects "Export Data Package"
     │
@@ -1732,12 +1868,14 @@ Save to Files or Share
 ### Mission Package Sync
 
 **TAK Server Sync:**
+
 - Upload data packages to TAK server
 - Download packages from server
 - Auto-sync on connection
 - Conflict resolution (server wins / local wins / merge)
 
 **Sync Process:**
+
 ```
 Connect to TAK server
     │
@@ -1766,11 +1904,13 @@ Notify user of sync results
 ### Video Streams
 
 **Supported Protocols:**
+
 - RTSP (Real-Time Streaming Protocol)
 - HTTP/HLS (HTTP Live Streaming)
 - RTMP (Real-Time Messaging Protocol)
 
 **Video Stream Management:**
+
 - Add/edit/delete video feeds
 - Video overlay on map (picture-in-picture)
 - Full-screen video player
@@ -1780,12 +1920,14 @@ Notify user of sync results
 ### ArcGIS Integration
 
 **ArcGIS Feature Services:**
+
 - Query ArcGIS feature layers
 - Display features on map
 - Attribute viewing
 - Feature search
 
 **ArcGIS Portal:**
+
 - Connect to ArcGIS Online or Portal
 - Browse organization content
 - Add web maps to OmniTAK
@@ -1794,6 +1936,7 @@ Notify user of sync results
 ### Bloodhound (Asset Tracking)
 
 **Tracking Assets:**
+
 - Non-human tracked entities (vehicles, supplies, equipment)
 - Asset status monitoring
 - Movement history
@@ -1804,6 +1947,7 @@ Notify user of sync results
 **Purpose:** Visualize distance circles around a point (e.g., weapon range, communication range).
 
 **Configuration:**
+
 - Center point (current location, waypoint, or custom)
 - Multiple rings (e.g., 1km, 5km, 10km)
 - Ring colors and labels
@@ -1812,6 +1956,7 @@ Notify user of sync results
 ### 3D Visualization
 
 **Features:**
+
 - 3D terrain with elevation data
 - Tilt and rotation controls
 - Building extrusion (in supported areas)
@@ -1821,12 +1966,14 @@ Notify user of sync results
 ### Coordinate Systems
 
 **Supported Systems:**
+
 - **WGS84** (World Geodetic System 1984) - GPS standard
 - **MGRS** (Military Grid Reference System)
 - **UTM** (Universal Transverse Mercator)
 - **USNG** (United States National Grid)
 
 **Conversion:**
+
 - Real-time conversion between formats
 - Copy coordinates to clipboard
 - Share coordinates via message
@@ -1835,40 +1982,40 @@ Notify user of sync results
 
 ## Feature Summary Table
 
-| Feature | Status | Description |
-|---------|--------|-------------|
-| **CoT Protocol** | ✅ Full | Send/receive CoT messages |
-| **Multi-Server** | ✅ Full | Connect to multiple TAK servers |
-| **GeoChat** | ✅ Full | Text messaging with location |
-| **Photo Attachments** | ✅ Full | Send images in chat |
-| **Position Broadcasting** | ✅ Full | Automatic PLI updates |
-| **Emergency Beacon** | ✅ Full | 911, In Contact alerts |
-| **MIL-STD-2525** | ✅ Full | Military symbology |
-| **MGRS Grid** | ✅ Full | Grid overlay and conversion |
-| **Offline Maps** | ✅ Full | Download regions for offline use |
-| **Certificate Auth** | ✅ Full | P12 client certificates |
-| **QR Enrollment** | ✅ Full | QR code-based setup |
-| **Waypoints** | ✅ Full | Create, edit, navigate to waypoints |
-| **Route Planning** | ✅ Full | Multi-waypoint routes |
-| **Turn-by-Turn Nav** | ✅ Full | Voice-guided navigation |
-| **Drawing Tools** | ✅ Full | Markers, lines, circles, polygons |
-| **Measurement Tools** | ✅ Full | Distance, bearing, area |
-| **Geofencing** | ✅ Full | Entry/exit monitoring |
-| **SPOTREP** | ✅ Full | Spot reports |
-| **MEDEVAC** | ✅ Full | 9-line MEDEVAC request |
-| **CAS Request** | ✅ Full | Close air support request |
-| **SALUTE** | ✅ Full | Intelligence reports |
-| **Meshtastic** | ✅ Full | Mesh network integration |
-| **KML/KMZ Import** | ✅ Full | Google Earth files |
-| **Data Packages** | ✅ Full | Import/export/sync |
-| **Team Management** | ✅ Full | Organize operators |
-| **Video Streams** | ✅ Full | RTSP/HTTP video |
-| **ArcGIS** | ✅ Full | Feature services |
-| **3D Terrain** | ✅ Full | Elevation visualization |
-| **Breadcrumb Trails** | ✅ Full | Movement history |
-| **Range Rings** | ✅ Full | Distance circles |
-| **Elevation Profile** | ✅ Full | Terrain profile graphs |
-| **Line of Sight** | ✅ Full | LOS analysis |
+| Feature                   | Status  | Description                         |
+| ------------------------- | ------- | ----------------------------------- |
+| **CoT Protocol**          | ✅ Full | Send/receive CoT messages           |
+| **Multi-Server**          | ✅ Full | Connect to multiple TAK servers     |
+| **GeoChat**               | ✅ Full | Text messaging with location        |
+| **Photo Attachments**     | ✅ Full | Send images in chat                 |
+| **Position Broadcasting** | ✅ Full | Automatic PLI updates               |
+| **Emergency Beacon**      | ✅ Full | 911, In Contact alerts              |
+| **MIL-STD-2525**          | ✅ Full | Military symbology                  |
+| **MGRS Grid**             | ✅ Full | Grid overlay and conversion         |
+| **Offline Maps**          | ✅ Full | Download regions for offline use    |
+| **Certificate Auth**      | ✅ Full | P12 client certificates             |
+| **QR Enrollment**         | ✅ Full | QR code-based setup                 |
+| **Waypoints**             | ✅ Full | Create, edit, navigate to waypoints |
+| **Route Planning**        | ✅ Full | Multi-waypoint routes               |
+| **Turn-by-Turn Nav**      | ✅ Full | Voice-guided navigation             |
+| **Drawing Tools**         | ✅ Full | Markers, lines, circles, polygons   |
+| **Measurement Tools**     | ✅ Full | Distance, bearing, area             |
+| **Geofencing**            | ✅ Full | Entry/exit monitoring               |
+| **SPOTREP**               | ✅ Full | Spot reports                        |
+| **MEDEVAC**               | ✅ Full | 9-line MEDEVAC request              |
+| **CAS Request**           | ✅ Full | Close air support request           |
+| **SALUTE**                | ✅ Full | Intelligence reports                |
+| **Meshtastic**            | ✅ Full | Mesh network integration            |
+| **KML/KMZ Import**        | ✅ Full | Google Earth files                  |
+| **Data Packages**         | ✅ Full | Import/export/sync                  |
+| **Team Management**       | ✅ Full | Organize operators                  |
+| **Video Streams**         | ✅ Full | RTSP/HTTP video                     |
+| **ArcGIS**                | ✅ Full | Feature services                    |
+| **3D Terrain**            | ✅ Full | Elevation visualization             |
+| **Breadcrumb Trails**     | ✅ Full | Movement history                    |
+| **Range Rings**           | ✅ Full | Distance circles                    |
+| **Elevation Profile**     | ✅ Full | Terrain profile graphs              |
+| **Line of Sight**         | ✅ Full | LOS analysis                        |
 
 ---
 

@@ -54,12 +54,14 @@ Violations of the Code of Conduct should be reported to the project maintainers.
 ### Prerequisites
 
 **Required:**
+
 - macOS 12.0 (Monterey) or later
 - Xcode 14.0 or later
 - Git
 - Apple Developer account (for device testing)
 
 **Recommended:**
+
 - Familiarity with Swift and SwiftUI
 - Understanding of MVVM architecture
 - Basic knowledge of the TAK protocol (can be learned)
@@ -68,6 +70,7 @@ Violations of the Code of Conduct should be reported to the project maintainers.
 ### Fork and Clone
 
 **1. Fork the Repository**
+
 ```bash
 # Navigate to GitHub repository
 https://github.com/tyroe1998/omniTAKmobile
@@ -77,18 +80,21 @@ https://github.com/tyroe1998/omniTAKmobile
 ```
 
 **2. Clone Your Fork**
+
 ```bash
 git clone https://github.com/YOUR-USERNAME/omniTAKmobile.git
 cd omniTAKmobile/apps/omnitak
 ```
 
 **3. Add Upstream Remote**
+
 ```bash
 git remote add upstream https://github.com/tyroe1998/omniTAKmobile.git
 git fetch upstream
 ```
 
 **4. Verify Remotes**
+
 ```bash
 git remote -v
 # origin    https://github.com/YOUR-USERNAME/omniTAKmobile.git (fetch)
@@ -104,12 +110,14 @@ git remote -v
 ### Xcode Setup
 
 **1. Open Project**
+
 ```bash
 cd apps/omnitak
 open OmniTAKMobile.xcodeproj
 ```
 
 **2. Configure Signing**
+
 - Select project in navigator
 - Select "OmniTAKMobile" target
 - Go to "Signing & Capabilities" tab
@@ -117,11 +125,13 @@ open OmniTAKMobile.xcodeproj
 - Xcode will automatically manage provisioning
 
 **3. Select Simulator/Device**
+
 - Choose target device from Xcode toolbar
 - Recommended: iPhone 15 Pro simulator or physical device
 - iPad also fully supported
 
 **4. Build and Run**
+
 ```bash
 # Keyboard shortcut
 Cmd + R
@@ -134,11 +144,13 @@ Cmd + R
 The project includes several utility scripts:
 
 **setup_xcode.sh** - Initialize Xcode project
+
 ```bash
 ./setup_xcode.sh
 ```
 
 **update_build.sh** - Update version and build numbers
+
 ```bash
 # Auto-increment build number
 ./update_build.sh
@@ -151,6 +163,7 @@ The project includes several utility scripts:
 ```
 
 **update_version.sh** - Alternative version updater
+
 ```bash
 ./update_version.sh 1.2.0 42
 ```
@@ -158,11 +171,13 @@ The project includes several utility scripts:
 ### Recommended Xcode Settings
 
 **Editor:**
+
 - Enable "Show Invisibles" (Control + Cmd + I)
 - Enable "Trim Trailing Whitespace"
 - Indent using spaces (4 spaces per tab)
 
 **Source Control:**
+
 - Enable "Show Source Control Changes"
 - Enable "Enable Git Ignore"
 
@@ -198,19 +213,23 @@ apps/omnitak/
 ### Key Files
 
 **App Entry:**
+
 - `Core/OmniTAKMobileApp.swift` - @main entry point
 
 **Core Services:**
+
 - `Services/TAKService.swift` - TAK connectivity (1105 lines)
 - `Services/PositionBroadcastService.swift` - PLI broadcasting (398 lines)
 - `Services/EmergencyBeaconService.swift` - Emergency system (417 lines)
 
 **Core Managers:**
+
 - `Managers/ChatManager.swift` - Chat state (891 lines)
 - `Managers/ServerManager.swift` - Server config (154 lines)
 - `Managers/CertificateManager.swift` - Certificates (436 lines)
 
 **CoT Processing:**
+
 - `CoT/CoTMessageParser.swift` - XML parsing (396 lines)
 - `CoT/CoTEventHandler.swift` - Event routing (333 lines)
 
@@ -239,10 +258,12 @@ We follow the [Swift API Design Guidelines](https://swift.org/documentation/api-
 ### Naming Conventions
 
 **Files:**
+
 - `PascalCase` for Swift files
 - Match primary type name: `ChatManager.swift`, `ChatModels.swift`
 
 **Types:**
+
 ```swift
 // Classes, Structs, Enums, Protocols - PascalCase
 class ChatManager { }
@@ -252,6 +273,7 @@ protocol NetworkServiceProtocol { }
 ```
 
 **Variables and Functions:**
+
 ```swift
 // camelCase
 var messageCount: Int
@@ -259,6 +281,7 @@ func sendMessage(_ text: String) { }
 ```
 
 **Constants:**
+
 ```swift
 // camelCase for let constants
 let defaultUpdateInterval: TimeInterval = 30.0
@@ -268,6 +291,7 @@ static let MAX_RETRY_ATTEMPTS = 3
 ```
 
 **Enums:**
+
 ```swift
 // Case should be lowerCamelCase
 enum MessageStatus {
@@ -282,6 +306,7 @@ enum MessageStatus {
 ### Code Organization
 
 **File Structure:**
+
 ```swift
 // MARK: - Imports
 import SwiftUI
@@ -289,21 +314,21 @@ import Combine
 
 // MARK: - Type Definition
 class MyManager: ObservableObject {
-    
+
     // MARK: - Properties
     @Published var items: [Item] = []
     private let service: MyService
-    
+
     // MARK: - Initialization
     init(service: MyService = MyService()) {
         self.service = service
     }
-    
+
     // MARK: - Public Methods
     func performAction() {
         // Implementation
     }
-    
+
     // MARK: - Private Methods
     private func helperMethod() {
         // Implementation
@@ -318,6 +343,7 @@ extension MyManager {
 
 **MARK Comments:**
 Use `// MARK:` to organize code into logical sections:
+
 - `// MARK: - Properties`
 - `// MARK: - Initialization`
 - `// MARK: - Lifecycle`
@@ -328,17 +354,18 @@ Use `// MARK:` to organize code into logical sections:
 ### SwiftUI Conventions
 
 **View Structure:**
+
 ```swift
 struct MyView: View {
     // MARK: - Properties
     @StateObject private var viewModel = MyViewModel()
     @State private var showingAlert = false
-    
+
     // MARK: - Body
     var body: some View {
         content
     }
-    
+
     // MARK: - View Components
     private var content: some View {
         VStack {
@@ -347,11 +374,11 @@ struct MyView: View {
             footerView
         }
     }
-    
+
     private var headerView: some View {
         Text("Header")
     }
-    
+
     // MARK: - Actions
     private func handleButtonTap() {
         // Action implementation
@@ -360,6 +387,7 @@ struct MyView: View {
 ```
 
 **Extract Complex Views:**
+
 ```swift
 // ❌ Don't do this - too complex
 var body: some View {
@@ -385,10 +413,11 @@ private var headerSection: some View {
 ### Combine Patterns
 
 **Memory Management:**
+
 ```swift
 class MyManager: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
-    
+
     func observePublisher() {
         publisher
             .sink { [weak self] value in  // Always use [weak self]
@@ -400,6 +429,7 @@ class MyManager: ObservableObject {
 ```
 
 **Publisher Naming:**
+
 ```swift
 // Suffix with "Publisher" or use $property for @Published
 let eventPublisher = PassthroughSubject<Event, Never>()
@@ -409,6 +439,7 @@ let eventPublisher = PassthroughSubject<Event, Never>()
 ### Error Handling
 
 **Optional Unwrapping:**
+
 ```swift
 // Prefer guard let for early exit
 guard let value = optionalValue else {
@@ -426,6 +457,7 @@ let finalValue = optionalValue ?? defaultValue
 ```
 
 **Error Propagation:**
+
 ```swift
 // Do-catch for recoverable errors
 do {
@@ -444,6 +476,7 @@ func fetchData() -> AnyPublisher<Data, Error> {
 ### Comments and Documentation
 
 **File Headers:**
+
 ```swift
 //
 //  ChatManager.swift
@@ -456,6 +489,7 @@ import SwiftUI
 ```
 
 **DocC Comments:**
+
 ```swift
 /// Manages chat state and message delivery.
 ///
@@ -464,7 +498,7 @@ import SwiftUI
 ///
 /// - Note: Singleton - use `ChatManager.shared`
 class ChatManager: ObservableObject {
-    
+
     /// Sends a text message to the specified conversation.
     ///
     /// - Parameters:
@@ -478,6 +512,7 @@ class ChatManager: ObservableObject {
 ```
 
 **Inline Comments:**
+
 ```swift
 // Use comments to explain "why", not "what"
 
@@ -491,6 +526,7 @@ let interval = 30  // TAK protocol recommends 30-second PLI intervals for mobile
 ### Code Smell Checks
 
 **Avoid:**
+
 - ❌ Force unwrapping (`!`) unless absolutely certain
 - ❌ Implicitly unwrapped optionals (`var value: String!`)
 - ❌ Magic numbers (use named constants)
@@ -499,6 +535,7 @@ let interval = 30  // TAK protocol recommends 30-second PLI intervals for mobile
 - ❌ God objects (single class doing too much)
 
 **Prefer:**
+
 - ✅ Optional binding (`guard let`, `if let`)
 - ✅ Named constants for configuration values
 - ✅ Flat code structure (early returns)
@@ -513,20 +550,24 @@ let interval = 30  // TAK protocol recommends 30-second PLI intervals for mobile
 ### Branch Strategy
 
 **Main Branches:**
+
 - `main` - Production-ready code
 - `develop` - Integration branch for features
 
 **Feature Branches:**
+
 - Create from `develop`
 - Naming: `feature/short-description`
 - Example: `feature/medevac-report`, `feature/offline-maps`
 
 **Bugfix Branches:**
+
 - Create from `main` (hotfix) or `develop` (regular fix)
 - Naming: `bugfix/issue-description`
 - Example: `bugfix/chat-crash`, `bugfix/certificate-import`
 
 **Release Branches:**
+
 - Create from `develop`
 - Naming: `release/version`
 - Example: `release/1.3.0`
@@ -555,6 +596,7 @@ git push origin feature/my-awesome-feature
 ### Commit Messages
 
 **Format:**
+
 ```
 <type>: <subject>
 
@@ -564,6 +606,7 @@ git push origin feature/my-awesome-feature
 ```
 
 **Types:**
+
 - `feat:` - New feature
 - `fix:` - Bug fix
 - `docs:` - Documentation changes
@@ -574,6 +617,7 @@ git push origin feature/my-awesome-feature
 - `chore:` - Build process, dependencies, etc.
 
 **Examples:**
+
 ```bash
 # Good commit messages
 git commit -m "feat: Add MEDEVAC 9-line report generation"
@@ -587,6 +631,7 @@ git commit -m "WIP"
 ```
 
 **Detailed Commit:**
+
 ```bash
 git commit -m "feat: Add offline map tile downloader
 
@@ -641,18 +686,20 @@ git push origin feature/my-feature --force
 **Location:** `OmniTAKMobileTests/`
 
 **Running Tests:**
+
 ```bash
 # In Xcode: Cmd + U
 # Or: Product → Test
 ```
 
 **Writing Tests:**
+
 ```swift
 import XCTest
 @testable import OmniTAKMobile
 
 class CoTMessageParserTests: XCTestCase {
-    
+
     func testParsePositionUpdate() {
         // Arrange
         let xmlString = """
@@ -661,10 +708,10 @@ class CoTMessageParserTests: XCTestCase {
             <point lat="38.8977" lon="-77.0365" hae="50.0" ce="10.0" le="5.0"/>
         </event>
         """
-        
+
         // Act
         let event = CoTMessageParser.parse(xmlString)
-        
+
         // Assert
         XCTAssertNotNil(event)
         XCTAssertEqual(event?.uid, "TEST-123")
@@ -675,6 +722,7 @@ class CoTMessageParserTests: XCTestCase {
 ```
 
 **Test Coverage:**
+
 - Core functionality should have unit tests
 - CoT parsing/generation
 - Coordinate conversions
@@ -686,27 +734,28 @@ class CoTMessageParserTests: XCTestCase {
 **Location:** `OmniTAKMobileUITests/`
 
 **Example:**
+
 ```swift
 import XCTest
 
 class ChatFlowUITests: XCTestCase {
-    
+
     func testSendChatMessage() throws {
         let app = XCUIApplication()
         app.launch()
-        
+
         // Navigate to chat
         app.buttons["Chat"].tap()
         app.buttons["All Chat Rooms"].tap()
-        
+
         // Type message
         let messageField = app.textFields["Type a message"]
         messageField.tap()
         messageField.typeText("Test message")
-        
+
         // Send
         app.buttons["Send"].tap()
-        
+
         // Verify message appears
         XCTAssertTrue(app.staticTexts["Test message"].exists)
     }
@@ -716,6 +765,7 @@ class ChatFlowUITests: XCTestCase {
 ### Manual Testing
 
 **Before Submitting PR, Test:**
+
 1. ✅ Build succeeds with no warnings
 2. ✅ Feature works as expected
 3. ✅ No crashes or freezes
@@ -725,6 +775,7 @@ class ChatFlowUITests: XCTestCase {
 7. ✅ Doesn't break existing functionality
 
 **Test Devices:**
+
 - iPhone (any size class)
 - iPad (large size class)
 - Simulator + physical device
@@ -736,27 +787,33 @@ class ChatFlowUITests: XCTestCase {
 ### Creating a Pull Request
 
 **1. Push Your Feature Branch**
+
 ```bash
 git push origin feature/my-awesome-feature
 ```
 
 **2. Open Pull Request on GitHub**
+
 - Navigate to your fork on GitHub
 - Click "Compare & pull request" button
 - Select base: `develop` ← compare: `feature/my-awesome-feature`
 
 **3. Fill Out PR Template**
+
 ```markdown
 ## Description
+
 Brief summary of changes.
 
 ## Type of Change
+
 - [ ] Bug fix (non-breaking change which fixes an issue)
 - [x] New feature (non-breaking change which adds functionality)
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 - [ ] Documentation update
 
 ## Testing
+
 - [x] Unit tests added/updated
 - [x] Tested on iPhone simulator
 - [x] Tested on iPad simulator
@@ -764,9 +821,11 @@ Brief summary of changes.
 - [x] No regressions in existing features
 
 ## Screenshots (if applicable)
+
 [Add screenshots here]
 
 ## Checklist
+
 - [x] My code follows the project's coding standards
 - [x] I have performed a self-review of my code
 - [x] I have commented my code, particularly in hard-to-understand areas
@@ -776,22 +835,26 @@ Brief summary of changes.
 - [x] New and existing unit tests pass locally with my changes
 
 ## Related Issues
+
 Closes #123
 ```
 
 **4. Wait for Review**
+
 - Maintainers will review your PR
 - Address any feedback promptly
 - Make requested changes and push to same branch
 - PR will auto-update
 
 **5. Merge**
+
 - Once approved, maintainer will merge
 - Your contribution is live! 🎉
 
 ### PR Guidelines
 
 **Good PRs:**
+
 - ✅ Focused on a single feature/fix
 - ✅ Well-described with clear purpose
 - ✅ Include tests
@@ -800,6 +863,7 @@ Closes #123
 - ✅ Passes all CI checks
 
 **Avoid:**
+
 - ❌ Mixing multiple unrelated changes
 - ❌ Massive PRs with 1000+ line changes
 - ❌ No description or context
@@ -813,6 +877,7 @@ Closes #123
 ### When to Update Docs
 
 **Always update documentation for:**
+
 - New features (add to FEATURES.md)
 - API changes (update API_REFERENCE.md)
 - Architecture changes (update ARCHITECTURE.md)
@@ -840,12 +905,14 @@ docs/
 ### Writing Style
 
 **Clear and Concise:**
+
 - Use simple language
 - Short paragraphs
 - Bullet points for lists
 - Code examples where helpful
 
 **Structure:**
+
 - Start with brief overview
 - Include step-by-step instructions
 - Provide code examples
@@ -859,6 +926,7 @@ docs/
 ### Getting Help
 
 **Questions?**
+
 - Review existing documentation
 - Check GitHub Issues for similar questions
 - Open a new Discussion on GitHub
@@ -867,16 +935,19 @@ docs/
 ### Reporting Bugs
 
 **Before Reporting:**
+
 1. Check if bug already reported
 2. Verify it's reproducible
 3. Collect relevant information
 
 **Bug Report Template:**
+
 ```markdown
 **Description**
 Clear description of the bug.
 
 **Steps to Reproduce**
+
 1. Go to '...'
 2. Click on '...'
 3. Scroll down to '...'
@@ -892,6 +963,7 @@ What actually happened.
 If applicable, add screenshots.
 
 **Environment:**
+
 - Device: iPhone 15 Pro
 - iOS Version: 17.0
 - App Version: 1.2.0
@@ -904,6 +976,7 @@ Any other relevant information.
 ### Feature Requests
 
 **Feature Request Template:**
+
 ```markdown
 **Feature Description**
 Clear description of the proposed feature.
@@ -924,6 +997,7 @@ Mockups, examples from other apps, etc.
 ### Recognition
 
 Contributors will be recognized in:
+
 - Release notes
 - Contributors list in README
 - GitHub Contributors graph
