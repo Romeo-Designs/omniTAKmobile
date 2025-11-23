@@ -29,23 +29,23 @@ This is a native iOS application that showcases the capabilities of OmniTAK Mobi
 
 ### Implemented
 
--  Native iOS app with Swift UI
--  OmniTAK native library integration via XCFramework
--  MapLibre GL Native map rendering
--  TAK server connection management
--  CoT message send/receive
--  Location services integration
--  Unit and integration tests
--  Simulator and device support
+- Native iOS app with Swift UI
+- OmniTAK native library integration via XCFramework
+- MapLibre GL Native map rendering
+- TAK server connection management
+- CoT message send/receive
+- Location services integration
+- Unit and integration tests
+- Simulator and device support
 
 ### Planned
 
--  Valdi TypeScript UI integration
--  Advanced map features (layers, annotations)
--  Certificate management UI
--  Settings and preferences
--  Background location tracking
--  Push notifications
+- Valdi TypeScript UI integration
+- Advanced map features (layers, annotations)
+- Certificate management UI
+- Settings and preferences
+- Background location tracking
+- Push notifications
 
 ## Architecture
 
@@ -219,7 +219,7 @@ Required iOS permissions are configured in `Info.plist`:
 
 Change the MapLibre style in `ViewController.swift`:
 
-```swift
+````swift
 // Default: MapLibre demo tiles
 let mapURL = URL(string: "https://demotiles.maplibre.org/style.json").
 // Alternative: Mapbox streets (requires API key)
@@ -250,7 +250,7 @@ bridge.connect(config: config) { connectionId in
         print("Connection failed")
     }
 }
-```
+````
 
 ### Send CoT Message
 

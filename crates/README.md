@@ -27,6 +27,7 @@ crates/
 ### omnitak-core
 
 Core types and utilities used across all crates:
+
 - `Protocol` enum (TCP, UDP, TLS, WebSocket)
 - `ConnectionConfig` for connection parameters
 - `ConnectionState` enum
@@ -34,6 +35,7 @@ Core types and utilities used across all crates:
 ### omnitak-cot
 
 Cursor on Target (CoT) message handling:
+
 - `CotMessage` struct for representing CoT events
 - `Point` struct for geographic coordinates
 - XML parsing and generation
@@ -42,6 +44,7 @@ Cursor on Target (CoT) message handling:
 ### omnitak-cert
 
 Certificate and TLS configuration:
+
 - `CertBundle` for managing certificates
 - TLS client configuration builder
 - PEM certificate parsing
@@ -50,6 +53,7 @@ Certificate and TLS configuration:
 ### omnitak-client
 
 TAK server client implementation:
+
 - `TakClient` for managing connections
 - Support for TCP, UDP, and TLS protocols
 - Async I/O with tokio
@@ -59,6 +63,7 @@ TAK server client implementation:
 ### omnitak-mobile
 
 FFI bridge for mobile platforms:
+
 - C-compatible interface
 - Connection management with global state
 - Callback system for receiving CoT messages
@@ -70,12 +75,14 @@ FFI bridge for mobile platforms:
 ### Prerequisites
 
 1. **Rust Toolchain**
+
    ```bash
    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
    source $HOME/.cargo/env
    ```
 
 2. **iOS Targets** (for iOS builds)
+
    ```bash
    rustup target add aarch64-apple-ios
    rustup target add aarch64-apple-ios-sim
@@ -98,6 +105,7 @@ cd crates
 ```
 
 This will:
+
 1. Build for all iOS architectures (arm64 device, arm64 + x86_64 simulator)
 2. Create a universal simulator binary
 3. Package into an XCFramework
@@ -212,6 +220,7 @@ All FFI functions are thread-safe and can be called from any thread.
 ### Error Handling
 
 FFI functions return:
+
 - `0` for success
 - `-1` for errors
 - `0` for invalid connection ID
@@ -221,6 +230,7 @@ Detailed errors are logged via `tracing` and can be retrieved via `omnitak_get_s
 ## Dependencies
 
 Key dependencies:
+
 - **tokio**: Async runtime for I/O
 - **rustls**: TLS implementation
 - **dashmap**: Concurrent hashmap
@@ -261,6 +271,7 @@ See `../docs/modules/omnitak_mobile/ios/native/README.md` for Swift integration 
 - Android: ~2-3 MB per architecture
 
 Optimizations enabled in release builds:
+
 - Size optimization (`opt-level = "z"`)
 - Link-time optimization (LTO)
 - Symbol stripping

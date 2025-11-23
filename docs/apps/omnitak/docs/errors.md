@@ -476,12 +476,10 @@ This document summarizes notable error types, failure modes, and fragile areas i
 When you hit an error, check:
 
 1. **Build vs Runtime**
-   
    - Build: Bazel/Cargo/Gradle/Xcode logs.
    - Runtime: app/server logs, `tracing` output.
 
 2. **Component**
-   
    - Core types: `omnitak-core`.
    - CoT parsing: `omnitak-cot`.
    - Certificates/TLS: `omnitak-cert`.
@@ -490,7 +488,6 @@ When you hit an error, check:
    - Mobile integration: `omnitak-mobile` + platform projects.
 
 3. **Environment**
-   
    - Toolchain versions (Rust, Node, Bazel, Android SDK/NDK, Xcode).
    - Network reachability and TLS configuration.
    - Correct cert/key files and CA trust.

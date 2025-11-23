@@ -14,12 +14,14 @@
 ### 1. Add State Variables (around line 19)
 
 Add after line 19:
+
 ```swift
 @State private var showOfflineMaps = false
 @State private var useOfflineTiles = true
 ```
 
 Add after line 9:
+
 ```swift
 @StateObject private var offlineMapManager = OfflineMapManager.shared
 @StateObject private var networkMonitor = NetworkMonitor.shared
@@ -28,6 +30,7 @@ Add after line 9:
 ### 2. Modify TacticalMapView struct (around line 954)
 
 Add `useOfflineTiles` parameter:
+
 ```swift
 struct TacticalMapView: UIViewRepresentable {
     @Binding var region: MKCoordinateRegion
@@ -60,6 +63,7 @@ TacticalMapView(
 ### 4. Add Offline Tile Overlay in makeUIView (around line 964)
 
 After creating mapView, add:
+
 ```swift
 // Add offline tile overlay if enabled
 if useOfflineTiles {
@@ -71,6 +75,7 @@ if useOfflineTiles {
 ### 5. Add Renderer for Tile Overlay in Coordinator
 
 Add this method to the Coordinator class (after line 1135):
+
 ```swift
 func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
     if let tileOverlay = overlay as? OfflineTileOverlay {
@@ -127,6 +132,7 @@ func isDrawingAnnotation(_ annotation: MKAnnotation) -> Bool {
 ### 7. Modify ATAKBottomToolbar (around line 396)
 
 Add binding parameter:
+
 ```swift
 struct ATAKBottomToolbar: View {
     @Binding var mapType: MKMapType
@@ -141,6 +147,7 @@ struct ATAKBottomToolbar: View {
 ```
 
 Add offline maps button before "Drawing List" button (around line 446):
+
 ```swift
 // Offline Maps
 ToolButton(icon: "arrow.down.circle", label: "Maps") {
@@ -170,6 +177,7 @@ ATAKBottomToolbar(
 ### 9. Add Sheet for Offline Maps View (around line 184)
 
 Add after the ServerConfigView sheet:
+
 ```swift
 .sheet(isPresented: $showOfflineMaps) {
     OfflineMapsView()
@@ -179,6 +187,7 @@ Add after the ServerConfigView sheet:
 ### 10. Add Network Status Indicator to Status Bar (optional, around line 332)
 
 Modify ATAKStatusBar to include network status:
+
 ```swift
 struct ATAKStatusBar: View {
     let connectionStatus: String
@@ -193,6 +202,7 @@ struct ATAKStatusBar: View {
 ```
 
 Add network indicator in the HStack (around line 372):
+
 ```swift
 // Network Status (before GPS Status)
 HStack(spacing: 4) {
@@ -205,6 +215,7 @@ HStack(spacing: 4) {
 ```
 
 Update ATAKStatusBar usage (around line 91):
+
 ```swift
 ATAKStatusBar(
     connectionStatus: takService.connectionStatus,
@@ -222,6 +233,7 @@ ATAKStatusBar(
 ## Required Info.plist Changes
 
 Add the following to Info.plist:
+
 ```xml
 <key>NSLocationWhenInUseUsageDescription</key>
 <string>OmniTAK needs your location to display your position on the map and download regional maps.</string>
@@ -250,6 +262,7 @@ Add the following to Info.plist:
 ## Architecture
 
 ### Directory Structure
+
 ```
 Documents/
 └── OfflineMaps/

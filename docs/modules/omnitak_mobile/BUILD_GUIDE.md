@@ -7,18 +7,21 @@ This guide provides step-by-step instructions for building the OmniTAK Mobile na
 ### Required Tools
 
 **For iOS:**
+
 - macOS 12.0+ (Monterey or later)
 - Xcode 14.0+
 - Command Line Tools: `xcode-select --install`
 - Rust toolchain: `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
 
 **For Android:**
+
 - Android Studio Arctic Fox or later
 - Android NDK r21 or later
 - CMake 3.18.1+
 - Rust toolchain (same as above)
 
 **For Both:**
+
 - Rust 1.70+
 - cargo-lipo (iOS): `cargo install cargo-lipo`
 - cbindgen: `cargo install cbindgen`
@@ -69,6 +72,7 @@ cargo build --release --target x86_64-apple-ios
 ```
 
 Build output locations:
+
 - `../../target/aarch64-apple-ios/release/libomnitak_mobile.a`
 - `../../target/aarch64-apple-ios-sim/release/libomnitak_mobile.a`
 - `../../target/x86_64-apple-ios/release/libomnitak_mobile.a`
@@ -310,6 +314,7 @@ chmod +x build_all.sh
 If mixing Objective-C, create bridging header:
 
 **ProjectName-Bridging-Header.h:**
+
 ```objc
 #import "omnitak_mobile.h"
 ```
@@ -379,6 +384,7 @@ dependencies {
 **Error: `ld: framework not found OmniTAKMobile`**
 
 Solution:
+
 - Check XCFramework is in correct location
 - Verify framework is added to target
 - Clean build folder: Product → Clean Build Folder
@@ -386,6 +392,7 @@ Solution:
 **Error: `Undefined symbol: _omnitak_init`**
 
 Solution:
+
 - Ensure XCFramework contains static library
 - Check that library is linked in Build Phases
 - Verify correct architecture is being built
@@ -395,6 +402,7 @@ Solution:
 **Error: `CMake Error: Could not find CMAKE_MAKE_PROGRAM`**
 
 Solution:
+
 ```bash
 # In Android Studio: Tools → SDK Manager → SDK Tools
 # Check "CMake" and "NDK"
@@ -403,6 +411,7 @@ Solution:
 **Error: `ld: cannot find -lomnitak_rust`**
 
 Solution:
+
 - Verify Rust libraries are in `android/native/lib/${ABI}/`
 - Check file is named `libomnitak_mobile.a` (not `.so`)
 - Clean and rebuild
@@ -410,6 +419,7 @@ Solution:
 **Error: `A problem occurred configuring project ':app'`**
 
 Solution:
+
 - Check CMakeLists.txt path in build.gradle
 - Ensure path is relative to app module
 - Sync Gradle files
@@ -419,6 +429,7 @@ Solution:
 **Error: `error: linker 'aarch64-linux-android30-clang' not found`**
 
 Solution:
+
 - Verify `ANDROID_NDK_HOME` is set correctly
 - Check `~/.cargo/config.toml` has correct paths
 - Update NDK version in config to match installed version
@@ -426,6 +437,7 @@ Solution:
 **Error: `failed to run custom build command for openssl-sys`**
 
 Solution (if using TLS):
+
 ```bash
 # Install OpenSSL for cross-compilation
 brew install openssl@3
@@ -445,9 +457,9 @@ name: Build Native Libraries
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build-ios:

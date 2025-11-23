@@ -182,7 +182,7 @@ Views (`TrackRecordingView`, `TrackListView`) → `TrackRecordingService` → Lo
 
 Dependencies:
 
-`ArcGISPortalView` → `ArcGISPortalService` → ArcGIS REST endpoints.  
+`ArcGISPortalView` → `ArcGISPortalService` → ArcGIS REST endpoints.
 
 Other services such as `ArcGISFeatureService` and `OfflineMapManager` likely consume `ArcGISPortalService.credentials` to access secure feature layers or tile services.
 
@@ -316,7 +316,6 @@ All of these integrate either with TAK (via CoT) or with third-party backends (e
 ### Patterns actually present
 
 1. **Singleton services and managers**
-
    - Almost all services are exposed as:
      ```swift
      class ChatService: ObservableObject {
@@ -335,7 +334,6 @@ All of these integrate either with TAK (via CoT) or with third-party backends (e
      - Receive an instance via initializer parameters, which are then derived from `.shared` at composition time.
 
 2. **Manual configuration methods**
-
    - Several services expose `configure(...)` methods that are called during app startup or when dependencies become available:
 
    ```swift
@@ -349,7 +347,6 @@ All of these integrate either with TAK (via CoT) or with third-party backends (e
    This is a form of setter/late injection, but not through a DI container.
 
 3. **Environment and ObservedObjects**
-
    - Views use typical SwiftUI patterns:
 
      ```swift
@@ -361,7 +358,6 @@ All of these integrate either with TAK (via CoT) or with third-party backends (e
    - These interact with `ObservableObject` managers and services.
 
 4. **Protocol-based interfaces (limited but present)**
-
    - `Architecture.md` describes protocols like:
 
      ```swift
@@ -373,7 +369,7 @@ All of these integrate either with TAK (via CoT) or with third-party backends (e
    - Generators like `ChatCoTGenerator`, `GeofenceCoTGenerator` likely conform to these protocols and can be substituted in tests.
    - However, services mostly depend on concrete singletons rather than protocols.
 
-### Things that are *not* present
+### Things that are _not_ present
 
 - No use of a third-party DI framework (e.g., Needle, Resolver, Swinject).
 - No centralized composition root that wires the whole object graph; initialization is mostly implicit via singletons and `@StateObject` instantiation.
@@ -382,7 +378,7 @@ All of these integrate either with TAK (via CoT) or with third-party backends (e
 
 - **Testability**:
   - Direct use of `static let shared` and concrete types makes unit testing harder; dependencies like `TAKService` or `ArcGISPortalService` are difficult to mock.
-  - Some injection exists via `configure(...)`, so for those services you *can* pass in mocked instances.
+  - Some injection exists via `configure(...)`, so for those services you _can_ pass in mocked instances.
 
 - **Lifecycle management**:
   - Singleton lifetime equals app lifetime; background tasks, timers (like `ChatService.retryTimer`) are pinned to app lifecycle and can become subtle sources of leaks or unwanted background activity.
@@ -407,7 +403,6 @@ Feature-specific clusters (e.g., Chat, Offline Maps, Measurement, Meshtastic) ar
    - The main, desired path. Views rarely reach into Services directly; they usually talk via Managers.
 
 2. **Singleton cross-links**
-
    - Many components reference each other through `.shared`, creating hidden coupling:
      - `ChatService` → `ChatManager.shared`, `ChatStorageManager.shared`.
      - Likely `TAKService.shared` is used inside other services rather than passed in.
@@ -415,7 +410,6 @@ Feature-specific clusters (e.g., Chat, Offline Maps, Measurement, Meshtastic) ar
 3. **Service ↔ Manager bidirectional coupling**
 
    Example from `ChatService.swift`:
-
    - `ChatService` holds `private let chatManager = ChatManager.shared`.
    - Docs for `ChatManager` show it calls methods on `ChatService` (or expects to be configured by `ChatService`/TAK).
    - This creates a risk of circular conceptual dependency:
@@ -424,13 +418,11 @@ Feature-specific clusters (e.g., Chat, Offline Maps, Measurement, Meshtastic) ar
    - Practically, the direction is Manager as UI-facing state, Service as backend; but because both are singletons they are tightly intertwined.
 
 4. **TAKService as a central hub**
-
    - Many services depend on `TAKService` (for sending/receiving CoT).
    - `TAKService` requests configuration from `ServerManager` and `CertificateManager`.
    - Changes in `TAKService` (connection semantics, queueing, CoT parsing) can affect chat, PLI, tracks, team, video, etc.
 
 5. **Rust xcframework bypass**
-
    - Networking is currently done via `DirectTCPSender` in Swift despite the xcframework existing.
    - When or if the Rust FFI is re-enabled, the dependency surface changes significantly:
      - `TAKService` would depend on the xcframework C-API (`omnitak_mobile.h`).
@@ -511,7 +503,6 @@ Below is a simplified textual graph of major components and their dependencies. 
 ## Potential Dependency Issues
 
 1. **Singleton-heavy architecture**
-
    - Impact:
      - Harder to unit test isolated components (e.g., Chat or TAKService logic) because dependencies are globally shared and concrete.
      - Increases implicit coupling; changes in a singleton ripple across users unexpectedly.
@@ -520,7 +511,6 @@ Below is a simplified textual graph of major components and their dependencies. 
      - Views and managers should depend on protocol types; actual instances provided via environment or initializers.
 
 2. **Service ↔ Manager bidirectional coupling**
-
    - Chat is the clearest example:
      - `ChatService` owns `ChatManager.shared` and subscribes to it.
      - `ChatManager` also coordinates with `ChatService`.
@@ -534,7 +524,6 @@ Below is a simplified textual graph of major components and their dependencies. 
      - Decouple with protocols and events rather than shared singletons.
 
 3. **Centralization on `TAKService`**
-
    - Many features depend on `TAKService`. It is effectively a “god object” for network/CoT:
      - Complex, 1100+ lines.
      - Hard to reason about behavior across all CoT types.
@@ -544,7 +533,6 @@ Below is a simplified textual graph of major components and their dependencies. 
        - Transport concerns (socket/connect/reconnect/TLS) into a separate `TransportClient` protocol already partially represented by `DirectTCPSender`.
 
 4. **TLS security posture embedded in `DirectTCPSender`**
-
    - `DirectTCPSender`:
      - Accepts all server certificates in the verification callback, to accommodate self-signed TAK servers.
      - Adds legacy ciphers and TLS 1.0/1.1 when `allowLegacyTLS` is enabled.
@@ -560,7 +548,6 @@ Below is a simplified textual graph of major components and their dependencies. 
      - Associate policy with `TAKServer` model.
 
 5. **Rust xcframework integration bypassed**
-
    - `DirectTCPSender` is explicitly described as “bypassing incomplete Rust FFI”.
    - There are two parallel paths:
      - Current live Swift network path.
@@ -572,7 +559,6 @@ Below is a simplified textual graph of major components and their dependencies. 
      - Define a single abstract interface for the transport; both Rust-based and `DirectTCPSender`-based clients should conform.
 
 6. **Plugin system is currently UI-only**
-
    - `PluginsListView` shows plugin toggles but they don’t hook into any extensible API.
    - Future real plugin support will need:
      - A plugin registry service.
@@ -582,7 +568,6 @@ Below is a simplified textual graph of major components and their dependencies. 
      - Avoid letting plugins access `TAKService.shared` directly; pass them scoped interfaces.
 
 7. **Testing and mocking external integrations**
-
    - External APIs (TAK, ArcGIS, Elevation) are called directly via `URLSession`/`NWConnection` in concrete services.
    - No obvious abstraction for:
      - Mocking ArcGIS responses.
@@ -594,7 +579,6 @@ Below is a simplified textual graph of major components and their dependencies. 
      - Provide default implementations using `URLSession`/`NWConnection` and allow tests to inject mocks.
 
 8. **Potential for circular runtime dependencies**
-
    - While the typegraph doesn’t show compile-time cycles, patterns like:
      - Service A holds `static let shared` of B, and B holds `static let shared` of A or uses A in its initializer.
    - This is not visible fully from the partial snippets, but should be checked carefully, especially around:

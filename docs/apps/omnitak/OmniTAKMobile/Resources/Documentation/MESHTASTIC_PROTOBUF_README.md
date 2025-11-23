@@ -28,7 +28,9 @@ OmniTAK Mobile now includes a complete Protobuf parser for Meshtastic mesh netwo
 ## Message Types Supported
 
 ### MeshPacket
+
 Main envelope for all mesh network packets:
+
 - Source/destination node IDs
 - Channel information
 - Signal metrics (SNR, RSSI)
@@ -36,7 +38,9 @@ Main envelope for all mesh network packets:
 - Encrypted/decrypted payload
 
 ### NodeInfo
+
 Complete node information:
+
 - Node ID and names (short/long)
 - User information
 - Position data
@@ -46,7 +50,9 @@ Complete node information:
 - Hop distance
 
 ### Position
+
 GPS/location data:
+
 - Latitude/longitude (1e-7 precision)
 - Altitude (MSL and HAE)
 - GPS accuracy metrics (PDOP, HDOP, VDOP)
@@ -54,7 +60,9 @@ GPS/location data:
 - Fix quality and satellite count
 
 ### User
+
 Node owner information:
+
 - Unique ID and names
 - Hardware model
 - MAC address
@@ -62,14 +70,18 @@ Node owner information:
 - Node role (client/router)
 
 ### DeviceMetrics
+
 Hardware telemetry:
+
 - Battery level and voltage
 - Channel utilization
 - Air utilization (TX)
 - Uptime
 
 ### Data
+
 Application-level messages:
+
 - Port number (message type)
 - Payload data
 - Request/reply IDs
@@ -181,10 +193,10 @@ To fully integrate with hardware, the bridge should provide:
 protocol OmniTAKNativeBridge {
     // Request node database (returns array of NodeInfo protobuf messages)
     func requestNodeDatabase(_ connectionId: UInt64) -> [Data]
-    
+
     // Send protobuf message to mesh
     func sendMeshPacket(_ connectionId: UInt64, packet: Data) -> Bool
-    
+
     // Register callback for incoming packets
     func registerPacketHandler(_ connectionId: UInt64, handler: @escaping (Data) -> Void)
 }

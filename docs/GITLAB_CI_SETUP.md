@@ -68,21 +68,25 @@ Or use the download button at the top of the pipeline page.
 The `.gitlab-ci.yml` already configured with:
 
 ### 1. Setup Environment
+
 - Installs Bazel 7.2.1
 - Installs Rust with Android targets
 - Downloads Android SDK/NDK
 
 ### 2. Validate Project
+
 - Checks BUILD.bazel files
 - Verifies project structure
 - Validates configuration
 
 ### 3. Build Rust Native Libraries
+
 - Builds for arm64-v8a, armeabi-v7a, x86_64, x86
 - Caches libraries for faster subsequent builds
 - Stores as artifacts
 
 ### 4. Build Android APK
+
 - Uses Bazel to build APK
 - Creates debug and release APKs
 - Stores APKs as artifacts (1 week retention)
@@ -92,6 +96,7 @@ The `.gitlab-ci.yml` already configured with:
 ### Change APK Name
 
 Edit `.gitlab-ci.yml` line 229:
+
 ```yaml
 - cp bazel-bin/apps/omnitak_android/omnitak_android.apk build-outputs/omnitak-v1.0.0.apk
 ```
@@ -112,6 +117,7 @@ only:
 ```
 
 Then trigger builds with:
+
 ```bash
 git tag -a v1.0.0 -m "Release v1.0.0"
 git push gitlab v1.0.0
@@ -122,6 +128,7 @@ git push gitlab v1.0.0
 For production releases, add signing configuration:
 
 1. **Generate keystore**:
+
    ```bash
    keytool -genkey -v -keystore release.keystore -alias omnitak -keyalg RSA -keysize 2048 -validity 10000
    ```
@@ -152,6 +159,7 @@ For production releases, add signing configuration:
 ### Email Notifications
 
 GitLab sends emails by default when:
+
 - ✓ Pipeline succeeds (first successful after failures)
 - ✗ Pipeline fails
 
@@ -167,6 +175,7 @@ Configure in: **Settings → Notifications**
 ### Build Status Badge
 
 Add to README.md:
+
 ```markdown
 [![Pipeline Status](https://gitlab.com/YOUR_USERNAME/omnitak-mobile/badges/main/pipeline.svg)](https://gitlab.com/YOUR_USERNAME/omnitak-mobile/-/pipelines)
 ```
@@ -176,10 +185,12 @@ Add to README.md:
 ### "No runners available"
 
 **For GitLab.com** (shared runners):
+
 - Go to **Settings → CI/CD → Runners**
 - Enable "Enable shared runners for this project"
 
 **For self-hosted GitLab**:
+
 - You need to setup a GitLab Runner (see docs/BUILD_ANDROID.md)
 
 ### "Build timeout"
@@ -187,6 +198,7 @@ Add to README.md:
 Default timeout is 1 hour. First builds take ~25 minutes.
 
 To increase:
+
 - **Settings → CI/CD → General pipelines**
 - Change **Timeout** to 2 hours
 
@@ -201,11 +213,13 @@ The pipeline caches Rust libraries between builds. If cache is corrupted:
 ### "Bazel build failed"
 
 Check the job logs for specific errors:
+
 1. Click on the failed job
 2. Scroll through the logs
 3. Look for "ERROR:" lines
 
 Common issues:
+
 - Missing native libraries → Check build_rust_libraries stage
 - Bazel syntax errors → Validate BUILD.bazel files locally
 - Platform mismatch → (This shouldn't happen on Linux CI)
@@ -237,11 +251,13 @@ Common issues:
 ### Cost Optimization (CI/CD Minutes)
 
 **GitLab.com**:
+
 - Free tier: 400 CI/CD minutes/month
 - Android build: ~25 minutes
 - You can do ~16 builds/month on free tier
 
 **Self-hosted Runner**:
+
 - Unlimited minutes
 - Run on your own hardware
 - See docs/BUILD_ANDROID.md for setup

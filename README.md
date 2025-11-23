@@ -432,11 +432,11 @@ The exact CoT types and XML schemas align with TAK/CoT conventions and are const
 
 The Marti HTTP router currently includes at least the following endpoints:
 
-| Method | Path                          | Description                                                    |
-|--------|-------------------------------|----------------------------------------------------------------|
-| GET    | `/Marti/api/version`          | Returns server version and identity metadata                   |
-| GET    | `/Marti/api/clientEndPoints`  | Returns available client endpoints (structure inferred)        |
-| GET    | `/Marti/api/tls/config`       | Returns TLS configuration (structure inferred)                 |
+| Method | Path                         | Description                                             |
+| ------ | ---------------------------- | ------------------------------------------------------- |
+| GET    | `/Marti/api/version`         | Returns server version and identity metadata            |
+| GET    | `/Marti/api/clientEndPoints` | Returns available client endpoints (structure inferred) |
+| GET    | `/Marti/api/tls/config`      | Returns TLS configuration (structure inferred)          |
 
 ##### `GET /Marti/api/version`
 

@@ -35,20 +35,24 @@ cd omni-BASE
 ### Step 2: Make Your Change
 
 Find the file you want to change and edit it with any text editor:
+
 - **TextEdit** (Mac)
 - **Notepad** (Windows)
 - **VS Code** (recommended, free download)
 
 Save your changes.
+
 ### Step 3: Test Your Changes (Optional but Nice)
 
 If you changed code:
+
 ```bash
 # Test it still builds
 ./scripts/build_ios.sh simulator debug
 ```
 
 If you just changed documentation (like README.md), you're good to go.
+
 ### Step 4: Submit Your Changes
 
 **Option A: Using GitHub Desktop**
@@ -75,6 +79,7 @@ git push
 ### Step 5: Wait for Review
 
 We'll review your pull request within a few days and either:
+
 - Merge it (yay!)
 - Ask questions or request small changes
 - Explain if we can't merge it (rare!)
@@ -113,6 +118,7 @@ We'll review your pull request within a few days and either:
 ## Plugin Contributions
 
 Want to create a plugin? It's easy.
+
 ### Quick Plugin Contribution
 
 ```bash
@@ -156,6 +162,7 @@ Don't worry if you're not perfect - we'll help you improve it.
 ## Reporting Bugs
 
 Found a bug? Help us fix it.
+
 1. **Go to Issues** on GitHub
 2. **Click "New Issue"**
 3. **Tell us:**
@@ -189,6 +196,7 @@ Screenshot: [attached]
 ## Suggesting Features
 
 Have an idea? We'd love to hear it.
+
 1. **Go to Issues** on GitHub
 2. **Click "New Issue"**
 3. **Select "Feature Request"** (if available)
@@ -200,7 +208,7 @@ Have an idea? We'd love to hear it.
 
 ### Good Feature Request Example
 
-```
+````
 Title: Add dark mode toggle
 
 Description:
@@ -324,11 +332,12 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 git clone https://gitlab.com/engindearing/omni-BASE.git
 cd omni-BASE
 ./scripts/build_ios.sh simulator debug
-```
+````
 
 ### Configure Your Editor
 
 We recommend **VS Code** with these extensions:
+
 - Swift
 - Rust Analyzer
 - GitLens
@@ -337,11 +346,13 @@ We recommend **VS Code** with these extensions:
 ### Code Style
 
 We follow:
+
 - **Swift**: [Swift Style Guide](https://google.github.io/swift/)
 - **Rust**: Standard `rustfmt`
 - **TypeScript**: Prettier with default settings
 
 Run formatters before committing:
+
 ```bash
 # Swift
 swiftformat .
@@ -381,22 +392,21 @@ The complete flow for bigger contributions:
 
 ## Types of Contributions We Love
 
-| Type | Difficulty | Impact | Examples |
-|------|-----------|--------|----------|
-| **Documentation** | ⭐ Easy |  High | Fix typos, add examples, improve clarity |
-| **Bug Reports** | ⭐ Easy |  Very High | Find and report issues |
-| **Bug Fixes** | ⭐⭐ Medium |  Very High | Fix reported issues |
-| **Tests** | ⭐⭐ Medium |  Very High | Add unit/integration tests |
-| **Plugins** | ⭐⭐ Medium |  High | Extend functionality |
-| **Features** | ⭐⭐⭐ Hard |  Huge | Add new capabilities |
-| **Architecture** | ⭐⭐⭐ Hard |  Very High | Refactor, optimize |
+| Type              | Difficulty  | Impact    | Examples                                 |
+| ----------------- | ----------- | --------- | ---------------------------------------- |
+| **Documentation** | ⭐ Easy     | High      | Fix typos, add examples, improve clarity |
+| **Bug Reports**   | ⭐ Easy     | Very High | Find and report issues                   |
+| **Bug Fixes**     | ⭐⭐ Medium | Very High | Fix reported issues                      |
+| **Tests**         | ⭐⭐ Medium | Very High | Add unit/integration tests               |
+| **Plugins**       | ⭐⭐ Medium | High      | Extend functionality                     |
+| **Features**      | ⭐⭐⭐ Hard | Huge      | Add new capabilities                     |
+| **Architecture**  | ⭐⭐⭐ Hard | Very High | Refactor, optimize                       |
 
 ## Thank You
 
 Every contribution, no matter how small, makes a difference. Whether you're fixing a typo or adding a major feature, we appreciate you taking the time to make OmniTAK better.
 
-Welcome to the team.
----
+## Welcome to the team.
 
 **Questions?** Open an issue and ask - we're happy to help.
 **Ready to contribute?** Pick an issue labeled `good first issue` to get started.

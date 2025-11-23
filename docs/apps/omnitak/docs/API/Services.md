@@ -1,6 +1,7 @@
 # Services API Reference
 
 ## Table of Contents
+
 - [Overview](#overview)
 - [Core Services](#core-services)
 - [Location & Tracking](#location--tracking)
@@ -50,6 +51,7 @@ All service files are located in: `OmniTAKMobile/Services/`
 Core networking service for TAK server communication.
 
 **Declaration:**
+
 ```swift
 class TAKService: ObservableObject {
     @Published var isConnected: Bool = false
@@ -63,14 +65,15 @@ class TAKService: ObservableObject {
 
 **Key Methods:**
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `connect(host:port:protocolType:)` | `String`, `UInt16`, `String` | `Void` | Connect to TAK server |
-| `disconnect()` | None | `Void` | Disconnect from server |
-| `send(cotMessage:priority:)` | `String`, `MessagePriority` | `Void` | Send CoT XML message |
-| `reconnect()` | None | `Void` | Attempt reconnection |
+| Method                             | Parameters                   | Returns | Description            |
+| ---------------------------------- | ---------------------------- | ------- | ---------------------- |
+| `connect(host:port:protocolType:)` | `String`, `UInt16`, `String` | `Void`  | Connect to TAK server  |
+| `disconnect()`                     | None                         | `Void`  | Disconnect from server |
+| `send(cotMessage:priority:)`       | `String`, `MessagePriority`  | `Void`  | Send CoT XML message   |
+| `reconnect()`                      | None                         | `Void`  | Attempt reconnection   |
 
 **Example:**
+
 ```swift
 let takService = TAKService()
 takService.connect(
@@ -96,10 +99,11 @@ takService.connect(
 Messaging service with queue and retry logic.
 
 **Declaration:**
+
 ```swift
 class ChatService: ObservableObject {
     static let shared = ChatService()
-    
+
     @Published var messages: [ChatMessage] = []
     @Published var conversations: [Conversation] = []
     @Published var participants: [ChatParticipant] = []
@@ -110,15 +114,16 @@ class ChatService: ObservableObject {
 
 **Key Methods:**
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `configure(takService:locationManager:)` | `TAKService`, `LocationManager` | `Void` | Initialize dependencies |
-| `sendTextMessage(_:to:)` | `String`, `String` | `Void` | Send text message |
-| `sendLocationMessage(location:to:)` | `CLLocation`, `String` | `Void` | Send location share |
-| `processQueue()` | None | `Void` | Process queued messages |
-| `markAsRead(_:)` | `String` | `Void` | Mark conversation read |
+| Method                                   | Parameters                      | Returns | Description             |
+| ---------------------------------------- | ------------------------------- | ------- | ----------------------- |
+| `configure(takService:locationManager:)` | `TAKService`, `LocationManager` | `Void`  | Initialize dependencies |
+| `sendTextMessage(_:to:)`                 | `String`, `String`              | `Void`  | Send text message       |
+| `sendLocationMessage(location:to:)`      | `CLLocation`, `String`          | `Void`  | Send location share     |
+| `processQueue()`                         | None                            | `Void`  | Process queued messages |
+| `markAsRead(_:)`                         | `String`                        | `Void`  | Mark conversation read  |
 
 **Example:**
+
 ```swift
 let chatService = ChatService.shared
 chatService.sendTextMessage("Ready to proceed", to: conversationId)
@@ -135,10 +140,11 @@ chatService.sendTextMessage("Ready to proceed", to: conversationId)
 Automatic Position Location Information (PLI) broadcasting.
 
 **Declaration:**
+
 ```swift
 class PositionBroadcastService: ObservableObject {
     static let shared = PositionBroadcastService()
-    
+
     @Published var isEnabled: Bool = false
     @Published var updateInterval: TimeInterval = 30.0
     @Published var staleTime: TimeInterval = 180.0
@@ -154,15 +160,16 @@ class PositionBroadcastService: ObservableObject {
 
 **Key Methods:**
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `configure(takService:locationManager:)` | `TAKService`, `LocationManager` | `Void` | Set up dependencies |
-| `startBroadcasting()` | None | `Void` | Start PLI broadcast |
-| `stopBroadcasting()` | None | `Void` | Stop PLI broadcast |
-| `broadcastPositionNow()` | None | `Void` | Force immediate broadcast |
-| `setUpdateInterval(_:)` | `TimeInterval` | `Void` | Change broadcast frequency |
+| Method                                   | Parameters                      | Returns | Description                |
+| ---------------------------------------- | ------------------------------- | ------- | -------------------------- |
+| `configure(takService:locationManager:)` | `TAKService`, `LocationManager` | `Void`  | Set up dependencies        |
+| `startBroadcasting()`                    | None                            | `Void`  | Start PLI broadcast        |
+| `stopBroadcasting()`                     | None                            | `Void`  | Stop PLI broadcast         |
+| `broadcastPositionNow()`                 | None                            | `Void`  | Force immediate broadcast  |
+| `setUpdateInterval(_:)`                  | `TimeInterval`                  | `Void`  | Change broadcast frequency |
 
 **Example:**
+
 ```swift
 let pliService = PositionBroadcastService.shared
 pliService.userCallsign = "Alpha-1"
@@ -179,10 +186,11 @@ pliService.isEnabled = true       // Start broadcasting
 GPS breadcrumb trail recording service.
 
 **Declaration:**
+
 ```swift
 class TrackRecordingService: ObservableObject {
     static let shared = TrackRecordingService()
-    
+
     @Published var isRecording: Bool = false
     @Published var isPaused: Bool = false
     @Published var currentTrack: Track?
@@ -196,15 +204,16 @@ class TrackRecordingService: ObservableObject {
 
 **Key Methods:**
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `startRecording(name:)` | `String` | `Void` | Start track recording |
-| `pauseRecording()` | None | `Void` | Pause recording |
-| `resumeRecording()` | None | `Void` | Resume recording |
-| `stopRecording()` | None | `Track?` | Stop and save track |
-| `exportTrack(_:format:)` | `Track`, `ExportFormat` | `URL?` | Export as GPX/KML |
+| Method                   | Parameters              | Returns  | Description           |
+| ------------------------ | ----------------------- | -------- | --------------------- |
+| `startRecording(name:)`  | `String`                | `Void`   | Start track recording |
+| `pauseRecording()`       | None                    | `Void`   | Pause recording       |
+| `resumeRecording()`      | None                    | `Void`   | Resume recording      |
+| `stopRecording()`        | None                    | `Track?` | Stop and save track   |
+| `exportTrack(_:format:)` | `Track`, `ExportFormat` | `URL?`   | Export as GPX/KML     |
 
 **Example:**
+
 ```swift
 let trackService = TrackRecordingService.shared
 trackService.startRecording(name: "Patrol Route Alpha")
@@ -224,10 +233,11 @@ if let track = trackService.stopRecording() {
 Emergency SOS beacon with rapid PLI updates.
 
 **Declaration:**
+
 ```swift
 class EmergencyBeaconService: ObservableObject {
     static let shared = EmergencyBeaconService()
-    
+
     @Published var isActive: Bool = false
     @Published var beaconType: BeaconType = .emergency911
     @Published var lastBeaconTime: Date?
@@ -236,11 +246,11 @@ class EmergencyBeaconService: ObservableObject {
 
 **Key Methods:**
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `activateBeacon(type:)` | `BeaconType` | `Void` | Start emergency beacon |
-| `cancelBeacon()` | None | `Void` | Cancel emergency |
-| `sendBeaconUpdate()` | None | `Void` | Send beacon CoT |
+| Method                  | Parameters   | Returns | Description            |
+| ----------------------- | ------------ | ------- | ---------------------- |
+| `activateBeacon(type:)` | `BeaconType` | `Void`  | Start emergency beacon |
+| `cancelBeacon()`        | None         | `Void`  | Cancel emergency       |
+| `sendBeaconUpdate()`    | None         | `Void`  | Send beacon CoT        |
 
 ---
 
@@ -253,6 +263,7 @@ class EmergencyBeaconService: ObservableObject {
 Image compression and transmission for chat.
 
 **Declaration:**
+
 ```swift
 class PhotoAttachmentService {
     func sendPhoto(_ image: UIImage, to conversationId: String)
@@ -270,6 +281,7 @@ class PhotoAttachmentService {
 Laser pointer functionality for map coordination.
 
 **Declaration:**
+
 ```swift
 class DigitalPointerService: ObservableObject {
     @Published var isActive: Bool = false
@@ -280,11 +292,11 @@ class DigitalPointerService: ObservableObject {
 
 **Key Methods:**
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `startPointing(at:)` | `CLLocationCoordinate2D` | `Void` | Start laser pointer |
-| `updatePointer(to:)` | `CLLocationCoordinate2D` | `Void` | Move pointer |
-| `stopPointing()` | None | `Void` | Stop pointer |
+| Method               | Parameters               | Returns | Description         |
+| -------------------- | ------------------------ | ------- | ------------------- |
+| `startPointing(at:)` | `CLLocationCoordinate2D` | `Void`  | Start laser pointer |
+| `updatePointer(to:)` | `CLLocationCoordinate2D` | `Void`  | Move pointer        |
+| `stopPointing()`     | None                     | `Void`  | Stop pointer        |
 
 ---
 
@@ -295,6 +307,7 @@ class DigitalPointerService: ObservableObject {
 Team management and coordination.
 
 **Declaration:**
+
 ```swift
 class TeamService: ObservableObject {
     @Published var teams: [Team] = []
@@ -304,12 +317,12 @@ class TeamService: ObservableObject {
 
 **Key Methods:**
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `createTeam(name:color:)` | `String`, `Color` | `Team` | Create new team |
-| `inviteToTeam(_:uid:)` | `Team`, `String` | `Void` | Invite member |
-| `leaveTeam(_:)` | `Team` | `Void` | Leave team |
-| `broadcastTeamMessage(_:)` | `String` | `Void` | Team broadcast |
+| Method                     | Parameters        | Returns | Description     |
+| -------------------------- | ----------------- | ------- | --------------- |
+| `createTeam(name:color:)`  | `String`, `Color` | `Team`  | Create new team |
+| `inviteToTeam(_:uid:)`     | `Team`, `String`  | `Void`  | Invite member   |
+| `leaveTeam(_:)`            | `Team`            | `Void`  | Leave team      |
+| `broadcastTeamMessage(_:)` | `String`          | `Void`  | Team broadcast  |
 
 ---
 
@@ -322,6 +335,7 @@ class TeamService: ObservableObject {
 Distance and area measurement tools.
 
 **Declaration:**
+
 ```swift
 class MeasurementService: ObservableObject {
     @Published var manager: MeasurementManager
@@ -332,14 +346,15 @@ class MeasurementService: ObservableObject {
 
 **Key Methods:**
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `startMeasurement(type:)` | `MeasurementType` | `Void` | Begin measurement |
-| `addPoint(_:)` | `CLLocationCoordinate2D` | `Void` | Add measurement point |
-| `completeMeasurement()` | None | `Measurement?` | Finish & save |
-| `addRangeRing(center:radius:)` | `CLLocationCoordinate2D`, `Double` | `Void` | Add range ring |
+| Method                         | Parameters                         | Returns        | Description           |
+| ------------------------------ | ---------------------------------- | -------------- | --------------------- |
+| `startMeasurement(type:)`      | `MeasurementType`                  | `Void`         | Begin measurement     |
+| `addPoint(_:)`                 | `CLLocationCoordinate2D`           | `Void`         | Add measurement point |
+| `completeMeasurement()`        | None                               | `Measurement?` | Finish & save         |
+| `addRangeRing(center:radius:)` | `CLLocationCoordinate2D`, `Double` | `Void`         | Add range ring        |
 
 **Example:**
+
 ```swift
 let service = MeasurementService()
 service.startMeasurement(type: .distance)
@@ -358,6 +373,7 @@ print("Distance: \(measurement.distanceMeters)m")
 Range and bearing line calculations.
 
 **Declaration:**
+
 ```swift
 class RangeBearingService: ObservableObject {
     @Published var activeLines: [RangeBearingLine] = []
@@ -366,11 +382,11 @@ class RangeBearingService: ObservableObject {
 
 **Key Methods:**
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `createLine(from:to:)` | `CLLocationCoordinate2D`, `CLLocationCoordinate2D` | `RangeBearingLine` | Create R&B line |
-| `calculateBearing(from:to:)` | `CLLocationCoordinate2D`, `CLLocationCoordinate2D` | `Double` | True bearing (degrees) |
-| `calculateDistance(from:to:)` | `CLLocationCoordinate2D`, `CLLocationCoordinate2D` | `Double` | Distance (meters) |
+| Method                        | Parameters                                         | Returns            | Description            |
+| ----------------------------- | -------------------------------------------------- | ------------------ | ---------------------- |
+| `createLine(from:to:)`        | `CLLocationCoordinate2D`, `CLLocationCoordinate2D` | `RangeBearingLine` | Create R&B line        |
+| `calculateBearing(from:to:)`  | `CLLocationCoordinate2D`, `CLLocationCoordinate2D` | `Double`           | True bearing (degrees) |
+| `calculateDistance(from:to:)` | `CLLocationCoordinate2D`, `CLLocationCoordinate2D` | `Double`           | Distance (meters)      |
 
 ---
 
@@ -381,6 +397,7 @@ class RangeBearingService: ObservableObject {
 Elevation profile generation for routes.
 
 **Declaration:**
+
 ```swift
 class ElevationProfileService: ObservableObject {
     @Published var currentProfile: ElevationProfile?
@@ -390,10 +407,10 @@ class ElevationProfileService: ObservableObject {
 
 **Key Methods:**
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `generateProfile(for:)` | `[CLLocationCoordinate2D]` | Async | Generate elevation profile |
-| `fetchElevation(at:)` | `CLLocationCoordinate2D` | `Double?` | Get single point elevation |
+| Method                  | Parameters                 | Returns   | Description                |
+| ----------------------- | -------------------------- | --------- | -------------------------- |
+| `generateProfile(for:)` | `[CLLocationCoordinate2D]` | Async     | Generate elevation profile |
+| `fetchElevation(at:)`   | `CLLocationCoordinate2D`   | `Double?` | Get single point elevation |
 
 ---
 
@@ -404,6 +421,7 @@ class ElevationProfileService: ObservableObject {
 Line-of-sight visibility analysis.
 
 **Declaration:**
+
 ```swift
 class LineOfSightService: ObservableObject {
     @Published var activeAnalysis: LOSAnalysis?
@@ -413,10 +431,10 @@ class LineOfSightService: ObservableObject {
 
 **Key Methods:**
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `calculateLOS(from:to:)` | `CLLocationCoordinate2D`, `CLLocationCoordinate2D` | Async | Calculate LOS |
-| `findObstructions(along:)` | `[CLLocationCoordinate2D]` | `[LOSObstruction]` | Find blocking terrain |
+| Method                     | Parameters                                         | Returns            | Description           |
+| -------------------------- | -------------------------------------------------- | ------------------ | --------------------- |
+| `calculateLOS(from:to:)`   | `CLLocationCoordinate2D`, `CLLocationCoordinate2D` | Async              | Calculate LOS         |
+| `findObstructions(along:)` | `[CLLocationCoordinate2D]`                         | `[LOSObstruction]` | Find blocking terrain |
 
 ---
 
@@ -427,6 +445,7 @@ class LineOfSightService: ObservableObject {
 Route navigation and guidance.
 
 **Declaration:**
+
 ```swift
 class NavigationService: ObservableObject {
     @Published var activeRoute: Route?
@@ -438,11 +457,11 @@ class NavigationService: ObservableObject {
 
 **Key Methods:**
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `startNavigation(route:)` | `Route` | `Void` | Begin navigation |
-| `stopNavigation()` | None | `Void` | End navigation |
-| `updateLocation(_:)` | `CLLocation` | `Void` | Update nav position |
+| Method                    | Parameters   | Returns | Description         |
+| ------------------------- | ------------ | ------- | ------------------- |
+| `startNavigation(route:)` | `Route`      | `Void`  | Begin navigation    |
+| `stopNavigation()`        | None         | `Void`  | End navigation      |
+| `updateLocation(_:)`      | `CLLocation` | `Void`  | Update nav position |
 
 ---
 
@@ -455,10 +474,11 @@ class NavigationService: ObservableObject {
 Geofence monitoring with entry/exit detection.
 
 **Declaration:**
+
 ```swift
 class GeofenceService: ObservableObject {
     static let shared = GeofenceService()
-    
+
     @Published var activeAlerts: [GeofenceAlert] = []
     @Published var recentEvents: [GeofenceEvent] = []
     @Published var isMonitoring: Bool = false
@@ -467,14 +487,15 @@ class GeofenceService: ObservableObject {
 
 **Key Methods:**
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `addGeofence(_:)` | `Geofence` | `Void` | Add monitored fence |
-| `startMonitoring()` | None | `Void` | Start monitoring all |
-| `stopMonitoring()` | None | `Void` | Stop monitoring |
-| `checkLocation(_:)` | `CLLocation` | `[GeofenceEvent]` | Check for events |
+| Method              | Parameters   | Returns           | Description          |
+| ------------------- | ------------ | ----------------- | -------------------- |
+| `addGeofence(_:)`   | `Geofence`   | `Void`            | Add monitored fence  |
+| `startMonitoring()` | None         | `Void`            | Start monitoring all |
+| `stopMonitoring()`  | None         | `Void`            | Stop monitoring      |
+| `checkLocation(_:)` | `CLLocation` | `[GeofenceEvent]` | Check for events     |
 
 **Example:**
+
 ```swift
 let service = GeofenceService.shared
 let fence = Geofence(
@@ -497,6 +518,7 @@ service.startMonitoring()
 Multi-waypoint route planning with optimization.
 
 **Declaration:**
+
 ```swift
 class RoutePlanningService: ObservableObject {
     @Published var routes: [Route] = []
@@ -506,11 +528,11 @@ class RoutePlanningService: ObservableObject {
 
 **Key Methods:**
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `createRoute(waypoints:)` | `[Waypoint]` | `Route` | Create route |
-| `optimizeRoute(_:)` | `Route` | `Route` | Optimize order |
-| `calculateETA(for:speed:)` | `Route`, `Double` | `TimeInterval` | Estimate time |
+| Method                     | Parameters        | Returns        | Description    |
+| -------------------------- | ----------------- | -------------- | -------------- |
+| `createRoute(waypoints:)`  | `[Waypoint]`      | `Route`        | Create route   |
+| `optimizeRoute(_:)`        | `Route`           | `Route`        | Optimize order |
+| `calculateETA(for:speed:)` | `Route`, `Double` | `TimeInterval` | Estimate time  |
 
 ---
 
@@ -521,6 +543,7 @@ class RoutePlanningService: ObservableObject {
 Quick point marker creation tool.
 
 **Declaration:**
+
 ```swift
 class PointDropperService: ObservableObject {
     @Published var droppedPoints: [PointMarker] = []
@@ -529,10 +552,10 @@ class PointDropperService: ObservableObject {
 
 **Key Methods:**
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `dropPoint(at:type:)` | `CLLocationCoordinate2D`, `String` | `PointMarker` | Drop marker |
-| `deletePoint(_:)` | `PointMarker` | `Void` | Remove marker |
+| Method                | Parameters                         | Returns       | Description   |
+| --------------------- | ---------------------------------- | ------------- | ------------- |
+| `dropPoint(at:type:)` | `CLLocationCoordinate2D`, `String` | `PointMarker` | Drop marker   |
+| `deletePoint(_:)`     | `PointMarker`                      | `Void`        | Remove marker |
 
 ---
 
@@ -543,6 +566,7 @@ class PointDropperService: ObservableObject {
 Military unit hierarchy management.
 
 **Declaration:**
+
 ```swift
 class EchelonService: ObservableObject {
     @Published var units: [MilitaryUnit] = []
@@ -561,6 +585,7 @@ class EchelonService: ObservableObject {
 Data package synchronization.
 
 **Declaration:**
+
 ```swift
 class MissionPackageSyncService: ObservableObject {
     @Published var packages: [MissionPackage] = []
@@ -571,11 +596,11 @@ class MissionPackageSyncService: ObservableObject {
 
 **Key Methods:**
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `syncPackage(_:)` | `MissionPackage` | Async | Sync package |
-| `importPackage(url:)` | `URL` | `MissionPackage?` | Import from file |
-| `exportPackage(_:)` | `MissionPackage` | `URL?` | Export to file |
+| Method                | Parameters       | Returns           | Description      |
+| --------------------- | ---------------- | ----------------- | ---------------- |
+| `syncPackage(_:)`     | `MissionPackage` | Async             | Sync package     |
+| `importPackage(url:)` | `URL`            | `MissionPackage?` | Import from file |
+| `exportPackage(_:)`   | `MissionPackage` | `URL?`            | Export to file   |
 
 ---
 
@@ -586,6 +611,7 @@ class MissionPackageSyncService: ObservableObject {
 Automated certificate enrollment.
 
 **Declaration:**
+
 ```swift
 class CertificateEnrollmentService: ObservableObject {
     @Published var enrollmentStatus: EnrollmentStatus = .idle
@@ -594,10 +620,10 @@ class CertificateEnrollmentService: ObservableObject {
 
 **Key Methods:**
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `enrollWithServer(url:username:password:)` | `String`, `String`, `String` | Async | Request certificate |
-| `checkEnrollmentStatus()` | None | `EnrollmentStatus` | Check status |
+| Method                                     | Parameters                   | Returns            | Description         |
+| ------------------------------------------ | ---------------------------- | ------------------ | ------------------- |
+| `enrollWithServer(url:username:password:)` | `String`, `String`, `String` | Async              | Request certificate |
+| `checkEnrollmentStatus()`                  | None                         | `EnrollmentStatus` | Check status        |
 
 ---
 
@@ -610,6 +636,7 @@ class CertificateEnrollmentService: ObservableObject {
 ArcGIS REST API integration.
 
 **Declaration:**
+
 ```swift
 class ArcGISFeatureService: ObservableObject {
     @Published var features: [ArcGISFeature] = []
@@ -619,10 +646,10 @@ class ArcGISFeatureService: ObservableObject {
 
 **Key Methods:**
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `queryFeatures(serviceURL:where:)` | `String`, `String` | Async | Query features |
-| `addFeature(_:to:)` | `ArcGISFeature`, `String` | Async | Add feature |
+| Method                             | Parameters                | Returns | Description    |
+| ---------------------------------- | ------------------------- | ------- | -------------- |
+| `queryFeatures(serviceURL:where:)` | `String`, `String`        | Async   | Query features |
+| `addFeature(_:to:)`                | `ArcGISFeature`, `String` | Async   | Add feature    |
 
 ---
 
@@ -633,6 +660,7 @@ class ArcGISFeatureService: ObservableObject {
 Video feed integration.
 
 **Declaration:**
+
 ```swift
 class VideoStreamService: ObservableObject {
     @Published var activeStreams: [VideoStream] = []
@@ -641,10 +669,10 @@ class VideoStreamService: ObservableObject {
 
 **Key Methods:**
 
-| Method | Parameters | Returns | Description |
-|--------|------------|---------|-------------|
-| `connectToStream(url:)` | `String` | `VideoStream?` | Connect video feed |
-| `disconnectStream(_:)` | `VideoStream` | `Void` | Disconnect |
+| Method                  | Parameters    | Returns        | Description        |
+| ----------------------- | ------------- | -------------- | ------------------ |
+| `connectToStream(url:)` | `String`      | `VideoStream?` | Connect video feed |
+| `disconnectStream(_:)`  | `VideoStream` | `Void`         | Disconnect         |
 
 ---
 
@@ -655,6 +683,7 @@ class VideoStreamService: ObservableObject {
 Personnel tracking integration.
 
 **Declaration:**
+
 ```swift
 class BloodhoundService: ObservableObject {
     @Published var trackedPersonnel: [TrackedPerson] = []
@@ -672,7 +701,7 @@ Most services use singleton pattern for shared state:
 ```swift
 class MyService: ObservableObject {
     static let shared = MyService()
-    
+
     private init() {
         // Initialize
     }
@@ -715,4 +744,4 @@ func fetchData() async throws -> Data {
 
 ---
 
-*Last Updated: November 22, 2025*
+_Last Updated: November 22, 2025_

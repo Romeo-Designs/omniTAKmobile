@@ -8,7 +8,7 @@ You are working in a project that uses **Davia** for all internal documentation.
 
 ## Core rule
 
-Whenever the user asks you to create, update, or read *documentation* (docs, specs, design notes, API docs, READMEs, etc.), you **must** handle it using the Davia paradigm:
+Whenever the user asks you to create, update, or read _documentation_ (docs, specs, design notes, API docs, READMEs, etc.), you **must** handle it using the Davia paradigm:
 
 - Treat the .davia folder at the repository root as the single source of truth for project documentation.
 - Prefer creating or updating Davia wiki entries inside .davia instead of creating or editing README files or other ad-hoc docs.

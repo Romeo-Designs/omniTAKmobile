@@ -31,7 +31,7 @@ Representative models and their roles in data flow:
     - `uid`, `coordinate`, `callsign`, `type`, `team`, `lastUpdate`.
     - Trail: `trailCoordinates`, `trailTimestamps`.
     - Status: `battery`, `speed`, `course`, computed `isStale`.
-  - Acts as a *view model* for displaying SA on map overlays.
+  - Acts as a _view model_ for displaying SA on map overlays.
 
 - **`EmergencyAlert`** (in `CoTMessageParser.swift`):
   - Not `Codable`, but `Identifiable` + `Equatable`.
@@ -143,7 +143,6 @@ This section focuses on how data changes shape as it crosses boundaries: network
   ```
 
   Transformations:
-
   - **Type inspection** (`type` attribute) determines which parser is used.
   - Each parser extracts data using custom regex/string helpers (`extractAttribute`, `extractPoint`, `extractDetail`, `extractTimestamp`, etc.).
   - Output is polymorphic:
@@ -261,7 +260,7 @@ From `ChatSystem.md`:
   }
   ```
 
-  - **Important:** This is a *pure transformation* from strongly typed `ChatMessage`/`Conversation` → XML string; any XML quirks (escaping, attribute names) are isolated here.
+  - **Important:** This is a _pure transformation_ from strongly typed `ChatMessage`/`Conversation` → XML string; any XML quirks (escaping, attribute names) are isolated here.
   - `escapeXML` ensures message text does not break XML.
 
 #### PLI, Waypoints, etc.
@@ -391,7 +390,7 @@ Storage is implemented via a small set of concrete persistence classes under `Om
     - On app launch or ChatManager initialization: `queuedMessages = storage.loadQueuedMessages()`.
     - On modification: `storage.saveQueuedMessages(queuedMessages)`.
 
-- **ServerManager** (`Managers/ServerManager.swift`, from docs):  
+- **ServerManager** (`Managers/ServerManager.swift`, from docs):
 
   ```swift
   private func saveServers() {
@@ -614,7 +613,7 @@ Serialization/deserialization is central to three concerns:
 **Key aspects:**
 
 - Transformation boundaries are explicit:
-  - XML enters/exits *only* inside CoT generators/parsers and `TAKService`.
+  - XML enters/exits _only_ inside CoT generators/parsers and `TAKService`.
   - Rest of the app sees typed models.
 
 ### 2. JSON (Persistence)

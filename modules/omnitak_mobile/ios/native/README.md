@@ -22,6 +22,7 @@ ios/native/
 ### OmniTAKNativeBridge.swift
 
 Swift bridge that:
+
 - Declares C FFI imports from Rust library
 - Converts between Swift and C types
 - Manages callbacks from C to Swift
@@ -30,6 +31,7 @@ Swift bridge that:
 - Implements singleton pattern for callback management
 
 Key features:
+
 - Thread-safe callback storage
 - Main queue dispatch for callbacks
 - Proper C string memory management
@@ -39,6 +41,7 @@ Key features:
 ### omnitak_mobile.h
 
 C header file that declares:
+
 - FFI function signatures
 - Data structures (ConnectionStatus)
 - Protocol constants
@@ -49,6 +52,7 @@ This header is generated from the Rust library and must match the compiled code.
 ### OmniTAKMobile.xcframework
 
 XCFramework bundle containing:
+
 - Static library for physical devices (arm64)
 - Static library for simulator (arm64 + x86_64)
 - Architecture-specific slices selected automatically by Xcode
@@ -62,6 +66,7 @@ XCFramework bundle containing:
    - Install Command Line Tools: `xcode-select --install`
 
 2. **Rust Toolchain**
+
    ```bash
    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
    source $HOME/.cargo/env
@@ -260,6 +265,7 @@ let cCallback: @convention(c) (...) -> Void = { ... in
 ### C String Conversion
 
 **Swift → C:**
+
 ```swift
 let connectionId = host.withCString { hostPtr in
     omnitak_connect(hostPtr, ...)
@@ -268,6 +274,7 @@ let connectionId = host.withCString { hostPtr in
 ```
 
 **C → Swift:**
+
 ```swift
 let version = String(cString: omnitak_version())
 // No manual deallocation needed for static strings from Rust
@@ -326,11 +333,13 @@ NSDictionary *config = @{
 If mixing C code, create a bridging header:
 
 **YourProject-Bridging-Header.h:**
+
 ```objc
 #import "omnitak_mobile.h"
 ```
 
 Add to Build Settings:
+
 - Objective-C Bridging Header: `YourProject-Bridging-Header.h`
 
 ## Debugging
@@ -348,6 +357,7 @@ print("[OmniTAK] CoT sent on connection \(connectionId)")
 ### Xcode Console
 
 View logs in Xcode Console (⌘+⇧+C):
+
 ```
 [OmniTAK] Native library initialized successfully
 [OmniTAK] Connected successfully: 1
@@ -358,28 +368,37 @@ View logs in Xcode Console (⌘+⇧+C):
 ### Common Issues
 
 **Issue: Framework not found**
+
 ```
 ld: framework not found OmniTAKMobile
 ```
+
 **Solution:**
+
 - Verify framework is in correct location
 - Check framework is added to target
 - Clean build folder: Product → Clean Build Folder (⌘+⇧+K)
 
 **Issue: Undefined symbols**
+
 ```
 Undefined symbol: _omnitak_init
 ```
+
 **Solution:**
+
 - Ensure XCFramework contains static library
 - Verify correct architecture is being built
 - Check framework is linked in Build Phases
 
 **Issue: Module not found**
+
 ```
 No such module 'valdi_core'
 ```
+
 **Solution:**
+
 - Ensure Valdi core is built and linked
 - Check import paths in Build Settings
 - Verify module is in Framework Search Paths
@@ -389,6 +408,7 @@ No such module 'valdi_core'
 ### Library Size
 
 XCFramework size:
+
 - Device (arm64): ~2-3 MB
 - Simulator (arm64 + x86_64): ~4-6 MB
 - Total: ~6-9 MB
@@ -398,6 +418,7 @@ XCFramework size:
 For release builds, ensure:
 
 1. **Rust Optimization:**
+
    ```toml
    # In Cargo.toml
    [profile.release]
@@ -416,6 +437,7 @@ For release builds, ensure:
 ### App Thinning
 
 Xcode automatically:
+
 - Selects correct architecture slice
 - Removes unused architectures from final app
 - Results in ~2-3 MB in shipped app
